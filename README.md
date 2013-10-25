@@ -8,7 +8,7 @@ In other word, targeting only visible area, no scroll to upward/downword.
 If I want search from all area of buffer, I chose `/`, `?`.  
 
 If you don't like this plugin?  
-It's ok, there are a lot of plugins like bellow. 
+It's ok, there are a lot of plugins like bellow.  
 
 * [easy_motion](https://github.com/Lokaltog/vim-easymotion)
 * [clever-f](https://github.com/rhysd/clever-f.vim)

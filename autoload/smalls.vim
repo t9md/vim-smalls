@@ -1,13 +1,16 @@
+let s:debug = 0
 " KeyMap:
 "==================
 " keymap {{{
 let s:_keymap = {
       \ "exit"         : [ "\<Esc>", ";" ],
-      \ "delete"       : [ "\<BS>", ";" ],
+      \ "delete"       : [ "\<BS>", "\<C-h>" ],
       \ "head"         : [ "\<C-a>"],
       \ "end"          : [ "\<C-e>"],
       \ "char_forward" : [ "\<C-f>"],
       \ "char_back"    : [ "\<C-b>"],
+      \ "next_candidate" : [ "\<Tab>", "\<C-n>"],
+      \ "prev_candidate" : [ "\<C-p>"],
       \ }
  "}}}
 function! s:setup_keymap(keymap) "{{{
@@ -31,8 +34,25 @@ endfunction "}}}
 
 function! s:key.delete() "{{{
   let s = s:smalls
+  call s:echo("b-word: " . s._word)
   let s._word = s._word[: -2]
+  call s:echo("a-word: " . s._word)
+  throw "smalls-delete"
 endfunction "}}}
+
+function! s:key.prev_candidate() "{{{
+  throw "smalls-prev"
+endfunction "}}}
+function! s:key.next_candidate() "{{{
+  throw "smalls-next"
+  " let self._debug = "NEXT"
+endfunction "}}}
+
+function! s:echo(var)
+  if s:debug 
+    echo a:var
+  endif
+endfunction
 
 function! s:key.input(c) "{{{
   let action = get(s:keymap, a:c, -1)
@@ -40,6 +60,7 @@ function! s:key.input(c) "{{{
     let s:smalls._word .= a:c
     return
   else
+    call s:echo(action)
     call call(self[action], [], {})
   endif
 endfunction "}}}
@@ -63,8 +84,8 @@ func! s:smalls.input() "{{{
 endf "}}}
 
 function! s:smalls.init() "{{{
-  let self._guicursor = &guicursor
-  let &guicursor = 'n:hor1-SmallsCursorHide'
+  " let self._guicursor = &guicursor
+  " let &guicursor = 'n:hor1-SmallsCursorHide'
   let self._retry = 0
   let self._notfound = 0
   let s:smalls._hl_ids = []
@@ -92,7 +113,7 @@ function! s:smalls.finish() "{{{
     let @/= self._word
   endif
   silent set guicursor&
-  let &guicursor = self._guicursor
+  " let &guicursor = self._guicursor
   echo
 endfunction "}}}
 
@@ -100,7 +121,7 @@ function! s:smalls.prompt() "{{{
   call s:echohl(self._prompt, "SmallsInput")
   call s:echohl(self._word)
   " call s:echohl(self._word)
-  redraw
+  call s:redraw()
 endfunction "}}}
 
 
@@ -108,14 +129,17 @@ function! s:smalls.spot() "{{{
   call self.init()
   " call cursor(self._env.top, 1)
   while 1
+    " echo getpos('.')[1:2]
     call self.prompt()
     let c = self.input()
-
     try
       call s:key.input(c)
     catch /smalls-exit/
       break
+    catch /smalls-delete/
+      continue
     endtry
+    " echo "===============PASS"
 
     if !self.search()
       if !self._retry
@@ -137,6 +161,10 @@ function! s:smalls.spot() "{{{
 endfunction "}}}
 
 function! s:smalls.search() "{{{
+  if empty(self._word)
+    return
+  endif
+
   if self._retry
     return search(self._word, 'ceW', self._env.cur)
   else
@@ -154,14 +182,21 @@ endfunction "}}}
 function! s:smalls.hl_cursor() "{{{
   let pos = getpos('.')
   let s = self._word
+  if empty(s) | return | endif
   " ex) [88,24] => '\%88l\%24c'
   let pattern = '\c' . s . '\%'. pos[1] .'l\%'. ( pos[2] + 1 ).'c'
   let cursor_pattern = '\%'. pos[1] .'l\%'. ( pos[2]).'c'
   let self._hl_ids += [ matchadd("SmallsCandidate", '\c' . s , 100) ]
   let self._hl_ids += [ matchadd("SmallsCurrent", pattern, 101) ]
   let self._hl_ids += [ matchadd("SmallsCursor",   cursor_pattern, 102) ]
-  redraw
+
+  call s:redraw()
 endfunction "}}}
+
+function! s:redraw()
+  if  s:debug | return | endif
+  redraw
+endfunction
 
 " PublicInterface:
 "===================
@@ -169,6 +204,8 @@ function! smalls#spot() "{{{
   call s:smalls.spot()
 endfunction "}}}
 function! smalls#debug() "{{{
+  echo PP(s:keymap)
+  echo "---"
   echo PP(s:smalls)
 endfunction "}}}
 " vim: foldmethod=marker

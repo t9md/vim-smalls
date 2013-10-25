@@ -1,3 +1,5 @@
+# Currently ITS INTENDED TO BE USEFUL TO MYSELF DON'T USE
+
 # Simply put cursor with search.
 
 Yet another cursor movement helper, simple but effective at least for me ;).

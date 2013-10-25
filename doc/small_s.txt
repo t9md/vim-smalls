@@ -1,0 +1,79 @@
+*samalls.txt* spot your cursor with simple search
+
+Version: 0.1
+Author : t9md <taqumd@gmail.com>
+GitHub : https://github.com/t9md/vim-samalls
+==============================================================================
+CONTENTS						    *samalls-contents*
+
+       Introduction -------------------- |samalls-introduction|
+       Mapping ------------------------------ |samalls-mapping|
+       Commands ---------------------------- |samalls-commands|
+       Variables -------------------------- |samalls-variables|
+       Functions -------------------------- |samalls-functions|
+       Configuration Example ---------------- |samalls-example|
+       Bug -------------------------------------- |samalls-bug|
+       Todo  ----------------------------------- |samalls-todo|
+       Changelog -------------------------- |samalls-changelog|
+
+==============================================================================
+INTRODUCTION						*samalls-introduction*
+
+Yet another cursor movement helper, simple but effective at least for me ;).
+If you don't like this plugin?
+It's ok, there are a lot of plugins like bellow.
+
+   - easy_motion
+     https://github.com/Lokaltog/vim-easymotion
+   - clever-f
+     https://github.com/rhysd/clever-f.vim
+   - sneak
+     https://github.com/justinmk/vim-sneak
+
+==============================================================================
+MAPPINGS						    *samalls-mappings*
+
+n   <Plug>(samalls)
+	  move cursor with simple serach
+
+==============================================================================
+COMMANDS						    *samalls-commands*
+
+
+==============================================================================
+VARIABLES						   *samalls-variables*
+
+*g:here_sample_var*
+	SAMPLE SENTENCE
+	see |samalls-example|
+
+==============================================================================
+FUNCTIONS						   *samalls-functions*
+
+*samalls#spot()*
+	Main function for this plugin!
+
+==============================================================================
+CONFIGURATION EXAMPLE					      *samalls-example*
+
+set in your '.vimrc'
+>
+	" map normal-mode 's' for simple search
+	nmap s <Plug>(smalls)
+<
+============================================================================
+BUG								 *samalls-bug*
+
+Here a lot of bug and limitation.
+
+============================================================================
+TODO								*samalls-todo*
+
+- move between candidate with keybind
+
+==============================================================================
+CHANGELOG						   *samalls-changelog*
+2013-10-25:
+	- initial release
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

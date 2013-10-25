@@ -1,23 +1,23 @@
-*samalls.txt* spot your cursor with simple search
+*smalls.txt* spot your cursor with simple search
 
 Version: 0.1
 Author : t9md <taqumd@gmail.com>
-GitHub : https://github.com/t9md/vim-samalls
+GitHub : https://github.com/t9md/vim-smalls
 ==============================================================================
-CONTENTS						    *samalls-contents*
+CONTENTS						    *smalls-contents*
 
-       Introduction -------------------- |samalls-introduction|
-       Mapping ------------------------------ |samalls-mapping|
-       Commands ---------------------------- |samalls-commands|
-       Variables -------------------------- |samalls-variables|
-       Functions -------------------------- |samalls-functions|
-       Configuration Example ---------------- |samalls-example|
-       Bug -------------------------------------- |samalls-bug|
-       Todo  ----------------------------------- |samalls-todo|
-       Changelog -------------------------- |samalls-changelog|
+       Introduction -------------------- |smalls-introduction|
+       Mapping ------------------------------ |smalls-mapping|
+       Commands ---------------------------- |smalls-commands|
+       Variables -------------------------- |smalls-variables|
+       Functions -------------------------- |smalls-functions|
+       Configuration Example ---------------- |smalls-example|
+       Bug -------------------------------------- |smalls-bug|
+       Todo  ----------------------------------- |smalls-todo|
+       Changelog -------------------------- |smalls-changelog|
 
 ==============================================================================
-INTRODUCTION						*samalls-introduction*
+INTRODUCTION						*smalls-introduction*
 
 Yet another cursor movement helper, simple but effective at least for me ;).
 If you don't like this plugin?
@@ -31,30 +31,30 @@ It's ok, there are a lot of plugins like bellow.
      https://github.com/justinmk/vim-sneak
 
 ==============================================================================
-MAPPINGS						    *samalls-mappings*
+MAPPINGS						    *smalls-mappings*
 
-n   <Plug>(samalls)
+n   <Plug>(smalls)
 	  move cursor with simple serach
 
 ==============================================================================
-COMMANDS						    *samalls-commands*
+COMMANDS						    *smalls-commands*
 
 
 ==============================================================================
-VARIABLES						   *samalls-variables*
+VARIABLES						   *smalls-variables*
 
 *g:here_sample_var*
 	SAMPLE SENTENCE
-	see |samalls-example|
+	see |smalls-example|
 
 ==============================================================================
-FUNCTIONS						   *samalls-functions*
+FUNCTIONS						   *smalls-functions*
 
-*samalls#spot()*
+*smalls#spot()*
 	Main function for this plugin!
 
 ==============================================================================
-CONFIGURATION EXAMPLE					      *samalls-example*
+CONFIGURATION EXAMPLE					      *smalls-example*
 
 set in your '.vimrc'
 >
@@ -62,17 +62,17 @@ set in your '.vimrc'
 	nmap s <Plug>(smalls)
 <
 ============================================================================
-BUG								 *samalls-bug*
+BUG								 *smalls-bug*
 
 Here a lot of bug and limitation.
 
 ============================================================================
-TODO								*samalls-todo*
+TODO								*smalls-todo*
 
 - move between candidate with keybind
 
 ==============================================================================
-CHANGELOG						   *samalls-changelog*
+CHANGELOG						   *smalls-changelog*
 2013-10-25:
 	- initial release
 ==============================================================================

@@ -32,8 +32,8 @@ highlight! SmallsCandidate term=bold,underline cterm=bold,underline gui=bold,und
 highlight! SmallsCurrent guifg=#ffffff guibg=#f92672
 highlight! SmallsCursor gui=bold,underline guifg=#ffffff guibg=#f92672
 
-nnoremap <silent> <Plug>(smalls)       :<C-u>call samalls#spot()<CR>
-nnoremap <silent> <Plug>(smalls-debug) :<C-u>call samalls#debug()<CR>
+nnoremap <silent> <Plug>(smalls)       :<C-u>call smalls#spot()<CR>
+nnoremap <silent> <Plug>(smalls-debug) :<C-u>call smalls#debug()<CR>
 " }}}
 " FINISH:
 "============={{{

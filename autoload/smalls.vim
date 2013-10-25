@@ -66,19 +66,19 @@ endfunction "}}}
 
 " MainObject:
 "==================
-let s:samalls = {}
-let s:samalls._prompt = "/"
-func! s:samalls.input() "{{{
+let s:smalls = {}
+let s:smalls._prompt = "/"
+func! s:smalls.input() "{{{
   let c = getchar()
   return type(c) == type(0)
         \ ? nr2char(c)
         \ : c
 endf "}}}
 
-function! s:samalls.init() "{{{
+function! s:smalls.init() "{{{
   let self._retry = 0
   let self._notfound = 0
-  let s:samalls._hl_ids = []
+  let s:smalls._hl_ids = []
   let self._scrolloff = &scrolloff
   let &scrolloff = 0
   let view = winsaveview()
@@ -92,7 +92,7 @@ function! s:samalls.init() "{{{
   let self._view = view
 endfunction "}}}
 
-function! s:samalls.finish() "{{{
+function! s:smalls.finish() "{{{
   let &scrolloff = self._scrolloff
 
   call self.hl_clear()
@@ -105,19 +105,19 @@ function! s:samalls.finish() "{{{
   echo
 endfunction "}}}
 
-function! s:samalls.prompt() "{{{
+function! s:smalls.prompt() "{{{
   call s:echohl(self._prompt, "Function")
   call s:echohl(self._word)
 endfunction "}}}
 
-function! s:samalls.hl_clear() "{{{
+function! s:smalls.hl_clear() "{{{
   for id in self._hl_ids
     call matchdelete(id)
   endfor
   let self._hl_ids = []
 endfunction "}}}
 
-function! s:samalls.spot() "{{{
+function! s:smalls.spot() "{{{
   call self.init()
   " call cursor(self._env.top, 1)
   while 1
@@ -155,7 +155,7 @@ function! s:samalls.spot() "{{{
   call self.finish()
 endfunction "}}}
 
-function! s:samalls.search() "{{{
+function! s:smalls.search() "{{{
   if self._retry
     call cursor(self._env.top, 1)
     return search(self._word, 'ceW', self._env.cur)
@@ -164,7 +164,7 @@ function! s:samalls.search() "{{{
   endif
 endfunction "}}}
 
-function! s:samalls.hl_cursor() "{{{
+function! s:smalls.hl_cursor() "{{{
   let pos = getpos('.')
   let s = self._word
   " ex) [88,24] => '\%88l\%24c'
@@ -177,10 +177,10 @@ endfunction "}}}
 
 " PublicInterface:
 "===================
-function! samalls#spot() "{{{
-  call s:samalls.spot()
+function! smalls#spot() "{{{
+  call s:smalls.spot()
 endfunction "}}}
-function! samalls#debug() "{{{
-  echo PP(s:samalls)
+function! smalls#debug() "{{{
+  echo PP(s:smalls)
 endfunction "}}}
 " vim: foldmethod=marker

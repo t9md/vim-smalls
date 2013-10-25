@@ -24,5 +24,5 @@ A lot of TODO to improve!
     " map normal-mode 's' for simple search
     nmap s <Plug>(smalls)
 
-### Movie
+# Movie
 

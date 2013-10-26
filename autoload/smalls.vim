@@ -34,9 +34,12 @@ endfunction "}}}
 
 function! s:key.delete() "{{{
   let s = s:smalls
-  call s:echo("b-word: " . s._word)
   let s._word = s._word[: -2]
-  call s:echo("a-word: " . s._word)
+  let [l,c] = getpos('.')[1:2]
+  call cursor(l, c-1)
+  call s.hl_clear()
+  call s.hl_cursor()
+
   throw "smalls-delete"
 endfunction "}}}
 
@@ -44,6 +47,9 @@ function! s:key.prev_candidate() "{{{
   throw "smalls-prev"
 endfunction "}}}
 function! s:key.next_candidate() "{{{
+  let p =  getpos('.')
+
+  call setpos(l, c-1)
   throw "smalls-next"
   " let self._debug = "NEXT"
 endfunction "}}}
@@ -51,7 +57,7 @@ endfunction "}}}
 function! s:echo(var)
   if s:debug 
     echo a:var
-  endif
+ endif
 endfunction
 
 function! s:key.input(c) "{{{
@@ -86,6 +92,7 @@ endf "}}}
 function! s:smalls.init() "{{{
   " let self._guicursor = &guicursor
   " let &guicursor = 'n:hor1-SmallsCursorHide'
+  "
   let self._retry = 0
   let self._notfound = 0
   let s:smalls._hl_ids = []
@@ -94,8 +101,8 @@ function! s:smalls.init() "{{{
   let view = winsaveview()
   let env = {
         \ "top": view.topline,
-        \ "cur": view.topline + winline() - 1,
-        \ "last": view.topline + winheight(0) - 1
+        \ "cur": view.lnum,
+        \ "last": line('w$'),
         \ }
   let self._word = ''
   let self._env = env
@@ -104,16 +111,16 @@ endfunction "}}}
 
 function! s:smalls.finish() "{{{
   let &scrolloff = self._scrolloff
-
   call self.hl_clear()
-
   if self._notfound
     call winrestview(self._view)
   else
     let @/= self._word
   endif
-  silent set guicursor&
-  " let &guicursor = self._guicursor
+  if exists("self._guicursor")
+    silent set guicursor&
+    let &guicursor = self._guicursor
+  endif
   echo
 endfunction "}}}
 
@@ -138,19 +145,11 @@ function! s:smalls.spot() "{{{
       break
     catch /smalls-delete/
       continue
+    " catch /smalls-next/
     endtry
     " echo "===============PASS"
 
-    if !self.search()
-      if !self._retry
-        call cursor(self._env.top, 1)
-        let self._retry = 1
-        continue
-      else
-        let self._notfound = 1
-      endif
-    endif
-
+    call self.search(self._word, "ceW", self._env.last)
     call self.hl_clear()
     call self.hl_cursor()
 
@@ -160,15 +159,30 @@ function! s:smalls.spot() "{{{
   call self.finish()
 endfunction "}}}
 
-function! s:smalls.search() "{{{
-  if empty(self._word)
-    return
-  endif
+function! s:smalls.search(word, opt, stopline) "{{{
+  if empty(self._word) | return | endif
 
-  if self._retry
-    return search(self._word, 'ceW', self._env.cur)
+  " searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*searchpos()*
+
+  let found = searchpos(a:word, a:opt, a:stopline)
+  if !(found == [0,0])
+    echo "FOUND" . string(getpos('.'))
+    let tl = foldclosedend(line('.'))
+    if tl ==# -1
+      return 1
+    endif
+    call cursor(tl+1, 1)
+    echo "call from:" . string(getpos('.')) .
+          \ " (" . join([a:word, a:opt, a:stopline],', ') . ")"
+    call self.search(a:word, a:opt, a:stopline)
   else
-    return search(self._word, 'ceW', self._env.last)
+    if self._retry
+      let self._notfound = 1
+      return 0
+    endif
+    call cursor(self._env.top, 1)
+    let self._retry = 1
+    call self.search(a:word, a:opt, self._env.cur)
   endif
 endfunction "}}}
 

@@ -1,4 +1,5 @@
 let s:debug = 0
+
 " KeyMap:
 "==================
 " keymap {{{
@@ -54,11 +55,11 @@ function! s:key.next_candidate() "{{{
   " let self._debug = "NEXT"
 endfunction "}}}
 
-function! s:echo(var)
+function! s:echo(var) "{{{
   if s:debug 
     echo a:var
  endif
-endfunction
+endfunction "}}}
 
 function! s:key.input(c) "{{{
   let action = get(s:keymap, a:c, -1)
@@ -213,10 +214,10 @@ function! s:smalls.hl_cursor() "{{{
   call s:redraw()
 endfunction "}}}
 
-function! s:redraw()
+function! s:redraw() "{{{
   if  s:debug | return | endif
   redraw
-endfunction
+endfunction "}}}
 
 " PublicInterface:
 "===================

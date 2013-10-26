@@ -42,7 +42,8 @@ highlight! SmallsCursorHide none
 
 " highlight! SmallsInput gui=bold,underline guifg=#ffffff guibg=#f92672
 
-nnoremap <silent> <Plug>(smalls)       :<C-u>call smalls#spot()<CR>
+nnoremap <silent> <Plug>(smalls-forward)       :<C-u>call smalls#spot(0)<CR>
+nnoremap <silent> <Plug>(smalls-backward)       :<C-u>call smalls#spot(1)<CR>
 nnoremap <silent> <Plug>(smalls-debug) :<C-u>call smalls#debug()<CR>
 " }}}
 " FINISH:

@@ -90,8 +90,8 @@ func! s:smalls.input() "{{{
 endf "}}}
 
 function! s:smalls.init() "{{{
-  " let self._guicursor = &guicursor
-  " let &guicursor = 'n:hor1-SmallsCursorHide'
+  let self._guicursor = &guicursor
+  let &guicursor = 'n:hor1-SmallsCursorHide'
   "
   let self._retry = 0
   let self._notfound = 0
@@ -132,7 +132,13 @@ function! s:smalls.prompt() "{{{
 endfunction "}}}
 
 
-function! s:smalls.spot() "{{{
+function! s:smalls.spot(dir)  "{{{
+  let self._dir = a:dir
+  let self._searchopt = "ceW"
+  if self._dir ==# 1
+    let self._searchopt .= "b"
+  endif
+
   call self.init()
   " call cursor(self._env.top, 1)
   while 1
@@ -149,7 +155,7 @@ function! s:smalls.spot() "{{{
     endtry
     " echo "===============PASS"
 
-    call self.search(self._word, "ceW", self._env.last)
+    call self.search(self._word, self._searchopt, self._env.last)
     call self.hl_clear()
     call self.hl_cursor()
 
@@ -214,8 +220,8 @@ endfunction
 
 " PublicInterface:
 "===================
-function! smalls#spot() "{{{
-  call s:smalls.spot()
+function! smalls#spot(dir) "{{{
+  call s:smalls.spot(a:dir)
 endfunction "}}}
 function! smalls#debug() "{{{
   echo PP(s:keymap)

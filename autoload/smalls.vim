@@ -1,232 +1,339 @@
 let s:debug = 0
+let g:smalls_shade = 1
+let g:smalls_jump_keys = ';abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 " KeyMap:
 "==================
-" keymap {{{
-let s:_keymap = {
-      \ "exit"         : [ "\<Esc>", ";" ],
-      \ "delete"       : [ "\<BS>", "\<C-h>" ],
-      \ "head"         : [ "\<C-a>"],
-      \ "end"          : [ "\<C-e>"],
-      \ "char_forward" : [ "\<C-f>"],
-      \ "char_back"    : [ "\<C-b>"],
-      \ "next_candidate" : [ "\<Tab>", "\<C-n>"],
-      \ "prev_candidate" : [ "\<C-p>"],
-      \ }
- "}}}
-function! s:setup_keymap(keymap) "{{{
-  let keymap = {}
-  for [action, keys] in items(a:keymap)
-    for k in keys
-      if ! has_key(keymap, k)
-        let keymap[k] = action
-      endif
-    endfor
-  endfor
-  return keymap
-endfunction "}}}
 
-let s:keymap = s:setup_keymap( s:_keymap)
-let s:key = {}
-
-function! s:key.exit() "{{{
-  throw "smalls-exit"
-endfunction "}}}
-
-function! s:key.delete() "{{{
-  let s = s:smalls
-  let s._word = s._word[: -2]
-  let [l,c] = getpos('.')[1:2]
-  call cursor(l, c-1)
-  call s.hl_clear()
-  call s.hl_cursor()
-
-  throw "smalls-delete"
-endfunction "}}}
-
-function! s:key.prev_candidate() "{{{
-  throw "smalls-prev"
-endfunction "}}}
-function! s:key.next_candidate() "{{{
-  let p =  getpos('.')
-
-  call setpos(l, c-1)
-  throw "smalls-next"
-  " let self._debug = "NEXT"
-endfunction "}}}
-
-function! s:echo(var) "{{{
-  if s:debug 
+" Utilw:
+function! s:echo(var) "{{{1
+  if s:debug
     echo a:var
  endif
-endfunction "}}}
+endfunction
 
-function! s:key.input(c) "{{{
-  let action = get(s:keymap, a:c, -1)
-  if action ==# -1
-    let s:smalls._word .= a:c
-    return
-  else
-    call s:echo(action)
-    call call(self[action], [], {})
-  endif
-endfunction "}}}
+function! s:msg(msg, ...) "{{{1
+  let color = a:0 ? a:1 : "Normal"
+	echohl Type
+	echon 'Smalls: '
+	exec "echohl"  color
+  echon a:msg
+	echohl None
+endfunction
 
-function! s:echohl(msg, ...) "{{{
+function! s:echohl(msg, ...) "{{{1
   let hl = a:0 ? a:1 : "Identifier"
   silent execute 'echohl ' . hl
   echon a:msg
   echohl Normal
-endfunction "}}}
+endfunction
 
-" MainObject:
-"==================
+function! s:redraw() "{{{1
+  if  s:debug | return | endif
+  redraw
+endfunction
+"}}}
+
+" Main: redraw
 let s:smalls = {}
-let s:smalls._prompt = ">> "
-func! s:smalls.input() "{{{
-  let c = getchar()
-  return type(c) == type(0)
-        \ ? nr2char(c)
-        \ : c
-endf "}}}
-
-function! s:smalls.init() "{{{
-  let self._guicursor = &guicursor
-  let &guicursor = 'n:hor1-SmallsCursorHide'
-  "
-  let self._retry = 0
-  let self._notfound = 0
+function! s:smalls.init() "{{{1
+  let self.prompt      = "> "
+  let self.cancelled   = 0
+  let self.lastpos     = [0,0]
+  let self._notfound   = 0
   let s:smalls._hl_ids = []
-  let self._scrolloff = &scrolloff
-  let &scrolloff = 0
-  let view = winsaveview()
+  let self.pos_org     = getpos('.')[1:2]
   let env = {
-        \ "top": view.topline,
-        \ "cur": view.lnum,
+        \ "top": line('w0'),
         \ "last": line('w$'),
+        \ "cur": line('.'),
+        \ "col": col('.'),
         \ }
   let self._word = ''
-  let self._env = env
-  let self._view = view
-endfunction "}}}
+  let self.env = env
+  let self._view = winsaveview()
+endfunction
 
-function! s:smalls.finish() "{{{
-  let &scrolloff = self._scrolloff
-  call self.hl_clear()
+function! s:smalls.finish() "{{{1
   if self._notfound
-    call winrestview(self._view)
+    call self.blink_pos()
+    call getchar(0)
   else
     let @/= self._word
   endif
-  if exists("self._guicursor")
-    silent set guicursor&
-    let &guicursor = self._guicursor
-  endif
-  echo
-endfunction "}}}
+endfunction
 
-function! s:smalls.prompt() "{{{
-  call s:echohl(self._prompt, "SmallsInput")
+function! s:smalls.show_prompt() "{{{1
+  call s:echohl(self.prompt, "SmallsInput")
   call s:echohl(self._word)
-  " call s:echohl(self._word)
   call s:redraw()
-endfunction "}}}
+endfunction
 
+function! s:smalls.log(msg)
+  cal vimproc#system('echo "' . a:msg . '" >> ~/vimlog.log')
+endfunction
+function! s:smalls.plog(msg)
+  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vimlog.log')
+endfunction
 
-function! s:smalls.spot(dir)  "{{{
-  let self._dir = a:dir
-  let self._searchopt = "ceW"
-  if self._dir ==# 1
-    let self._searchopt .= "b"
-  endif
+function! s:smalls.getchar() "{{{1
+  return nr2char(getchar())
+endfunction
 
+          " \ '&modifiable':  1,
+          " \ '&readonly':    0,
+          " \ '&spell':       0,
+function! s:smalls.set_opts() "{{{1
+  let self._opts = {}
+  let opts = {
+          \ '&scrolloff': 0,
+          \ '&modified':    0,
+          \ '&guicursor': 'n:hor1-SmallsCursorHide',
+          \ '&cursorline': 0,
+          \ }
+  let self._opts = {}
+  let curbuf = bufname('')
+  for [var, val] in items(opts)
+    let self._opts[var] = getbufvar(curbuf, var)
+    call setbufvar(curbuf, var, val)
+  endfor
+endfunction
+
+function! s:smalls.restore_opts() "{{{1
+  for [var, val] in items(self._opts)
+    if var == '&guicursor'
+      silent set guicursor&
+    endif
+    call setbufvar(bufname(''), var, val)
+  endfor
+endfunction
+
+  
+function! s:smalls.start(dir)  "{{{1
+  " dir: 0 => forward, 1 => backward
   call self.init()
-  " call cursor(self._env.top, 1)
-  while 1
-    " echo getpos('.')[1:2]
-    call self.prompt()
-    let c = self.input()
-    try
-      call s:key.input(c)
-    catch /smalls-exit/
-      break
-    catch /smalls-delete/
-      continue
-    " catch /smalls-next/
-    endtry
-    " echo "===============PASS"
+  let self._dir = a:dir
+  try
+    call self.set_opts()
 
-    call self.search(self._word, self._searchopt, self._env.last)
-    call self.hl_clear()
-    call self.hl_cursor()
+    let firsttime = 0
+    while 1
+      if !firsttime
+        call self.hl_shade()
+      else
+        let firsttime = 0
+      endif
+      call self.show_prompt()
 
-    if self._notfound | break | endif
-  endwhile
+      let c = self.getchar()
+      if c == "\<Esc>"
+        throw "CANCELLED"
+      endif
+      if c == ";"
+        let pos_new =  self.jump_to_target()
+        " call self.plog(pos_new)
+        let self.lastpos = [pos_new.line, pos_new.col ]
+        break
+      endif
 
-  call self.finish()
-endfunction "}}}
+      let self._word .= c
 
-function! s:smalls.search(word, opt, stopline) "{{{
-  if empty(self._word) | return | endif
-
-  " searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*searchpos()*
-
-  let found = searchpos(a:word, a:opt, a:stopline)
-  if !(found == [0,0])
-    echo "FOUND" . string(getpos('.'))
-    let tl = foldclosedend(line('.'))
-    if tl ==# -1
-      return 1
-    endif
-    call cursor(tl+1, 1)
-    echo "call from:" . string(getpos('.')) .
-          \ " (" . join([a:word, a:opt, a:stopline],', ') . ")"
-    call self.search(a:word, a:opt, a:stopline)
-  else
-    if self._retry
+      let found = self.jump_targets(1)
+      if empty(found) | throw "NOT_FOUND" | endif
+      call self.hl_clear()
+      call self.hl_candidate(found[0])
+    endwhile
+  catch
+    if v:exception ==# "NOT_FOUND"
       let self._notfound = 1
-      return 0
+      call self.hl_clear()
+    elseif v:exception ==# "CANCELLED"
+      let self.cancelled = 1
+      call winrestview(self._view)
     endif
-    call cursor(self._env.top, 1)
-    let self._retry = 1
-    call self.search(a:word, a:opt, self._env.cur)
-  endif
-endfunction "}}}
+    call s:msg(v:exception)
+  finally
+    if self.lastpos != [0,0] && !self.cancelled
+      call setpos('.', [0, self.lastpos[0], self.lastpos[1], 0])
+    endif
+    call self.hl_clear()
+    call self.restore_opts()
+    call self.finish()
+  endtry
+endfunction
 
-function! s:smalls.hl_clear() "{{{
+let s:metachar = '\/~ .*^|[''$'
+function! s:smalls.escape(char)
+  return escape(a:char, s:metachar)
+endfunction
+
+
+function! s:ensure(expr, err) "{{{1
+  if ! a:expr
+    throw a:err
+  endif
+endfunction
+
+function! s:smalls.jump_to_target()
+  let targets = self.jump_targets()
+  if empty(targets)
+    return easymotion#pos#new(self.lastpos)
+  endif
+  " call s:ensure( !empty(targets), "No candidate")
+  let tgt2pos = easymotion#grouping#SCTree(targets, split(g:smalls_jump_keys, '\zs'))
+
+  call self.hl_shade()
+  let pos_new = easymotion#ui#start(tgt2pos)
+  return pos_new
+endfunction
+
+function! s:smalls.jump_targets(...) "{{{1
+  let limit = a:0 > 0 ? a:1 : 0
+  let word = self._word
+  let targets = []
+
+  if empty(word)
+    return targets
+  endif
+
+  let d = self._dir
+  let [opt, stopline, fname, ope] =
+        \ d ==# 'backward' ? [ 'b', self.env.top , 'foldclosed', '-'] :
+        \ d ==# 'forward' ?  [ '' , self.env.last, 'foldclosedend', '+'] : throw
+
+  try
+    while 1
+      let pos = searchpos(word, opt, stopline)
+      if pos == [0, 0] | break | endif
+
+      let linum = function(fname)(pos[0])
+      if linum != -1
+        call cursor(eval('linum' . ope . '1') , pos[1])
+        continue
+      endif
+      call add(targets, pos)
+      if limit && (len(targets) >= limit )
+        break
+      endif
+    endwhile
+  finally
+    call cursor(self.env.cur, self.env.col)
+  endtry
+  return targets
+endfunction
+
+
+
+
+function! s:smalls.hl_clear() "{{{1
   for id in self._hl_ids
     call matchdelete(id)
   endfor
   let self._hl_ids = []
-endfunction "}}}
+endfunction
 
-function! s:smalls.hl_cursor() "{{{
-  let pos = getpos('.')
-  let s = self._word
-  if empty(s) | return | endif
+function! s:smalls.hl_candidate(pos) "{{{1
+  if empty(self._word) | return | endif
+  if empty(a:pos)      | return | endif
+  
+  let [line, col ] = a:pos
+  let keyword = self.escape(self._word)
   " ex) [88,24] => '\%88l\%24c'
-  let pattern = '\c' . s . '\%'. pos[1] .'l\%'. ( pos[2] + 1 ).'c'
-  let cursor_pattern = '\%'. pos[1] .'l\%'. ( pos[2]).'c'
-  let self._hl_ids += [ matchadd("SmallsCandidate", '\c' . s , 100) ]
-  let self._hl_ids += [ matchadd("SmallsCurrent", pattern, 101) ]
-  let self._hl_ids += [ matchadd("SmallsCursor",   cursor_pattern, 102) ]
+  " let top        = self.env.top
+  " let top_above  = top - 1
+  " let last       = self.env.last
+  " let last_below = last + 1
+  " let line       = self.env.cur
+  " let col        = self.env.col
 
-  call s:redraw()
+  let top_above  = self.env.top - 1
+  let last_below = self.env.last + 1
+  let org_line    = self.env.cur
+  let org_col    = self.env.col
+
+  " let pat            = '\v(%>10l%<32l)'
+  " let candidate       = '\v(%>10llet%<32l)'
+  if self._dir==# 'forward'
+    let curline = '%%' . org_line . 'l%%>' . org_col . 'c' . '%s'
+    let next2end = '%%>' . org_line . 'l' .  '%s' . '%%<' . last_below . 'l'
+    let candidate_pat =  '\v(' . curline . ')' . '|' . '(' . next2end . ')'
+    let candidate = printf(candidate_pat, keyword, keyword)
+  elseif self._dir ==# "backward"
+    let curline = '%%' . org_line . 'l' . '%s' . '%%<' . (org_col+1) . 'c'
+    let next2top = '%%>' . top_above . 'l' . '%s' . '%%<' . (org_line) . 'l'
+    let candidate_pat =  '\v(' . curline . ')' . '|' . '(' . next2top . ')'
+    let candidate = printf(candidate_pat, keyword, keyword)
+  elseif self._dir ==# "left"
+    let candidate     = '\v(%>'. top_above .'l%<' . org_col . 'c' . keyword
+          \ . '%<' . last_below  . 'l)'
+    " call self.log(candidate)
+  elseif self._dir ==# "right"
+    let candidate = '\v(%>'. top_above .'l%>' . org_col . 'c' . keyword 
+          \ . '%<' . last_below . 'l)'
+  end
+  let self._hl_ids += [ matchadd("SmallsCandidate", '\c' . candidate , 100) ]
+
+  let current = '\v\c' . keyword . '%'. line .'l%' . ( col + len(keyword)).'c'
+  let g:V = current
+  let self._hl_ids += [ matchadd("SmallsCurrent", current, 101) ]
+
+  let hl_pos   = '\v%' . line . 'l%'. (col -1 + len(keyword)) .'c'
+  let self._hl_ids += [ matchadd("SmallsCursor",   hl_pos, 102) ]
+endfunction
+
+function! s:smalls.hl_shade() "{{{1
+  if ! g:smalls_shade | return | endif
+  let top        = self.env.top
+  let top_above  = top - 1
+  let last       = self.env.last
+  let last_below = last + 1
+  let line       = self.env.cur
+  let col        = self.env.col
+  let pos        = '%' . line . 'l%'. col .'c'
+  let forward    = pos . '\_.*%'. (last + 1).'l'
+  let backward   = '%'. top .'l\_.*' . pos
+  let right      = '%>'. top_above .'l%>' . (col -1) . 'c%<' . last_below . 'l'
+  let left       = '%>'. top_above .'l%<' . (col +1) . 'c%<' . last_below . 'l'
+  let hl_re = 
+        \ self._dir ==# "backward" ? backward :
+        \ self._dir ==# "forward"  ? forward  :
+        \ self._dir ==# "right"    ? right    :
+        \ self._dir ==# "left"     ? left     : throw
+
+  let self._hl_ids += [ matchadd("SmallsShade", '\v' . hl_re) ]
 endfunction "}}}
 
-function! s:redraw() "{{{
-  if  s:debug | return | endif
-  redraw
-endfunction "}}}
+function! s:smalls.blink_pos() "{{{1
+  let s:blink_stay  = '200m'
+  let s:blink_sleep = '200m'
+  let [line, col ] = getpos('.')[1:2]
+  let hl_pos   = '\%' . line . 'l\%'. col .'c'
+  call self.blink("SmallsCursor", 2, hl_pos, 104)
+endfunction
+
+function! s:smalls.blink(hl, count, pattern, priority) "{{{1
+ for i in range(1, a:count)
+   let id = matchadd(a:hl, a:pattern, a:priority)
+   redraw!
+   execute "sleep " . s:blink_stay
+   call matchdelete(id)
+   redraw!
+   if i >= a:count
+     break
+   endif
+   execute "sleep " . s:blink_sleep
+ endfor
+endfunction
+"}}}
+
 
 " PublicInterface:
-"===================
-function! smalls#spot(dir) "{{{
-  call s:smalls.spot(a:dir)
+function! smalls#start(dir) "{{{1
+  call s:smalls.start(a:dir)
 endfunction "}}}
 function! smalls#debug() "{{{
   echo PP(s:keymap)
   echo "---"
   echo PP(s:smalls)
-endfunction "}}}
+endfunction
 " vim: foldmethod=marker

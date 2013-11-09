@@ -6,15 +6,15 @@ GitHub : https://github.com/t9md/vim-smalls
 ==============================================================================
 CONTENTS						    *smalls-contents*
 
-       Introduction -------------------- |smalls-introduction|
-       Mapping ------------------------------ |smalls-mapping|
-       Commands ---------------------------- |smalls-commands|
-       Variables -------------------------- |smalls-variables|
-       Functions -------------------------- |smalls-functions|
-       Configuration Example ---------------- |smalls-example|
-       Bug -------------------------------------- |smalls-bug|
-       Todo  ----------------------------------- |smalls-todo|
-       Changelog -------------------------- |smalls-changelog|
+       Introduction .................... |smalls-introduction|
+       Mapping .............................. |smalls-mapping|
+       Commands ............................ |smalls-commands|
+       Variables .......................... |smalls-variables|
+       Functions .......................... |smalls-functions|
+       Configuration Example ................ |smalls-example|
+       Bug ...................................... |smalls-bug|
+       Todo  ................................... |smalls-todo|
+       Changelog .......................... |smalls-changelog|
 
 ==============================================================================
 INTRODUCTION						*smalls-introduction*

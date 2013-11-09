@@ -1,4 +1,4 @@
-# Currently ITS INTENDED TO BE USEFUL TO MYSELF DON'T USE
+# Currently ITS INTENDED TO BE USEFUL TO MYSELF DON'T USE THIS
 
 # Simply put cursor with search.
 

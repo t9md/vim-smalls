@@ -72,8 +72,9 @@ function! s:setup_hl()
   " highlight! SmallsCandidate guibg=NONE  guifg=#ff0000 gui=bold
   highlight! SmallsCandidate  guibg=bg  guifg=#66D9EF gui=bold
   " highlight! SmallsJumpTarget guibg=#1060a0 guifg=#ffffff gui=bold
-  " highlight! SmallsJumpTarget guibg=#223322 guifg=yellow gui=bold
-  highlight! SmallsJumpTarget guibg=NONE guifg=green gui=bold,italic
+  highlight! SmallsJumpTarget guibg=#223322 guifg=yellow gui=bold
+  " highlight! SmallsJumpTarget guibg=NONE guifg=red gui=bold
+  " highlight! SmallsJumpTarget guibg=NONE guifg=green gui=bold,italic
   " highlight! SmallsJumpTarget guibg=NONE guifg=red gui=NONE
   " highlight! link SmallsJumpTarget  Statement
   " highlight! link SmallsJumpTarget  PreProc

@@ -1,12 +1,12 @@
 " GUARD:
-if !exists('g:smals_debug')
-  let g:smal_s_debug = 0
+if !exists('g:smalls_debug')
+  let g:smalls_debug = 0
 endif
 
-if exists('g:loaded_smals')
+if exists('g:loaded_smalls')
   " finish
 endif
-let g:loaded_smals = 1
+let g:loaded_smalls = 1
 let s:old_cpo = &cpo
 set cpo&vim
 " }}}
@@ -72,6 +72,14 @@ function! s:setup_hl()
   " highlight! SmallsCandidate guibg=NONE  guifg=#ff0000 gui=bold
   highlight! SmallsCandidate  guibg=bg  guifg=#66D9EF gui=bold
   " highlight! SmallsJumpTarget guibg=#1060a0 guifg=#ffffff gui=bold
+  " highlight! SmallsJumpTarget guibg=#223322 guifg=yellow gui=bold
+  highlight! SmallsJumpTarget guibg=NONE guifg=green gui=bold,italic
+  " highlight! SmallsJumpTarget guibg=NONE guifg=red gui=NONE
+  " highlight! link SmallsJumpTarget  Statement
+  " highlight! link SmallsJumpTarget  PreProc
+  " {'fg': '#A6E22E', 'guifg': '#a6e22e', 'name': 'PreProc'}
+  " {'fg': '#F92672', 'guifg': '#f92672', 'name': 'Statement'}
+  " {'fg': '#E6DB74', 'guifg': '#e6db74', 'name': 'String'}
   " highlight! SmallsJumpTarget guibg=red guifg=#ffffff gui=bold
   " highlight! SmallsJumpTarget guibg=NONE guifg=#777777 gui=NONE
   highlight! SmallsCurrent   guifg=#ffffff       guibg=#f92672
@@ -82,7 +90,6 @@ function! s:setup_hl()
   highlight! SmallsInput guifg=#a6e22e
   highlight! SmallsCursorHide none
 endfunction
-" let g:EasyMotion_hl_group_target = "SmallsJumpTarget"
 " let g:EasyMotion_hl_group_target = 'EasyMotionTarget'
 call s:setup_hl()
 
@@ -90,8 +97,6 @@ augroup Smalls
   autocmd!
   autocmd ColorScheme * call s:setup_hl()
 augroup END
-
-" highlight! SmallsInput guifg=#a6e22e
 
 
 " highlight! SmallsInput gui=bold,underline guifg=#ffffff guibg=#f92672

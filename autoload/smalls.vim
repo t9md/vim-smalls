@@ -1,17 +1,16 @@
 let s:debug = 0
 let g:smalls_shade = 1
-let g:smalls_jump_keys = ';abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+let g:smalls_jump_keys = ';ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-" KeyMap:
-"==================
+let g:smalls_hl_priorities = {
+      \ 'SmallsShade':       10,
+      \ 'SmallsCandidate':  100,
+      \ 'SmallsCurrent':    101,
+      \ 'SmallsCursor':     102,
+      \ 'SmallsJumpTarget': 200,
+      \ }
 
-" Utilw:
-function! s:echo(var) "{{{1
-  if s:debug
-    echo a:var
- endif
-endfunction
-
+" Util:
 function! s:msg(msg, ...) "{{{1
   let color = a:0 ? a:1 : "Normal"
 	echohl Type
@@ -21,16 +20,10 @@ function! s:msg(msg, ...) "{{{1
 	echohl None
 endfunction
 
-function! s:echohl(msg, ...) "{{{1
-  let hl = a:0 ? a:1 : "Identifier"
-  silent execute 'echohl ' . hl
+function! s:echohl(msg, color) "{{{1
+  silent execute 'echohl ' . a:color
   echon a:msg
   echohl Normal
-endfunction
-
-function! s:redraw() "{{{1
-  if  s:debug | return | endif
-  redraw
 endfunction
 "}}}
 
@@ -65,24 +58,23 @@ endfunction
 
 function! s:smalls.show_prompt() "{{{1
   call s:echohl(self.prompt, "SmallsInput")
-  call s:echohl(self._word)
-  call s:redraw()
+  call s:echohl(self._word,  "Identifier")
+  redraw
 endfunction
 
 function! s:smalls.log(msg)
   cal vimproc#system('echo "' . a:msg . '" >> ~/vimlog.log')
 endfunction
-function! s:smalls.plog(msg)
+
+function! Plog(msg)
   cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vimlog.log')
 endfunction
 
 function! s:smalls.getchar() "{{{1
-  return nr2char(getchar())
+  let c = getchar()
+  return type(c) == type(0) ? nr2char(c) : c
 endfunction
 
-          " \ '&modifiable':  1,
-          " \ '&readonly':    0,
-          " \ '&spell':       0,
 function! s:smalls.set_opts() "{{{1
   let self._opts = {}
   let opts = {
@@ -90,6 +82,9 @@ function! s:smalls.set_opts() "{{{1
           \ '&modified':    0,
           \ '&guicursor': 'n:hor1-SmallsCursorHide',
           \ '&cursorline': 0,
+          \ '&modifiable':  1,
+          \ '&readonly':    0,
+          \ '&spell':       0,
           \ }
   let self._opts = {}
   let curbuf = bufname('')
@@ -116,33 +111,37 @@ function! s:smalls.start(dir)  "{{{1
   try
     call self.set_opts()
 
-    let firsttime = 0
     while 1
-      if !firsttime
-        call self.hl_shade()
-      else
-        let firsttime = 0
-      endif
+      call self.hl_shade()
       call self.show_prompt()
 
       let c = self.getchar()
       if c == "\<Esc>"
         throw "CANCELLED"
       endif
+
       if c == ";"
-        let pos_new =  self.jump_to_target()
-        " call self.plog(pos_new)
+        let pos_new =  self.get_jump_target()
         let self.lastpos = [pos_new.line, pos_new.col ]
         break
       endif
 
-      let self._word .= c
+      if c ==# "\<C-h>" || c ==# "\<BS>"
+        if len(self._word) >= 1
+          let self._word = self._word[:-2]
+        endif
+      else
+        let self._word .= c
+      endif
 
-      let found = self.jump_targets(1)
-      if empty(found) | throw "NOT_FOUND" | endif
+      let found = self.gather_candidate(1)
+      if empty(found)
+        throw "NOT_FOUND"
+      endif
       call self.hl_clear()
       call self.hl_candidate(found[0])
     endwhile
+
   catch
     if v:exception ==# "NOT_FOUND"
       let self._notfound = 1
@@ -162,7 +161,7 @@ function! s:smalls.start(dir)  "{{{1
   endtry
 endfunction
 
-let s:metachar = '\/~ .*^|[''$'
+let s:metachar = '\/~ .*^|[''$()'
 function! s:smalls.escape(char)
   return escape(a:char, s:metachar)
 endfunction
@@ -174,22 +173,21 @@ function! s:ensure(expr, err) "{{{1
   endif
 endfunction
 
-function! s:smalls.jump_to_target()
-  let targets = self.jump_targets()
+function! s:smalls.get_jump_target()
+  let targets = self.gather_candidate()
   if empty(targets)
-    return easymotion#pos#new(self.lastpos)
+    return smalls#pos#new(self.lastpos)
   endif
   " call s:ensure( !empty(targets), "No candidate")
-  let tgt2pos = easymotion#grouping#SCTree(targets, split(g:smalls_jump_keys, '\zs'))
-
-  call self.hl_shade()
-  let pos_new = easymotion#ui#start(tgt2pos)
+  " call self.plog(targets)
+  let tgt2pos = smalls#grouping#SCTree(targets, split(g:smalls_jump_keys, '\zs'))
+  let pos_new = smalls#ui#start(tgt2pos)
   return pos_new
 endfunction
 
-function! s:smalls.jump_targets(...) "{{{1
+function! s:smalls.gather_candidate(...) "{{{1
   let limit = a:0 > 0 ? a:1 : 0
-  let word = self._word
+  let word = self.escape(self._word)
   let targets = []
 
   if empty(word)
@@ -198,12 +196,12 @@ function! s:smalls.jump_targets(...) "{{{1
 
   let d = self._dir
   let [opt, stopline, fname, ope] =
-        \ d ==# 'backward' ? [ 'b', self.env.top , 'foldclosed', '-'] :
+        \ d ==# 'backward' ? [ 'b', self.env.top , 'foldclosed',    '-'] :
         \ d ==# 'forward' ?  [ '' , self.env.last, 'foldclosedend', '+'] : throw
 
   try
     while 1
-      let pos = searchpos(word, opt, stopline)
+      let pos = searchpos('\v'. word, opt, stopline)
       if pos == [0, 0] | break | endif
 
       let linum = function(fname)(pos[0])
@@ -224,7 +222,6 @@ endfunction
 
 
 
-
 function! s:smalls.hl_clear() "{{{1
   for id in self._hl_ids
     call matchdelete(id)
@@ -238,6 +235,7 @@ function! s:smalls.hl_candidate(pos) "{{{1
   
   let [line, col ] = a:pos
   let keyword = self.escape(self._word)
+  call Plog(keyword)
   " ex) [88,24] => '\%88l\%24c'
   " let top        = self.env.top
   " let top_above  = top - 1
@@ -248,21 +246,21 @@ function! s:smalls.hl_candidate(pos) "{{{1
 
   let top_above  = self.env.top - 1
   let last_below = self.env.last + 1
-  let org_line    = self.env.cur
+  let org_line   = self.env.cur
   let org_col    = self.env.col
 
   " let pat            = '\v(%>10l%<32l)'
   " let candidate       = '\v(%>10llet%<32l)'
   if self._dir==# 'forward'
-    let curline = '%%' . org_line . 'l%%>' . org_col . 'c' . '%s'
-    let next2end = '%%>' . org_line . 'l' .  '%s' . '%%<' . last_below . 'l'
-    let candidate_pat =  '\v(' . curline . ')' . '|' . '(' . next2end . ')'
-    let candidate = printf(candidate_pat, keyword, keyword)
+    let curline       = '%%' . org_line . 'l%%>' . org_col . 'c' . '%s'
+    let next2end      = '%%>' . org_line . 'l' .  '%s' . '%%<' . last_below . 'l'
+    let candidate_pat = '\v(' . curline . ')' . '|' . '(' . next2end . ')'
+    let candidate     = printf(candidate_pat, keyword, keyword)
   elseif self._dir ==# "backward"
-    let curline = '%%' . org_line . 'l' . '%s' . '%%<' . (org_col+1) . 'c'
-    let next2top = '%%>' . top_above . 'l' . '%s' . '%%<' . (org_line) . 'l'
-    let candidate_pat =  '\v(' . curline . ')' . '|' . '(' . next2top . ')'
-    let candidate = printf(candidate_pat, keyword, keyword)
+    let curline       = '%%' . org_line . 'l' . '%s' . '%%<' . (org_col+1) . 'c'
+    let next2top      = '%%>' . top_above . 'l' . '%s' . '%%<' . (org_line) . 'l'
+    let candidate_pat = '\v(' . curline . ')' . '|' . '(' . next2top . ')'
+    let candidate     = printf(candidate_pat, keyword, keyword)
   elseif self._dir ==# "left"
     let candidate     = '\v(%>'. top_above .'l%<' . org_col . 'c' . keyword
           \ . '%<' . last_below  . 'l)'
@@ -273,11 +271,11 @@ function! s:smalls.hl_candidate(pos) "{{{1
   end
   let self._hl_ids += [ matchadd("SmallsCandidate", '\c' . candidate , 100) ]
 
-  let current = '\v\c' . keyword . '%'. line .'l%' . ( col + len(keyword)).'c'
-  let g:V = current
+  let current = '\v\c' . keyword . '%'. line .'l%' . ( col + len(self._word)).'c'
+  cal Plog(current)
   let self._hl_ids += [ matchadd("SmallsCurrent", current, 101) ]
 
-  let hl_pos   = '\v%' . line . 'l%'. (col -1 + len(keyword)) .'c'
+  let hl_pos   = '\v%' . line . 'l%'. (col -1 + len(self._word)) .'c'
   let self._hl_ids += [ matchadd("SmallsCursor",   hl_pos, 102) ]
 endfunction
 
@@ -300,7 +298,7 @@ function! s:smalls.hl_shade() "{{{1
         \ self._dir ==# "right"    ? right    :
         \ self._dir ==# "left"     ? left     : throw
 
-  let self._hl_ids += [ matchadd("SmallsShade", '\v' . hl_re) ]
+  let self._hl_ids += [ matchadd("SmallsShade", '\v' . hl_re, 10) ]
 endfunction "}}}
 
 function! s:smalls.blink_pos() "{{{1

@@ -23,7 +23,7 @@ Yet another cursor movement helper, simple but effective at least for me ;).
 If you don't like this plugin?
 It's ok, there are a lot of plugins like bellow.
 
-   - easy_motion
+   - easymotion
      https://github.com/Lokaltog/vim-easymotion
    - clever-f
      https://github.com/rhysd/clever-f.vim

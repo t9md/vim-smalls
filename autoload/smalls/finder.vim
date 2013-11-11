@@ -23,9 +23,13 @@ function! f.all(word, ...) "{{{1
 
   let [opt, stopline, fname, ope] =
         \ self.dir ==# 'backward' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
-        \ self.dir ==# 'forward' ?  [ '' , self.env['w$'], 'foldclosedend', '+'] : throw
+        \ self.dir ==# 'forward' ?  [ '' , self.env['w$'], 'foldclosedend', '+'] : 
+        \ self.dir ==# 'all'     ?  [ 'c' , self.env['w$'], 'foldclosedend', '+'] : throw
 
   try
+    if self.dir ==# 'all'
+      call cursor(self.env['w0'], 1)
+    endif
     while 1
       let pos = searchpos('\v'. word, opt, stopline)
       if pos == [0, 0] | break | endif
@@ -42,6 +46,16 @@ function! f.all(word, ...) "{{{1
       call add(targets, pos)
       if one
         return pos
+      endif
+      if self.dir ==# 'all'
+        call cursor(0, col('.') + 1)
+        if col('.') == col('$') - 1
+          if line('.') == self.env['w$']
+            break
+          else
+            normal! +
+          endif
+        endif
       endif
     endwhile
   finally

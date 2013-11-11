@@ -1,3 +1,8 @@
+map <SID>xx <SID>xx
+let s:sid = maparg("<SID>xx")
+unmap <SID>xx
+let s:sid = substitute(s:sid, 'xx', '', '')
+
 function! s:plog(msg) "{{{1
   cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
 endfunction
@@ -33,8 +38,8 @@ function! s:setlines(lines, key) "{{{1
   endtry
 
   " key is 'orig' or 'marker'
-  for [line_num, line] in a:lines
-    call setline(line_num, line[a:key])
+  for line_num in sort(keys(a:lines))
+    call setline(line_num, a:lines[line_num][a:key])
   endfor
 endfunction
 
@@ -49,7 +54,7 @@ function! s:getchar() "{{{1
   return nr2char(char)
 endfunction
 
-let s:metachar = '\/~ .*^%|[''$()'
+let s:metachar = '\=/~ .{*^%|[''$()'
 function! s:escape(char)
   return escape(a:char, s:metachar)
 endfunction
@@ -57,7 +62,7 @@ endfunction
 function! smalls#util#use(list) "{{{1
   let u = {}
   for fname in a:list
-    let u[fname] = function('s:' . fname)
+    let u[fname] = function(s:sid . fname)
   endfor
   return u
 endfunction

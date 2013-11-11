@@ -1,4 +1,4 @@
-let s:U = smalls#util#use([ "escape" ])
+let s:U = smalls#util#use([ "escape", "plog" ])
 
 function! s:interpolate(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
@@ -9,7 +9,7 @@ let h = {}
 let s:h = h
 let h.ids = []
 let s:priorities = {
-      \ 'SmallsShade':       10,
+      \ 'SmallsShade':       99,
       \ 'SmallsCandidate':  100,
       \ 'SmallsCurrent':    101,
       \ 'SmallsCursor':     102,
@@ -18,29 +18,37 @@ let s:priorities = {
 function! h.new(dir, env) "{{{1
   let self.env = a:env
   let self.dir = a:dir
+  let self.ids = {}
   return self
 endfunction
 
 function! h.hl(color, pattern) "{{{1
-  call add(self.ids, matchadd(a:color, a:pattern, s:priorities[a:color]))
+  let self.ids[a:color] = matchadd(a:color, a:pattern, s:priorities[a:color])
 endfunction
 
-function! h.clear() "{{{1
-  for id in self.ids
+function! h.clear(...) "{{{1
+  let colors = a:0 ? a:000 : keys(self.ids)
+  for color in colors
+    if !has_key(self.ids, color)
+      continue
+    endif
+    let id = self.ids[color]
     call matchdelete(id)
+    unlet self.ids[color] 
   endfor
-  let self.ids = []
 endfunction
 
 function! h.shade() "{{{1
   if ! g:smalls_shade | return | endif
   let e = self.env
   let pos        = '%{l}l%{c}c'
-  let forward    = pos . '\_.*%{w$+1}l'
+  let forward    = pos . '\_.*%{w$}l'
   let backward   = '%{w0}l\_.*' . pos
+  let all   = '%{w0}l\_.*%{w$}l'
   let pat = 
         \ self.dir ==# "backward" ? s:interpolate(backward,e) :
-        \ self.dir ==# "forward"  ? s:interpolate(forward,e)  : throw
+        \ self.dir ==# "forward"  ? s:interpolate(forward,e)  :
+        \ self.dir ==# "all"      ? s:interpolate(all,e)      : throw
 
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
@@ -62,6 +70,8 @@ function! h.candidate(word, pos) "{{{1
     let curline   = '%{l}l{k}%<{c+1}c'
     let next2top  = '%>{w0-1}l{k}%<{l}l'
     let candidate = '\v\c('. curline .')|('. next2top .')'
+  elseif self.dir ==# "all"
+    let candidate = '\v\c{k}'
   end
 
   call extend(e, self.env, 'error')

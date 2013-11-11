@@ -5,19 +5,18 @@ let s:U = smalls#util#use([
 " UI:
 let s:ui = {}
 function! s:ui.read_target() "{{{1
-  " call s:U.prompt('Target key')
   return s:U.getchar()
 endfunction
 
 
 function! s:ui.show_jumpscreen()
   call self.setup_tareget_hl()
-  call s:U.setlines(items(self.lines), 'marker')
+  call s:U.setlines(self.lines, 'marker')
   redraw
 endfunction
 
 function! s:ui.revert_screen() "{{{1
-  call s:U.setlines(items(self.lines), 'orig')
+  call s:U.setlines(self.lines, 'orig')
   if has_key(self, "target_hl_id")
     call matchdelete(self.target_hl_id)
   endif

@@ -64,8 +64,8 @@ endfunction
 
 function! s:smalls.show_prompt() "{{{1
   redraw
-  call s:echohl(self.prompt, "SmallsInput")
-  call s:echohl(self._word,  "Identifier")
+  call s:echohl(self.prompt, 'Function')
+  call s:echohl(self._word,  'Identifier')
 endfunction
 
 function! s:smalls.getchar() "{{{1
@@ -114,11 +114,12 @@ function! s:smalls.start(dir)  "{{{1
       if c == "\<Esc>"
         throw "CANCELLED"
       elseif c == ";"
-        let pos_new = self.get_jump_target()
-        call pos_new.set()
-        break
-      elseif c == "'"
-        cal smalls#pos#new(self.finder.one(self._word)).set()
+        call self.hl.clear('SmallsCurrent',
+              \ 'SmallsCursor', 'SmallsCandidate')
+        let pos_new = self.get_jump_target(self._word)
+        if !empty(pos_new)
+          call pos_new.set()
+        endif
         break
       elseif  c ==# "\<C-h>" || c ==# "\<BS>"
         if len(self._word) >= 1
@@ -156,13 +157,11 @@ function! s:smalls.start(dir)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.get_jump_target() "{{{1
-  let targets = self.finder.all(self._word)
-  if empty(targets)
-    return smalls#pos#new(self.lastpos)
+function! s:smalls.get_jump_target(word) "{{{1
+  if empty(a:word)
+    return []
   endif
-  " call s:ensure( !empty(targets), "No candidate")
-  " call self.plog(targets)
+  let targets = self.finder.all(a:word)
   let tgt2pos = smalls#grouping#SCTree(targets, split(g:smalls_jump_keys, '\zs'))
   let pos_new = smalls#ui#start(tgt2pos)
   return pos_new

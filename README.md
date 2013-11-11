@@ -33,3 +33,4 @@ A lot of TODO to improve!
 
 # Movie
 
+![Example](https://github.com/t9md/t9md/blob/master/img/vim-smalls.gif?raw=true)

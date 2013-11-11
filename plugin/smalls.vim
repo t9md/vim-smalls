@@ -104,8 +104,6 @@ augroup END
 
 nnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward")<CR>
 nnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward")<CR>
-nnoremap <silent> <Plug>(smalls-right)    :<C-u>call smalls#start("right")<CR>
-nnoremap <silent> <Plug>(smalls-left)     :<C-u>call smalls#start("left")<CR>
 nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug()<CR>
 " }}}
 " FINISH:

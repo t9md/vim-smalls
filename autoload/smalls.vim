@@ -1,24 +1,18 @@
+let s:U = smalls#util#use([ "plog" ])
+
 let s:debug = 0
 let g:smalls_shade = 1
+
+" use only captal letter to easily spot the targets
 let g:smalls_jump_keys = ';ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-let g:smalls_hl_priorities = {
-      \ 'SmallsShade':       10,
-      \ 'SmallsCandidate':  100,
-      \ 'SmallsCurrent':    101,
-      \ 'SmallsCursor':     102,
-      \ 'SmallsJumpTarget': 200,
-      \ }
-
 " Util:
-function! s:msg(msg, ...) "{{{1
-  let color = a:0 ? a:1 : "Normal"
-	echohl Type
-	echon 'Smalls: '
-	exec "echohl"  color
-  echon a:msg
-	echohl None
+function! s:msg(msg) "{{{1
+  redraw
+  call s:echohl('Smalls ', 'Type')
+  call s:echohl(a:msg, 'Normal')
 endfunction
+
 
 function! s:echohl(msg, color) "{{{1
   silent execute 'echohl ' . a:color
@@ -29,22 +23,30 @@ endfunction
 
 " Main: redraw
 let s:smalls = {}
-function! s:smalls.init() "{{{1
+function! s:smalls.init(dir) "{{{1
+  let self.lastmsg = ''
+  let self.dir = a:dir
   let self.prompt      = "> "
   let self.cancelled   = 0
   let self.lastpos     = [0,0]
   let self._notfound   = 0
-  let s:smalls._hl_ids = []
-  let self.pos_org     = getpos('.')[1:2]
-  let env = {
-        \ "top": line('w0'),
-        \ "last": line('w$'),
-        \ "cur": line('.'),
-        \ "col": col('.'),
+  let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
+  let self.env = {
+        \ 'w0': w0,
+        \ 'w0-1': w0-1,
+        \ 'w$': w_,
+        \ 'w$+1': w_+1,
+        \ 'p': smalls#pos#new(getpos('.')[1:2]),
+        \ 'l': l,
+        \ 'c': c,
+        \ 'c-1': c-1,
+        \ 'c+1': c+1,
         \ }
+  let self.hl = smalls#highlighter#new(a:dir, self.env)
+  let self.finder = smalls#finder#new(a:dir, self.env)
   let self._word = ''
-  let self.env = env
   let self._view = winsaveview()
+  call self.set_opts()
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -54,20 +56,16 @@ function! s:smalls.finish() "{{{1
   else
     let @/= self._word
   endif
+  redraw!
+  if !empty(self.lastmsg)
+    call s:msg(self.lastmsg)
+  endif
 endfunction
 
 function! s:smalls.show_prompt() "{{{1
+  redraw
   call s:echohl(self.prompt, "SmallsInput")
   call s:echohl(self._word,  "Identifier")
-  redraw
-endfunction
-
-function! s:smalls.log(msg)
-  cal vimproc#system('echo "' . a:msg . '" >> ~/vimlog.log')
-endfunction
-
-function! Plog(msg)
-  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vimlog.log')
 endfunction
 
 function! s:smalls.getchar() "{{{1
@@ -78,19 +76,20 @@ endfunction
 function! s:smalls.set_opts() "{{{1
   let self._opts = {}
   let opts = {
-          \ '&scrolloff': 0,
-          \ '&modified':    0,
-          \ '&guicursor': 'n:hor1-SmallsCursorHide',
+          \ '&scrolloff':  0,
+          \ '&modified':   0,
+          \ '&guicursor':  'n:hor1-SmallsCursorHide',
           \ '&cursorline': 0,
-          \ '&modifiable':  1,
-          \ '&readonly':    0,
-          \ '&spell':       0,
+          \ '&modifiable': 1,
+          \ '&readonly':   0,
+          \ '&spell':      0,
           \ }
   let self._opts = {}
   let curbuf = bufname('')
   for [var, val] in items(opts)
     let self._opts[var] = getbufvar(curbuf, var)
     call setbufvar(curbuf, var, val)
+    unlet var val
   endfor
 endfunction
 
@@ -100,81 +99,65 @@ function! s:smalls.restore_opts() "{{{1
       silent set guicursor&
     endif
     call setbufvar(bufname(''), var, val)
+    unlet var val
   endfor
 endfunction
 
-  
 function! s:smalls.start(dir)  "{{{1
-  " dir: 0 => forward, 1 => backward
-  call self.init()
-  let self._dir = a:dir
   try
-    call self.set_opts()
-
+    call self.init(a:dir)
     while 1
-      call self.hl_shade()
+      call self.hl.shade()
       call self.show_prompt()
 
       let c = self.getchar()
       if c == "\<Esc>"
         throw "CANCELLED"
-      endif
-
-      if c == ";"
-        let pos_new =  self.get_jump_target()
-        let self.lastpos = [pos_new.line, pos_new.col ]
+      elseif c == ";"
+        let pos_new = self.get_jump_target()
+        call pos_new.set()
         break
-      endif
-
-      if c ==# "\<C-h>" || c ==# "\<BS>"
+      elseif c == "'"
+        cal smalls#pos#new(self.finder.one(self._word)).set()
+        break
+      elseif  c ==# "\<C-h>" || c ==# "\<BS>"
         if len(self._word) >= 1
           let self._word = self._word[:-2]
+        endif
+        if len(self._word) ==# 0
+          call self.hl.clear()
+          continue
         endif
       else
         let self._word .= c
       endif
 
-      let found = self.gather_candidate(1)
+      let found = self.finder.one(self._word)
       if empty(found)
         throw "NOT_FOUND"
       endif
-      call self.hl_clear()
-      call self.hl_candidate(found[0])
+      call self.hl.clear()
+      call self.hl.candidate(self._word, found)
     endwhile
 
-  catch
+ catch
     if v:exception ==# "NOT_FOUND"
       let self._notfound = 1
-      call self.hl_clear()
+      " call self.hl.clear()
     elseif v:exception ==# "CANCELLED"
       let self.cancelled = 1
       call winrestview(self._view)
     endif
-    call s:msg(v:exception)
+    let self.lastmsg = v:exception
   finally
-    if self.lastpos != [0,0] && !self.cancelled
-      call setpos('.', [0, self.lastpos[0], self.lastpos[1], 0])
-    endif
-    call self.hl_clear()
+    call self.hl.clear()
     call self.restore_opts()
     call self.finish()
   endtry
 endfunction
 
-let s:metachar = '\/~ .*^|[''$()'
-function! s:smalls.escape(char)
-  return escape(a:char, s:metachar)
-endfunction
-
-
-function! s:ensure(expr, err) "{{{1
-  if ! a:expr
-    throw a:err
-  endif
-endfunction
-
-function! s:smalls.get_jump_target()
-  let targets = self.gather_candidate()
+function! s:smalls.get_jump_target() "{{{1
+  let targets = self.finder.all(self._word)
   if empty(targets)
     return smalls#pos#new(self.lastpos)
   endif
@@ -184,122 +167,6 @@ function! s:smalls.get_jump_target()
   let pos_new = smalls#ui#start(tgt2pos)
   return pos_new
 endfunction
-
-function! s:smalls.gather_candidate(...) "{{{1
-  let limit = a:0 > 0 ? a:1 : 0
-  let word = self.escape(self._word)
-  let targets = []
-
-  if empty(word)
-    return targets
-  endif
-
-  let d = self._dir
-  let [opt, stopline, fname, ope] =
-        \ d ==# 'backward' ? [ 'b', self.env.top , 'foldclosed',    '-'] :
-        \ d ==# 'forward' ?  [ '' , self.env.last, 'foldclosedend', '+'] : throw
-
-  try
-    while 1
-      let pos = searchpos('\v'. word, opt, stopline)
-      if pos == [0, 0] | break | endif
-
-      let linum = function(fname)(pos[0])
-      if linum != -1
-        call cursor(eval('linum' . ope . '1') , pos[1])
-        continue
-      endif
-      call add(targets, pos)
-      if limit && (len(targets) >= limit )
-        break
-      endif
-    endwhile
-  finally
-    call cursor(self.env.cur, self.env.col)
-  endtry
-  return targets
-endfunction
-
-
-
-function! s:smalls.hl_clear() "{{{1
-  for id in self._hl_ids
-    call matchdelete(id)
-  endfor
-  let self._hl_ids = []
-endfunction
-
-function! s:smalls.hl_candidate(pos) "{{{1
-  if empty(self._word) | return | endif
-  if empty(a:pos)      | return | endif
-  
-  let [line, col ] = a:pos
-  let keyword = self.escape(self._word)
-  call Plog(keyword)
-  " ex) [88,24] => '\%88l\%24c'
-  " let top        = self.env.top
-  " let top_above  = top - 1
-  " let last       = self.env.last
-  " let last_below = last + 1
-  " let line       = self.env.cur
-  " let col        = self.env.col
-
-  let top_above  = self.env.top - 1
-  let last_below = self.env.last + 1
-  let org_line   = self.env.cur
-  let org_col    = self.env.col
-
-  " let pat            = '\v(%>10l%<32l)'
-  " let candidate       = '\v(%>10llet%<32l)'
-  if self._dir==# 'forward'
-    let curline       = '%%' . org_line . 'l%%>' . org_col . 'c' . '%s'
-    let next2end      = '%%>' . org_line . 'l' .  '%s' . '%%<' . last_below . 'l'
-    let candidate_pat = '\v(' . curline . ')' . '|' . '(' . next2end . ')'
-    let candidate     = printf(candidate_pat, keyword, keyword)
-  elseif self._dir ==# "backward"
-    let curline       = '%%' . org_line . 'l' . '%s' . '%%<' . (org_col+1) . 'c'
-    let next2top      = '%%>' . top_above . 'l' . '%s' . '%%<' . (org_line) . 'l'
-    let candidate_pat = '\v(' . curline . ')' . '|' . '(' . next2top . ')'
-    let candidate     = printf(candidate_pat, keyword, keyword)
-  elseif self._dir ==# "left"
-    let candidate     = '\v(%>'. top_above .'l%<' . org_col . 'c' . keyword
-          \ . '%<' . last_below  . 'l)'
-    " call self.log(candidate)
-  elseif self._dir ==# "right"
-    let candidate = '\v(%>'. top_above .'l%>' . org_col . 'c' . keyword 
-          \ . '%<' . last_below . 'l)'
-  end
-  let self._hl_ids += [ matchadd("SmallsCandidate", '\c' . candidate , 100) ]
-
-  let current = '\v\c' . keyword . '%'. line .'l%' . ( col + len(self._word)).'c'
-  cal Plog(current)
-  let self._hl_ids += [ matchadd("SmallsCurrent", current, 101) ]
-
-  let hl_pos   = '\v%' . line . 'l%'. (col -1 + len(self._word)) .'c'
-  let self._hl_ids += [ matchadd("SmallsCursor",   hl_pos, 102) ]
-endfunction
-
-function! s:smalls.hl_shade() "{{{1
-  if ! g:smalls_shade | return | endif
-  let top        = self.env.top
-  let top_above  = top - 1
-  let last       = self.env.last
-  let last_below = last + 1
-  let line       = self.env.cur
-  let col        = self.env.col
-  let pos        = '%' . line . 'l%'. col .'c'
-  let forward    = pos . '\_.*%'. (last + 1).'l'
-  let backward   = '%'. top .'l\_.*' . pos
-  let right      = '%>'. top_above .'l%>' . (col -1) . 'c%<' . last_below . 'l'
-  let left       = '%>'. top_above .'l%<' . (col +1) . 'c%<' . last_below . 'l'
-  let hl_re = 
-        \ self._dir ==# "backward" ? backward :
-        \ self._dir ==# "forward"  ? forward  :
-        \ self._dir ==# "right"    ? right    :
-        \ self._dir ==# "left"     ? left     : throw
-
-  let self._hl_ids += [ matchadd("SmallsShade", '\v' . hl_re, 10) ]
-endfunction "}}}
 
 function! s:smalls.blink_pos() "{{{1
   let s:blink_stay  = '200m'
@@ -323,7 +190,6 @@ function! s:smalls.blink(hl, count, pattern, priority) "{{{1
  endfor
 endfunction
 "}}}
-
 
 " PublicInterface:
 function! smalls#start(dir) "{{{1

@@ -1,23 +1,23 @@
-let s:em = smalls#util#use([
+let s:U = smalls#util#use([
       \ "setlines", "prompt", "getchar", "ensure"
       \ ])
 
 " UI:
 let s:ui = {}
 function! s:ui.read_target() "{{{1
-  " call s:em.prompt('Target key')
-  return s:em.getchar()
+  " call s:U.prompt('Target key')
+  return s:U.getchar()
 endfunction
 
 
 function! s:ui.show_jumpscreen()
   call self.setup_tareget_hl()
-  call s:em.setlines(items(self.lines), 'marker')
+  call s:U.setlines(items(self.lines), 'marker')
   redraw
 endfunction
 
 function! s:ui.revert_screen() "{{{1
-  call s:em.setlines(items(self.lines), 'orig')
+  call s:U.setlines(items(self.lines), 'orig')
   if has_key(self, "target_hl_id")
     call matchdelete(self.target_hl_id)
   endif
@@ -93,9 +93,9 @@ function! s:ui.start(tgt2pos) "{{{1
   try
     call self.show_jumpscreen()
     let tgt = self.read_target()
-    call s:em.ensure(!empty(tgt), "Cancelled")
+    call s:U.ensure(!empty(tgt), "Cancelled")
     let up_tgt = toupper(tgt)
-    call s:em.ensure(has_key(a:tgt2pos, up_tgt), "Invalid target" )
+    call s:U.ensure(has_key(a:tgt2pos, up_tgt), "Invalid target" )
   finally
     call self.revert_screen()
   endtry

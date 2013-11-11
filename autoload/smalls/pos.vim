@@ -13,10 +13,11 @@ function! s:pos.to_s() "{{{1
 endfunction
 
 function! s:pos.set(...) "{{{1
-  if a:0 == 0
+  if !a:0
+    normal! m`
     call cursor(self.line, self.col)
   else
-    keepjump call cursor(self.line, self.col)
+    call cursor(self.line, self.col)
   endif
 endfunction
 

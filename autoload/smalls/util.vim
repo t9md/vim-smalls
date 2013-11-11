@@ -1,8 +1,16 @@
+function! s:plog(msg) "{{{1
+  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
+endfunction
 function! s:msg(message) "{{{1
   echohl PreProc
   echon 'Smalls: '
   echohl None
   echon a:message
+endfunction
+function! s:error(expr, err) "{{{1
+  if a:expr
+    throw a:err
+  endif
 endfunction
 function! s:ensure(expr, err) "{{{1
   if ! a:expr
@@ -39,6 +47,11 @@ function! s:getchar() "{{{1
     return ''
   endif
   return nr2char(char)
+endfunction
+
+let s:metachar = '\/~ .*^%|[''$()'
+function! s:escape(char)
+  return escape(a:char, s:metachar)
 endfunction
 
 function! smalls#util#use(list) "{{{1

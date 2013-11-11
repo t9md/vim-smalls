@@ -32,7 +32,6 @@ function! f.all(word, ...) "{{{1
       call cursor(self.env['w0'], 1)
     endif
     while 1
-      let prefix = g:smalls_word ? '<' : ''
       let pos = searchpos('\v'. prefix . word, opt, stopline)
       if pos == [0, 0] | break | endif
 

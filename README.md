@@ -24,7 +24,12 @@ A lot of TODO to improve!
 # Configuration example
 
     " map normal-mode 's' for simple search
-    nmap s <Plug>(smalls)
+    nmap s <Plug>(smalls-all)
+
+
+    " or 
+    nmap s <Plug>(smalls-forward)
+    nmap S <Plug>(smalls-backward)
 
 # Movie
 

@@ -32,7 +32,7 @@ function! f.all(word, ...) "{{{1
       call cursor(self.env['w0'], 1)
     endif
     while 1
-      let pos = searchpos('\v'. prefix . word, opt, stopline)
+      let pos = searchpos('\v' . word, opt, stopline)
       if pos == [0, 0] | break | endif
 
       let linum = function(fname)(pos[0])

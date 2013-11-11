@@ -54,7 +54,7 @@ function! s:getchar() "{{{1
   return nr2char(char)
 endfunction
 
-let s:metachar = '\=/~ .{*^%|[''$()'
+let s:metachar = '\=/<>~ .{*^%|[''$()'
 function! s:escape(char)
   return escape(a:char, s:metachar)
 endfunction

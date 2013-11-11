@@ -20,6 +20,7 @@ function! f.all(word, ...) "{{{1
   if empty(word)
     return targets
   endif
+  "A
 
   let [opt, stopline, fname, ope] =
         \ self.dir ==# 'backward' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
@@ -31,7 +32,8 @@ function! f.all(word, ...) "{{{1
       call cursor(self.env['w0'], 1)
     endif
     while 1
-      let pos = searchpos('\v'. word, opt, stopline)
+      let prefix = g:smalls_word ? '<' : ''
+      let pos = searchpos('\v'. prefix . word, opt, stopline)
       if pos == [0, 0] | break | endif
 
       let linum = function(fname)(pos[0])

@@ -1,5 +1,5 @@
 let s:U = smalls#util#use([
-      \ "setlines", "prompt", "getchar", "ensure"
+      \ "setlines", "prompt", "getchar", "ensure", 'plog'
       \ ])
 
 " UI:
@@ -12,6 +12,16 @@ endfunction
 function! s:ui.show_jumpscreen()
   call self.setup_tareget_hl()
   call s:U.setlines(self.lines, 'marker')
+  " let p = getpos('.')
+  " for line in keys(self.lines)
+    " if foldclosed(line) == -1
+      " continue
+    " endif
+    " let cmd =  'normal! ' . line . 'GzO'
+    " exe cmd
+    " redraw
+  " endfor
+  " call setpos('.', p)
   redraw
 endfunction
 

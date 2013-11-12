@@ -1,4 +1,3 @@
-let s:escape = smalls#util#import("escape")
 let s:plog = smalls#util#import("plog")
 
 function! s:intrpl(string, vars) "{{{1
@@ -56,7 +55,7 @@ function! h.candidate(word, pos) "{{{1
   if empty(a:pos)  | return | endif
   let wordlen = len(a:word)
   let e = {
-        \ 'k':    s:escape(a:word),
+        \ 'k':  '\V'. escape(a:word, '\'). '\v',
         \ 'cl':   a:pos[0],
         \ 'ke+1': a:pos[1] + wordlen,
         \ 'ke':   a:pos[1] + wordlen - 1,

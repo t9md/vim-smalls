@@ -102,6 +102,9 @@ function! ui.start(tgt2pos) "{{{1
     " " return
     let tgt = s:getchar()
     call s:ensure(!empty(tgt), "Cancelled")
+    " if c == "\<Esc>"
+      " throw "CANCELLED"
+    " endif
     let up_tgt = toupper(tgt)
     call s:ensure(has_key(a:tgt2pos, up_tgt), "Invalid target" )
   finally

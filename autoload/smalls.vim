@@ -39,11 +39,11 @@ function! s:smalls.init(dir) "{{{1
         \ 'c-1': c-1,
         \ 'c+1': c+1,
         \ }
+  let self.jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
   let self.hl = smalls#highlighter#new(a:dir, self.env)
   let self.finder = smalls#finder#new(a:dir, self.env)
   let self._word = ''
   let self._view = winsaveview()
-  call self.set_opts()
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -103,14 +103,17 @@ endfunction
 function! s:smalls.start(dir)  "{{{1
   try
     call self.init(a:dir)
+    call self.set_opts()
+
     while 1
       call self.hl.shade()
       call self.show_prompt()
 
       let c = self.getchar()
-      if c == "\<Esc>"
-        throw "CANCELLED"
-      elseif c == get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+
+      if c ==# "\<Esc>"
+        throw "CANCELED"
+      elseif c ==# self.jump_trigger
         call self.hl.clear('SmallsCurrent',
               \ 'SmallsCursor', 'SmallsCandidate')
         let pos_new = self.get_jump_target(self._word)

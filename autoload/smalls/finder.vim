@@ -1,4 +1,3 @@
-let s:escape = smalls#util#import("escape")
 let s:plog = smalls#util#import("plog")
 
 let f = {} | let s:f = f
@@ -14,13 +13,10 @@ endfunction
 
 function! f.all(word, ...) "{{{1
   let one = a:0
-  let word = s:escape(a:word)
   let targets = []
-
-  if empty(word)
+  if empty(a:word)
     return targets
   endif
-  "A
 
   let [opt, stopline, fname, ope] =
         \ self.dir ==# 'backward' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
@@ -32,7 +28,7 @@ function! f.all(word, ...) "{{{1
       call cursor(self.env['w0'], 1)
     endif
     while 1
-      let pos = searchpos('\v' . word, opt, stopline)
+      let pos = searchpos('\V' . escape(a:word, '\'), opt, stopline)
       if pos == [0, 0] | break | endif
 
       let linum = function(fname)(pos[0])

@@ -42,10 +42,10 @@ function! s:getchar() "{{{1
   return nr2char(char)
 endfunction
 
-let s:metachar = '\=/<>~ .{*^%|[''$()'
-function! s:escape(char)
-  return escape(a:char, s:metachar)
-endfunction
+" let s:metachar = '\=?/<>~ .{*^%|[''$()'
+" function! s:escape(char)
+  " return escape(a:char, s:metachar)
+" endfunction
 
 function! smalls#util#use(list) "{{{1
   let u = {}

@@ -19,6 +19,8 @@ let s:color = {
       \ 'SmallsCurrent':   [ ['NONE',      'magenta', 'white',  ], [ 'NONE',           '#f92672', '#ffffff']],
       \ 'SmallsCursor':    [ ['underline', 'magenta', 'white',  ], [ 'bold,underline', '#f92672', '#ffffff']],
       \ 'SmallsShade':     [ ['NONE',      'NONE',    'grey',   ], [ 'NONE',           'NONE',    '#777777']],
+      \ 'SmallsCli':       [ ['NONE',      'NONE',    'grey',   ], [ 'NONE',           'NONE',    '#a6e22e']]
+      \ 'SmallsCliCursor': [ ['NONE',      'NONE',    'grey',   ], [ 'underline',      'NONE',    '#a6e22e']]
       \ }
 
 function! s:set_options(options) "{{{

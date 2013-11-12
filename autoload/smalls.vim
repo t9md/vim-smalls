@@ -9,12 +9,9 @@ endfunction
 
 
 function! s:echohl(msg, color) "{{{1
-  try
-    silent execute 'echohl ' . a:color
-    echon a:msg
-  finally
-    echohl Normal
-  endtry
+  silent execute 'echohl ' . a:color
+  echon a:msg
+  echohl Normal
 endfunction
 "}}}
 
@@ -39,35 +36,23 @@ function! s:smalls.init(dir) "{{{1
         \ 'c-1': c-1,
         \ 'c+1': c+1,
         \ }
-  let self.jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
   let self.hl = smalls#highlighter#new(a:dir, self.env)
   let self.finder = smalls#finder#new(a:dir, self.env)
-  let self._word = ''
   let self._view = winsaveview()
+  let self.keyboard = smalls#keyboard#new(self)
 endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
     call self.blink_pos()
     call getchar(0)
-  else
-    let @/= self._word
+  " else
+    " let @/= self._word
   endif
   redraw!
   if !empty(self.lastmsg)
     call s:msg(self.lastmsg)
   endif
-endfunction
-
-function! s:smalls.show_prompt() "{{{1
-  redraw
-  call s:echohl(self.prompt, 'Function')
-  call s:echohl(self._word,  'Identifier')
-endfunction
-
-function! s:smalls.getchar() "{{{1
-  let c = getchar()
-  return type(c) == type(0) ? nr2char(c) : c
 endfunction
 
 function! s:smalls.set_opts() "{{{1
@@ -104,54 +89,44 @@ function! s:smalls.start(dir)  "{{{1
   try
     call self.init(a:dir)
     call self.set_opts()
-
+    let kbd = self.keyboard
+    let hl = self.hl
     while 1
-      call self.hl.shade()
-      call self.show_prompt()
+      call hl.shade()
+      call kbd.read()
 
-      let c = self.getchar()
-
-      if c ==# "\<Esc>"
-        throw "CANCELED"
-      elseif c ==# self.jump_trigger
-        call self.hl.clear('SmallsCurrent',
-              \ 'SmallsCursor', 'SmallsCandidate')
-        let pos_new = self.get_jump_target(self._word)
-        if !empty(pos_new)
-          call pos_new.jump()
+      if kbd.interrupt
+        let kbd.interrupt = 0
+        if kbd.interrupt_msg ==# 'JUMP'
+          call hl.clear('SmallsCurrent',
+                \ 'SmallsCursor', 'SmallsCandidate')
+          let pos_new = self.get_jump_target(kbd.data)
+          if !empty(pos_new)
+            call pos_new.jump()
+          endif
+          break
         endif
-        break
-      elseif  c ==# "\<C-h>" || c ==# "\<BS>"
-        if len(self._word) >= 1
-          let self._word = self._word[:-2]
-        endif
-        if len(self._word) ==# 0
-          call self.hl.clear()
-          continue
-        endif
-      else
-        let self._word .= c
       endif
 
-      let found = self.finder.one(self._word)
+      call hl.clear()
+      if kbd.data_len() ==# 0 | continue | endif
+
+      let found = self.finder.one(kbd.data)
       if empty(found)
         throw "NOT_FOUND"
       endif
-      call self.hl.clear()
-      call self.hl.candidate(self._word, found)
+      call hl.candidate(kbd.data, found)
     endwhile
-
  catch
-    if v:exception ==# "NOT_FOUND"
+   if v:exception ==# "NOT_FOUND"
       let self._notfound = 1
-      " call self.hl.clear()
-    elseif v:exception ==# "CANCELLED"
+    elseif v:exception ==# "CANCELED"
       let self.cancelled = 1
       call winrestview(self._view)
     endif
     let self.lastmsg = v:exception
   finally
-    call self.hl.clear()
+    call hl.clear()
     call self.restore_opts()
     call self.finish()
   endtry

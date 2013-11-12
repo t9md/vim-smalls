@@ -3,10 +3,9 @@ BETA
 
 # Simply put cursor with search.
 
-Sarch and jump with easmotion.
+Sarch and jump with easymotion.
 
-If you don't like this plugin?  
-It's ok, there are a lot of plugins like bellow.  
+If you don't like this plugin? It's ok, there are a lot of plugins like bellow.  
 
 * [easy_motion](https://github.com/Lokaltog/vim-easymotion)
 * [clever-f](https://github.com/rhysd/clever-f.vim)

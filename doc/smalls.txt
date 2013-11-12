@@ -20,6 +20,9 @@ CONTENTS						    *smalls-contents*
 INTRODUCTION						*smalls-introduction*
 
 Yet another cursor movement helper, simple but effective at least for me ;).
+To exmplain simply, this is the plugin to spot cursor by
+- Seach candidate and Jump with easymotion.
+
 If you don't like this plugin?
 It's ok, there are a lot of plugins like bellow.
 
@@ -33,12 +36,22 @@ It's ok, there are a lot of plugins like bellow.
 ==============================================================================
 MAPPINGS						    *smalls-mappings*
 
-n   <Plug>(smalls)
-	  move cursor with simple serach
+n_<Plug>(smalls)
+n_<Plug>(smalls-all)
+	smalls for current window area.
+	<Plug>(smalls) is simply alias of <Plug>(smalls-all).
+
+n_<Plug>(smalls-forward)
+	smalls for forward direction
+
+n_<Plug>(smalls-backward)
+	smalls for backward direction
 
 ==============================================================================
 COMMANDS						    *smalls-commands*
 
+*:Smalls* {direction}
+	{direction} should be 'all', 'forward', 'backward'
 
 ==============================================================================
 VARIABLES						   *smalls-variables*
@@ -89,27 +102,6 @@ VARIABLES						   *smalls-variables*
 	      \ 'SmallsJumpTarget':[['NONE', 'NONE', 'red'], [ 'bold', 'NONE', 'red']],
 	      \ }
 <
-==============================================================================
-MAPPINGS						    *textmanip-mappings*
-
-n_<Plug>(smalls)
-n_<Plug>(smalls-all)
-	smalls for current window area.
-	<Plug>(smalls) is simply alias of <Plug>(smalls-all).
-
-n_<Plug>(smalls-forward)
-	smalls for forward direction
-
-n_<Plug>(smalls-backward)
-	smalls for backward direction
-
-
-==============================================================================
-COMMAND							    *textmanip-command*
-
-*:Smalls* {direction}
-	{direction} should be 'all', 'forward', 'backward'
-
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
 

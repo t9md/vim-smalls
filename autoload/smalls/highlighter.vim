@@ -1,12 +1,12 @@
-let s:U = smalls#util#use([ "escape", "plog" ])
+let s:escape = smalls#util#import("escape")
+let s:plog = smalls#util#import("plog")
 
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
   return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
 endfunction "}}}
 
-let h = {}
-let s:h = h
+let h = {} | let s:h = h
 let h.ids = []
 let s:priorities = {
       \ 'SmallsShade':       99,
@@ -56,7 +56,7 @@ function! h.candidate(word, pos) "{{{1
   if empty(a:pos)  | return | endif
   let wordlen = len(a:word)
   let e = {
-        \ 'k':    s:U.escape(a:word),
+        \ 'k':    s:escape(a:word),
         \ 'cl':   a:pos[0],
         \ 'ke+1': a:pos[1] + wordlen,
         \ 'ke':   a:pos[1] + wordlen - 1,

@@ -1,39 +1,37 @@
-let s:U = smalls#util#use([
-      \ "setlines", "prompt", "getchar", "ensure", 'plog'
-      \ ])
+let s:ensure  = smalls#util#import("ensure")
+let s:getchar = smalls#util#import("getchar")
+" let s:plog    = smalls#util#import("plog")
 
 " UI:
-let s:ui = {}
-function! s:ui.read_target() "{{{1
-  return s:U.getchar()
+let ui = {} | let s:ui = ui
+function! ui.setlines(lines, key) "{{{1
+  try
+    " Try to join changes with previous undo block
+    undojoin
+  catch
+  endtry
+
+  " key is 'orig' or 'marker'
+  for line_num in sort(keys(a:lines))
+    call setline(line_num, a:lines[line_num][a:key])
+  endfor
 endfunction
 
-
-function! s:ui.show_jumpscreen()
+function! ui.show_jumpscreen() "{{{1
   call self.setup_tareget_hl()
-  call s:U.setlines(self.lines, 'marker')
-  " let p = getpos('.')
-  " for line in keys(self.lines)
-    " if foldclosed(line) == -1
-      " continue
-    " endif
-    " let cmd =  'normal! ' . line . 'GzO'
-    " exe cmd
-    " redraw
-  " endfor
-  " call setpos('.', p)
+  call self.setlines(self.lines, 'marker')
   redraw
 endfunction
 
-function! s:ui.revert_screen() "{{{1
-  call s:U.setlines(self.lines, 'orig')
+function! ui.revert_screen() "{{{1
+  call self.setlines(self.lines, 'orig')
   if has_key(self, "target_hl_id")
     call matchdelete(self.target_hl_id)
   endif
   redraw
 endfunction
 
-function! s:ui.prepare_display_lines(groups) "{{{1
+function! ui.prepare_display_lines(groups) "{{{1
   let lines = {}
 
   for pos in self.sorted_pos
@@ -60,13 +58,13 @@ function! s:ui.prepare_display_lines(groups) "{{{1
   return lines
 endfunction
 
-function! s:ui.setup_tareget_hl() "{{{1
+function! ui.setup_tareget_hl() "{{{1
   let hl_expr =  join(map(map(self.sorted_pos, 'split(v:val, ",")'), 
         \ "'\\%' . v:val[0] . 'l\\%' . v:val[1] . 'c'"), '\|')
   let self.target_hl_id = matchadd("SmallsJumpTarget", hl_expr , 200)
 endfunction
 
-function! s:ui.gen_pos2tgt(tgt2pos, ...) "{{{1
+function! ui.gen_pos2tgt(tgt2pos, ...) "{{{1
   " From       ->  To
   " tgt : pos      pos         : tgt    
   "  a: [1,2] -->  00001,00002 : a      
@@ -89,7 +87,7 @@ function! s:ui.gen_pos2tgt(tgt2pos, ...) "{{{1
   return result
 endfunction
 
-function! s:ui.start(tgt2pos) "{{{1
+function! ui.start(tgt2pos) "{{{1
   let poss = values(a:tgt2pos)
   if len(poss) == 1
     redraw
@@ -101,10 +99,11 @@ function! s:ui.start(tgt2pos) "{{{1
 
   try
     call self.show_jumpscreen()
-    let tgt = self.read_target()
-    call s:U.ensure(!empty(tgt), "Cancelled")
+    " " return
+    let tgt = s:getchar()
+    call s:ensure(!empty(tgt), "Cancelled")
     let up_tgt = toupper(tgt)
-    call s:U.ensure(has_key(a:tgt2pos, up_tgt), "Invalid target" )
+    call s:ensure(has_key(a:tgt2pos, up_tgt), "Invalid target" )
   finally
     call self.revert_screen()
   endtry
@@ -115,7 +114,7 @@ function! s:ui.start(tgt2pos) "{{{1
         \ : self.start(pos)
 endfunction
 
-function! smalls#ui#start(tgt2pos)
+function! smalls#ui#start(tgt2pos) "{{{1
   return  s:ui.start(a:tgt2pos)
 endfunction
 

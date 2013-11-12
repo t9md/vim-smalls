@@ -1,4 +1,4 @@
-let s:U = smalls#util#use([ "plog" ])
+let s:plog = smalls#util#import("plog")
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -9,13 +9,16 @@ endfunction
 
 
 function! s:echohl(msg, color) "{{{1
-  silent execute 'echohl ' . a:color
-  echon a:msg
-  echohl Normal
+  try
+    silent execute 'echohl ' . a:color
+    echon a:msg
+  finally
+    echohl Normal
+  endtry
 endfunction
 "}}}
 
-" Main: redraw
+" Main:
 let s:smalls = {}
 function! s:smalls.init(dir) "{{{1
   let self.lastmsg = ''
@@ -112,7 +115,7 @@ function! s:smalls.start(dir)  "{{{1
               \ 'SmallsCursor', 'SmallsCandidate')
         let pos_new = self.get_jump_target(self._word)
         if !empty(pos_new)
-          call pos_new.set()
+          call pos_new.jump()
         endif
         break
       elseif  c ==# "\<C-h>" || c ==# "\<BS>"

@@ -1,7 +1,7 @@
-let s:U = smalls#util#use([ "escape", 'plog' ])
+let s:escape = smalls#util#import("escape")
+let s:plog = smalls#util#import("plog")
 
-let f = {}
-let s:f = f
+let f = {} | let s:f = f
 function! f.new(dir, env) "{{{1
   let self.env = a:env
   let self.dir = a:dir
@@ -14,7 +14,7 @@ endfunction
 
 function! f.all(word, ...) "{{{1
   let one = a:0
-  let word = s:U.escape(a:word)
+  let word = s:escape(a:word)
   let targets = []
 
   if empty(word)
@@ -60,7 +60,7 @@ function! f.all(word, ...) "{{{1
       endif
     endwhile
   finally
-    call self.env.p.set(1)
+    call self.env.p.set()
   endtry
   return targets
 endfunction

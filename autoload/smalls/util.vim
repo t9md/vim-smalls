@@ -30,18 +30,6 @@ function! s:prompt(msg) "{{{1
 endfunction
 
 
-function! s:setlines(lines, key) "{{{1
-  try
-    " Try to join changes with previous undo block
-    undojoin
-  catch
-  endtry
-
-  " key is 'orig' or 'marker'
-  for line_num in sort(keys(a:lines))
-    call setline(line_num, a:lines[line_num][a:key])
-  endfor
-endfunction
 
 function! s:getchar() "{{{1
   let char = getchar()
@@ -65,5 +53,9 @@ function! smalls#util#use(list) "{{{1
     let u[fname] = function(s:sid . fname)
   endfor
   return u
+endfunction
+
+function! smalls#util#import(fname) "{{{1
+  return function(s:sid . a:fname)
 endfunction
 " vim: foldmethod=marker

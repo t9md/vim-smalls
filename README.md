@@ -1,11 +1,9 @@
-# Currently ITS INTENDED TO BE USEFUL TO MYSELF DON'T USE THIS
+# Current Development state
+BETA
 
 # Simply put cursor with search.
 
-Yet another cursor movement helper, simple but effective at least for me ;).  
-This plugin simply indended to put the cursor by seach on screen.  
-In other word, targeting only visible area, no scroll to upward/downword.  
-If I want search from all area of buffer, I chose `/`, `?`.  
+Sarch and jump with easmotion.
 
 If you don't like this plugin?  
 It's ok, there are a lot of plugins like bellow.  
@@ -24,7 +22,7 @@ A lot of TODO to improve!
 # Configuration example
 
     " map normal-mode 's' for simple search
-    nmap s <Plug>(smalls-all)
+    nmap s <Plug>(smalls)
 
 
     " or 

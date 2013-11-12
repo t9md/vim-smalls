@@ -1,6 +1,6 @@
 let s:U = smalls#util#use([ "escape", "plog" ])
 
-function! s:interpolate(string, vars) "{{{1
+function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
   return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
 endfunction "}}}
@@ -40,15 +40,14 @@ endfunction
 
 function! h.shade() "{{{1
   if ! g:smalls_shade | return | endif
-  let e = self.env
-  let pos        = '%{l}l%{c}c'
-  let forward    = pos . '\_.*%{w$}l'
-  let backward   = '%{w0}l\_.*' . pos
-  let all   = '%{w0}l\_.*%{w$}l'
+  let pos      = '%{l}l%{c}c'
+  let forward  = pos . '\_.*%{w$}l'
+  let backward = '%{w0}l\_.*' . pos
+  let all      = '%{w0}l\_.*%{w$}l'
   let pat = 
-        \ self.dir ==# "backward" ? s:interpolate(backward,e) :
-        \ self.dir ==# "forward"  ? s:interpolate(forward,e)  :
-        \ self.dir ==# "all"      ? s:interpolate(all,e)      : throw
+        \ self.dir ==# "backward" ? s:intrpl(backward, self.env) :
+        \ self.dir ==# "forward"  ? s:intrpl(forward, self.env)  :
+        \ self.dir ==# "all"      ? s:intrpl(all, self.env)      : throw
 
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
@@ -75,11 +74,11 @@ function! h.candidate(word, pos) "{{{1
   end
 
   call extend(e, self.env, 'error')
-  let candidate = s:interpolate(candidate, e)
-  let current   = s:interpolate('\v\c{k}%{cl}l%{ke+1}c', e)
-  let pos       = s:interpolate('\v\c%{cl}l%{ke}c', e)
+  let candidate = s:intrpl(candidate, e)
+  let current   = s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e)
+  let pos       = s:intrpl('\v\c%{cl}l%{ke}c', e)
 
-  call self.hl("SmallsCandidate", '\c' . candidate)
+  call self.hl("SmallsCandidate", candidate)
   call self.hl("SmallsCurrent", current)
   call self.hl("SmallsCursor", pos)
 endfunction

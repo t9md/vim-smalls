@@ -43,15 +43,79 @@ COMMANDS						    *smalls-commands*
 ==============================================================================
 VARIABLES						   *smalls-variables*
 
-*g:here_sample_var*
-	SAMPLE SENTENCE
-	see |smalls-example|
+*g:smalls_shade*
+	Default: 1
+
+	Set 0, if you want to disable shade effect.
+
+*g:smalls_jump_keys*
+	Default: ;ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+	[NOTE] first char is semicolon. which I intended to jump
+	Specify textmanip mode at startup.
+	This is useful to speedy choice of first target, but as side effect,
+	you can't use ';' as search caracter.
+
+*g:smalls_jump_trigger*
+	Default: first character of |g:smalls_jump_keys|.
+
+	You don't need to set this variable explicitly.
+	If you use specific key to trigger jump screen, set
+	ex) use <C-j> to show jump screen.
+>
+	let g:smalls_jump_keys = "\<C-j>"
+<
+*g:smalls_highlight*
+	Default: {}
+
+	|Dictionary| used to update default highlight.
+	Format~
+	{ "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
+
+	{Key} is the highlight name, shoud be one of the following.
+      	 SmallsCandidate    used to current sewarching keyword
+      	 SmallsJumpTarget   used to standout jump target
+      	 SmallsCurrent      current searching keyword
+      	 SmallsCursor       indicate last inputted char within keyword
+      	 SmallsShade        used in shade effect
+
+	{Value} is array to define actual color, should have two element.
+	First element is for 'cterm', second element for 'gui'.
+	[[ cterm, ctermbg, cterfg ],[ gui, guibg, guifg ] ]
+
+	Example >
+	" change JumpTarget color to 'red'
+	let g:smalls_highlight = {
+	      \ 'SmallsJumpTarget':[['NONE', 'NONE', 'red'], [ 'bold', 'NONE', 'red']],
+	      \ }
+<
+==============================================================================
+MAPPINGS						    *textmanip-mappings*
+
+n_<Plug>(smalls)
+n_<Plug>(smalls-all)
+	smalls for current window area.
+	<Plug>(smalls) is simply alias of <Plug>(smalls-all).
+
+n_<Plug>(smalls-forward)
+	smalls for forward direction
+
+n_<Plug>(smalls-backward)
+	smalls for backward direction
+
+
+==============================================================================
+COMMAND							    *textmanip-command*
+
+*:Smalls* {direction}
+	{direction} should be 'all', 'forward', 'backward'
 
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
 
-*smalls#spot()*
+*smalls#start(direction)*
 	Main function for this plugin!
+	{direction} should be 'all', 'forward', 'backward'
 
 ==============================================================================
 CONFIGURATION EXAMPLE					      *smalls-example*
@@ -61,6 +125,11 @@ set in your '.vimrc'
 	" map normal-mode 's' for simple search
 	nmap s <Plug>(smalls)
 <
+If you want separate 'forward' and 'backward'
+>
+	nmap s <Plug>(smalls-forward)
+	nmap S <Plug>(smalls-backward)
+<
 ============================================================================
 BUG								 *smalls-bug*
 
@@ -69,7 +138,17 @@ Here a lot of bug and limitation.
 ============================================================================
 TODO								*smalls-todo*
 
-- move between candidate with keybind
+* jump between candidate with C-hjkl and C-n, C-p or <Tab> and customizable
+* specify search area
+ - above
+ - below
+ - [x] harf-screen-above sk or S.
+ - [x] harf-screen-below sj or s.
+ - right-col s-h
+ - left-col  s-l
+* jump line with jump target on (screen middle col) or (screen left col)
+* [x] skip folded area
+* code cleanup
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*

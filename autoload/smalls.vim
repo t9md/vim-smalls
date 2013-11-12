@@ -1,11 +1,5 @@
 let s:U = smalls#util#use([ "plog" ])
 
-let s:debug = 0
-let g:smalls_shade = 1
-
-" use only captal letter to easily spot the targets
-let g:smalls_jump_keys = ';ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 " Util:
 function! s:msg(msg) "{{{1
   redraw
@@ -113,7 +107,7 @@ function! s:smalls.start(dir)  "{{{1
       let c = self.getchar()
       if c == "\<Esc>"
         throw "CANCELLED"
-      elseif c == ";"
+      elseif c == get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
         call self.hl.clear('SmallsCurrent',
               \ 'SmallsCursor', 'SmallsCandidate')
         let pos_new = self.get_jump_target(self._word)

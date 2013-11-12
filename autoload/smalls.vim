@@ -1,4 +1,4 @@
-let s:plog = smalls#util#import("plog")
+" let s:plog = smalls#util#import("plog")
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -100,10 +100,16 @@ function! s:smalls.start(dir)  "{{{1
         if kbd.interrupt_msg ==# 'JUMP'
           call hl.clear('SmallsCurrent',
                 \ 'SmallsCursor', 'SmallsCandidate')
-          let pos_new = self.get_jump_target(kbd.data)
-          if !empty(pos_new)
-            call pos_new.jump()
-          endif
+          try
+            let pos_new = self.get_jump_target(kbd.data)
+            if !empty(pos_new)
+              call pos_new.jump()
+            endif
+          catch
+            " if v:exception ==# "JUMP_CANCELLED"
+              " continue
+            " endif
+          endtry
           break
         endif
       endif

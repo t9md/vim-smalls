@@ -1,4 +1,4 @@
-let s:plog = smalls#util#import("plog")
+" let s:plog = smalls#util#import("plog")
 
 let f = {} | let s:f = f
 function! f.new(dir, env) "{{{1

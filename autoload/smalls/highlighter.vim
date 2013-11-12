@@ -1,4 +1,4 @@
-let s:plog = smalls#util#import("plog")
+" let s:plog = smalls#util#import("plog")
 
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'

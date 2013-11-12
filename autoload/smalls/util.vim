@@ -32,14 +32,8 @@ endfunction
 
 
 function! s:getchar() "{{{1
-  let char = getchar()
-  if char == char2nr("\<Esc>")
-    " Escape key pressed
-    redraw
-    call s:msg('Cancelled')
-    return ''
-  endif
-  return nr2char(char)
+  let c = getchar()
+  return type(c) == type(0) ? nr2char(c) : c
 endfunction
 
 " let s:metachar = '\=?/<>~ .{*^%|[''$()'

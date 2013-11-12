@@ -1,6 +1,7 @@
+" FIXME need refactoring
 let s:ensure  = smalls#util#import("ensure")
 let s:getchar = smalls#util#import("getchar")
-" let s:plog    = smalls#util#import("plog")
+let s:plog    = smalls#util#import("plog")
 
 " UI:
 let ui = {} | let s:ui = ui
@@ -101,10 +102,11 @@ function! ui.start(tgt2pos) "{{{1
     call self.show_jumpscreen()
     " " return
     let tgt = s:getchar()
+    " call s:plog(tgt)
+    if tgt ==# "\<Esc>"
+      throw "JUMP_CANCELLED"
+    endif
     call s:ensure(!empty(tgt), "Cancelled")
-    " if c == "\<Esc>"
-      " throw "CANCELLED"
-    " endif
     let up_tgt = toupper(tgt)
     call s:ensure(has_key(a:tgt2pos, up_tgt), "Invalid target" )
   finally

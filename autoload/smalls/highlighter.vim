@@ -14,6 +14,7 @@ let s:priorities = {
       \ 'SmallsCursor':     102,
       \ 'SmallsJumpTarget': 103,
       \ }
+
 function! h.new(dir, env) "{{{1
   let self.env = a:env
   let self.dir = a:dir
@@ -39,17 +40,14 @@ endfunction
 
 function! h.shade() "{{{1
   if ! g:smalls_shade | return | endif
-  let pos      = '%{l}l%{c}c'
-  let forward  = pos . '\_.*%{w$}l'
-  let backward = '%{w0}l\_.*' . pos
-  let all      = '%{w0}l\_.*%{w$}l'
+  let pos = '%{l}l%{c}c'
   let pat = 
-        \ self.dir ==# "backward" ? s:intrpl(backward, self.env) :
-        \ self.dir ==# "forward"  ? s:intrpl(forward, self.env)  :
-        \ self.dir ==# "all"      ? s:intrpl(all, self.env)      : throw
-
+        \ self.dir ==# "fwd" ? s:intrpl(pos . '\_.*%{w$}l', self.env):
+        \ self.dir ==# "bwd" ? s:intrpl('%{w0}l\_.*' . pos, self.env):
+        \ self.dir ==# "all" ? s:intrpl('%{w0}l\_.*%{w$}l', self.env): throw
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
+
 function! h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
@@ -60,26 +58,23 @@ function! h.candidate(word, pos) "{{{1
         \ 'ke+1': a:pos[1] + wordlen,
         \ 'ke':   a:pos[1] + wordlen - 1,
         \ }
-  if self.dir==# 'forward'
-    let curline   = '%{l}l%>{c}c{k}'
-    let next2end  = '%>{l}l{k}%<{w$+1}l'
-    let candidate = '\v\c('. curline .')|('. next2end .')'
-  elseif self.dir ==# "backward"
-    let curline   = '%{l}l{k}%<{c+1}c'
-    let next2top  = '%>{w0-1}l{k}%<{l}l'
-    let candidate = '\v\c('. curline .')|('. next2top .')'
+
+  if self.dir     ==# 'fwd'
+    let curline     = '%{l}l%>{c}c{k}'
+    let next2end    = '%>{l}l{k}%<{w$+1}l'
+    let candidate   = '('. curline .')|('. next2end .')'
+  elseif self.dir ==# "bwd"
+    let curline     = '%{l}l{k}%<{c+1}c'
+    let next2top    = '%>{w0-1}l{k}%<{l}l'
+    let candidate   = '('.curline .')|('. next2top .')'
   elseif self.dir ==# "all"
-    let candidate = '\v\c{k}'
+    let candidate   = '{k}'
   end
 
   call extend(e, self.env, 'error')
-  let candidate = s:intrpl(candidate, e)
-  let current   = s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e)
-  let pos       = s:intrpl('\v\c%{cl}l%{ke}c', e)
-
-  call self.hl("SmallsCandidate", candidate)
-  call self.hl("SmallsCurrent", current)
-  call self.hl("SmallsCursor", pos)
+  call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
+  call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))
+  call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
 endfunction
 
 function! smalls#highlighter#new(dir, env) "{{{1

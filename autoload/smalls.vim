@@ -1,4 +1,4 @@
-" let s:plog = smalls#util#import("plog")
+let s:plog = smalls#util#import("plog")
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -21,8 +21,7 @@ function! s:smalls.init(dir) "{{{1
   let self.lastmsg = ''
   let self.dir = a:dir
   let self.prompt      = "> "
-  let self.cancelled   = 0
-  let self.lastpos     = [0,0]
+  " let self.cancelled   = 0
   let self._notfound   = 0
   let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
   let self.env = {
@@ -36,14 +35,16 @@ function! s:smalls.init(dir) "{{{1
         \ 'c-1': c-1,
         \ 'c+1': c+1,
         \ }
-  let self.hl = smalls#highlighter#new(a:dir, self.env)
-  let self.finder = smalls#finder#new(a:dir, self.env)
-  let self._view = winsaveview()
-  let self.keyboard = smalls#keyboard#new(self)
+  let self.hl       = smalls#highlighter#new(a:dir, self.env)
+  let self.finder   = smalls#finder#new(a:dir, self.env)
+  " let self._view    = winsaveview()
+  let keyboard = smalls#keyboard#new(self)
+  let self.keyboard = keyboard
 endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
+    call getchar(0)
     call self.blink_pos()
     call getchar(0)
   " else
@@ -86,49 +87,35 @@ function! s:smalls.restore_opts() "{{{1
 endfunction
 
 function! s:smalls.start(dir)  "{{{1
+  let dir = { 'forward': 'fwd', 'backward': 'bwd', 'all': 'all' }[a:dir]
   try
-    call self.init(a:dir)
+    call self.init(dir)
     call self.set_opts()
     let kbd = self.keyboard
     let hl = self.hl
     while 1
       call hl.shade()
       call kbd.read()
-
-      if kbd.interrupt
-        let kbd.interrupt = 0
-        if kbd.interrupt_msg ==# 'JUMP'
-          call hl.clear('SmallsCurrent',
-                \ 'SmallsCursor', 'SmallsCandidate')
-          try
-            let pos_new = self.get_jump_target(kbd.data)
-            if !empty(pos_new)
-              call pos_new.jump()
-            endif
-          catch
-            " if v:exception ==# "JUMP_CANCELLED"
-              " continue
-            " endif
-          endtry
-          break
-        endif
+      if self.handler(kbd)
+        break
       endif
-
       call hl.clear()
-      if kbd.data_len() ==# 0 | continue | endif
+      if kbd.data_len() ==# 0
+        continue
+      endif
 
       let found = self.finder.one(kbd.data)
       if empty(found)
-        throw "NOT_FOUND"
+        throw "NotFound"
       endif
       call hl.candidate(kbd.data, found)
     endwhile
  catch
-   if v:exception ==# "NOT_FOUND"
+   if v:exception ==# "NotFound"
       let self._notfound = 1
-    elseif v:exception ==# "CANCELED"
-      let self.cancelled = 1
-      call winrestview(self._view)
+    " elseif v:exception ==# "Canceled"
+      " let self.cancelled = 1
+      " call winrestview(self._view)
     endif
     let self.lastmsg = v:exception
   finally
@@ -138,13 +125,38 @@ function! s:smalls.start(dir)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.get_jump_target(word) "{{{1
-  if empty(a:word)
-    return []
+function! s:smalls.handler(keyboard) "{{{1
+  let kbd = a:keyboard
+  let hl  = self.hl
+  if !kbd.interrupt
+    return 0
   endif
-  let targets = self.finder.all(a:word)
-  let tgt2pos = smalls#grouping#SCTree(targets, split(g:smalls_jump_keys, '\zs'))
-  let pos_new = smalls#ui#start(tgt2pos)
+  let kbd.interrupt = 0
+  if kbd.interrupt_msg ==# 'JUMP'
+    call hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+    let pos_new = self.get_jump_target(kbd.data)
+    if !empty(pos_new)
+      call pos_new.jump()
+    endif
+    return 1
+  elseif kbd.interrupt_msg ==# 'JUMP_FIRST'
+    let found = self.finder.one(kbd.data)
+    if empty(found)
+      throw "NOT_FOUND"
+    endif
+    call smalls#pos#new(found).jump()
+    return 1
+  endif
+endfunction
+
+function! s:smalls.get_jump_target(word) "{{{1
+  if empty(a:word) | return [] | endif
+  let poslist  = self.finder.all(a:word)
+  " " if only one destination, we won't show jump screen.
+  " if len(poslist) ==# 1
+    " return smalls#pos#new(poslist[0])
+  " endif
+  let pos_new  = smalls#jump#get_pos(poslist)
   return pos_new
 endfunction
 

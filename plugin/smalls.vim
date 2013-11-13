@@ -13,15 +13,17 @@ let options = {
       \ 'g:smalls_highlight': {},
       \ }
 
+      " \ 'SmallsJumpTarget':[ ['NONE',      'NONE',    'yellow', ], [ 'bold',           '#223322', 'yellow']],
 let s:color = {
-      \ 'SmallsCandidate': [ ['NONE',      'NONE',    'cyan',   ], [ 'bold',           'NONE',    '#66D9EF']],
-      \ 'SmallsJumpTarget':[ ['NONE',      'NONE',    'yellow', ], [ 'bold',           '#223322', 'yellow']],
-      \ 'SmallsCurrent':   [ ['NONE',      'magenta', 'white',  ], [ 'NONE',           '#f92672', '#ffffff']],
-      \ 'SmallsCursor':    [ ['underline', 'magenta', 'white',  ], [ 'bold,underline', '#f92672', '#ffffff']],
-      \ 'SmallsShade':     [ ['NONE',      'NONE',    'grey',   ], [ 'NONE',           'NONE',    '#777777']],
-      \ 'SmallsCli':       [ ['NONE',      'NONE',    'grey',   ], [ 'NONE',           'NONE',    '#a6e22e']],
-      \ 'SmallsCliCursor': [ ['NONE',      'NONE',    'grey',   ], [ 'underline',      'NONE',    '#a6e22e']],
+      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE',    '#66D9EF']],
+      \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#f92672']],
+      \ 'SmallsCurrent':    [['NONE',      'magenta', 'white', ], [ 'NONE',           '#f92672', '#ffffff']],
+      \ 'SmallsCursor':     [['underline', 'magenta', 'white', ], [ 'bold,underline', '#f92672', '#ffffff']],
+      \ 'SmallsShade':      [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#777777']],
+      \ 'SmallsCli':        [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#a6e22e']],
+      \ 'SmallsCliCursor':  [['NONE',      'NONE',    'grey',  ], [ 'underline',      'NONE',    '#a6e22e']],
       \ }
+
 
 function! s:set_options(options) "{{{
   for [varname, value] in items(a:options)
@@ -31,6 +33,7 @@ function! s:set_options(options) "{{{
     unlet value
   endfor
 endfunction "}}}
+
 function! s:clear_highlight(color) "{{{1
   for color in keys(a:color)
     exe 'highlight' color 'none'

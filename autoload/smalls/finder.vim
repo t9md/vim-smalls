@@ -1,4 +1,4 @@
-" let s:plog = smalls#util#import("plog")
+let s:plog = smalls#util#import("plog")
 
 let f = {} | let s:f = f
 function! f.new(dir, env) "{{{1
@@ -19,54 +19,47 @@ function! f.all(word, ...) "{{{1
   endif
 
   let [opt, stopline, fname, ope] =
-        \ self.dir ==# 'backward' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
-        \ self.dir ==# 'forward' ?  [ '' , self.env['w$'], 'foldclosedend', '+'] : 
-        \ self.dir ==# 'all'     ?  [ 'c' , self.env['w$'], 'foldclosedend', '+'] : throw
-
+        \ self.dir ==# 'bwd' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
+        \ self.dir ==# 'fwd' ? [ '' , self.env['w$'], 'foldclosedend', '+'] : 
+        \ self.dir ==# 'all' ? [ 'c', self.env['w$'], 'foldclosedend', '+'] : throw
   try
     if self.dir ==# 'all'
       call cursor(self.env['w0'], 1)
     endif
     while 1
-      let pos = searchpos('\V' . escape(a:word, '\'), opt, stopline)
+      let word = '\V' . escape(a:word, '\')
+      let pos = searchpos(word, opt, stopline)
       if pos == [0, 0] | break | endif
 
+      " skip fold
       let linum = function(fname)(pos[0])
       if linum != -1
         if linum ==# self.env['w$'] || linum ==# self.env['w0']
           " avoid infinit loop
           break
         endif
-        call cursor(eval('linum' . ope . '1') , pos[1])
+        call cursor(eval('linum' . ope . '1') , 1)
         continue
       endif
-      call add(targets, pos)
       if one
         return pos
       endif
+      call add(targets, pos)
+
       if self.dir ==# 'all'
-        call cursor(0, col('.') + 1)
-        if col('.') == col('$') - 1
+        if col('.') >= col('$') - 1
           if line('.') == self.env['w$']
             break
-          else
-            normal! +
           endif
+          normal! +
         endif
+        call cursor(0, col('.') + 1)
       endif
     endwhile
   finally
     call self.env.p.set()
   endtry
   return targets
-endfunction
-
-function! smalls#finder#one(word) "{{{1
-  return s:f.one(a:word)
-endfunction
-
-function! smalls#finder#all(word) "{{{1
-  return s:f.all(a:word)
 endfunction
 
 function! smalls#finder#new(dir, env) "{{{1

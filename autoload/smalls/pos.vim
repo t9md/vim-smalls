@@ -22,7 +22,7 @@ endfunction
 
 function! pos.jump() "{{{1
   normal! m`
-  call cursor(self.to_list())
+  call cursor(self.line, self.col)
 endfunction
 
 function! smalls#pos#new(pos) "{{{1

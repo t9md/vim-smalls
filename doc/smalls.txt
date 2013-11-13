@@ -67,8 +67,10 @@ VARIABLES						   *smalls-variables*
 *g:smalls_jump_keys*
 	Default: ;ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-	[NOTE] first char is semicolon. which I intended to jump
-	Specify textmanip mode at startup.
+	[NOTE] don't use lowercase letter, the jumpkey you entered is
+	automatically converted uppercase by |toupper()| before matching
+	target you want to jump.
+	[NOTE] By default, first char is semicolon.
 	This is useful to speedy choice of first target, but as side effect,
 	you can't use ';' as search caracter.
 

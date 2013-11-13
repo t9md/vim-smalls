@@ -113,9 +113,6 @@ function! s:smalls.start(dir)  "{{{1
  catch
    if v:exception ==# "NotFound"
       let self._notfound = 1
-    " elseif v:exception ==# "Canceled"
-      " let self.cancelled = 1
-      " call winrestview(self._view)
     endif
     let self.lastmsg = v:exception
   finally
@@ -152,10 +149,6 @@ endfunction
 function! s:smalls.get_jump_target(word) "{{{1
   if empty(a:word) | return [] | endif
   let poslist  = self.finder.all(a:word)
-  " " if only one destination, we won't show jump screen.
-  " if len(poslist) ==# 1
-    " return smalls#pos#new(poslist[0])
-  " endif
   let pos_new  = smalls#jump#get_pos(poslist)
   return pos_new
 endfunction

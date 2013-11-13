@@ -12,8 +12,8 @@ let s:priorities = {
       \ 'SmallsCandidate':  100,
       \ 'SmallsCurrent':    101,
       \ 'SmallsCursor':     102,
-      \ 'SmallsJumpTarget': 103,
       \ }
+      " \ 'SmallsJumpTarget': 103,
 
 function! h.new(dir, env) "{{{1
   let self.env = a:env

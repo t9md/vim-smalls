@@ -86,7 +86,7 @@ function! jump.get_pos(jumpk2pos) "{{{1
   try
     let hl_expr = join(
           \ map(poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
-    let jumpk_hl_id = matchadd("SmallsJumpTarget", '\v'. hl_expr , 200)
+    let jumpk_hl_id = matchadd("SmallsJumpTarget", '\v'. hl_expr , 103)
     call self.setlines(lines_jmp)
     redraw
     let jumpk = s:getchar()

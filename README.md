@@ -1,6 +1,6 @@
 # Fist of all
 
-Specially thanks for Lokaltog who created great [vim-easymotion](https://github.com/Lokaltog/vim-easymotion).
+Specially thanks to Lokaltog who created great [vim-easymotion](https://github.com/Lokaltog/vim-easymotion).
 Without his former work, I don't think I could create smalls from scratch.
 
 # What is this?

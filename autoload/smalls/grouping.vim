@@ -1,4 +1,3 @@
-" FIXME need rewrite and clear licensing for original EasyMotion.vim
 let s:libname = expand("<sfile>:t:r")
 function! smalls#grouping#SCTree(targets, keys)  "{{{1
   " Single-key/closest target priority tree

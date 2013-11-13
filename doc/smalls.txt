@@ -1,8 +1,10 @@
 *smalls.txt* spot your cursor with simple search
 
-Version: 0.1
+Version: 0.5
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-smalls
+License: Creative Commons Attribution-ShareAlike 3.0 Unported
+	http://creativecommons.org/licenses/by-sa/3.0/
 ==============================================================================
 CONTENTS						    *smalls-contents*
 
@@ -14,6 +16,7 @@ CONTENTS						    *smalls-contents*
        Configuration Example ................ |smalls-example|
        Bug ...................................... |smalls-bug|
        Todo  ................................... |smalls-todo|
+       Special Notes ........................... |smalls-note|
        Changelog .......................... |smalls-changelog|
 
 ==============================================================================
@@ -125,22 +128,37 @@ If you want separate 'forward' and 'backward'
 ============================================================================
 BUG								 *smalls-bug*
 
-Here a lot of bug and limitation.
+Jump-marker is accompalished by temporarily replace buffer with marker.
+To avoid this temporal edit affect undo history, smalls use 'undojoin'.
+
+To minimize this buffer editing effect to aff so 'undo' after
+showing jump marker don't put cursor to original pos. This caused as the 
+side-effect of 'undojoin' to minimize effect
+
+marker
 
 ============================================================================
 TODO								*smalls-todo*
 
 * jump between candidate with C-hjkl and C-n, C-p or <Tab> and customizable
 * specify search area
- - above
- - below
  - [x] harf-screen-above sk or S.
  - [x] harf-screen-below sj or s.
- - right-col s-h
- - left-col  s-l
+ - [decline] right-col s-h
+ - [decline] left-col  s-l
 * jump line with jump target on (screen middle col) or (screen left col)
 * [x] skip folded area
-* code cleanup
+* code cleanup [ 75 %]
+
+============================================================================
+SPECIAL NOTES							*smalls-note*
+
+Unless Kim Silkebækken's great EasyMotion, 'smalls' would never be created.
+
+   - EasyMotion
+     https://github.com/Lokaltog/vim-easymotion
+
+What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*

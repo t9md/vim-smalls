@@ -1,4 +1,5 @@
 let s:plog = smalls#util#import("plog")
+let s:getchar = smalls#util#import("getchar")
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -37,9 +38,20 @@ function! s:smalls.init(dir) "{{{1
         \ }
   let self.hl       = smalls#highlighter#new(a:dir, self.env)
   let self.finder   = smalls#finder#new(a:dir, self.env)
-  " let self._view    = winsaveview()
+  let self.keyboard = self.init_keyboard()
+  let self._break = 0
+endfunction
+
+function! s:smalls.init_keyboard() "{{{1
   let keyboard = smalls#keyboard#new(self)
-  let self.keyboard = keyboard
+  let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+  call keyboard.bind(jump_trigger,
+        \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
+  call keyboard.bind("\<CR>",
+        \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
+  call keyboard.bind("\<C-n>",
+        \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
+  return keyboard
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -96,7 +108,7 @@ function! s:smalls.start(dir)  "{{{1
     while 1
       call hl.shade()
       call kbd.read()
-      if self.handler(kbd)
+      if self._break
         break
       endif
       call hl.clear()
@@ -122,28 +134,66 @@ function! s:smalls.start(dir)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.handler(keyboard) "{{{1
-  let kbd = a:keyboard
-  let hl  = self.hl
-  if !kbd.interrupt
-    return 0
+function! s:smalls.do_jump(kbd) "{{{1
+  call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+  let pos_new = self.get_jump_target(a:kbd.data)
+  if !empty(pos_new)
+    call pos_new.jump()
   endif
-  let kbd.interrupt = 0
-  if kbd.interrupt_msg ==# 'JUMP'
-    call hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
-    let pos_new = self.get_jump_target(kbd.data)
-    if !empty(pos_new)
-      call pos_new.jump()
-    endif
-    return 1
-  elseif kbd.interrupt_msg ==# 'JUMP_FIRST'
-    let found = self.finder.one(kbd.data)
-    if empty(found)
-      throw "NOT_FOUND"
-    endif
+  let self._break = 1
+endfunction
+
+function! s:smalls.do_jump_first(kbd) "{{{1
+  let found = self.finder.one(a:kbd.data)
+  if !empty(found)
     call smalls#pos#new(found).jump()
-    return 1
   endif
+  let self._break = 1
+endfunction
+
+function! s:smalls.do_excursion(kbd) "{{{1
+  let word = a:kbd.data
+  if empty(word) | return [] | endif
+  let poslist  = self.finder.all(word)
+  let max = len(poslist)
+  let index = 0
+  let [key_l, key_r, key_u, key_d, key_n, key_p ] = self.dir ==# 'bwd'
+        \ ? [ 'l', 'h', 'j', 'k', 'p', 'n' ]
+        \ : [ 'h', 'l', 'k', 'j', 'n', 'p' ]
+  while 1
+    let c = s:getchar()
+    if c == "\<Esc>"
+      break
+    endif
+    if     c == key_n | let index = (index + 1) % max
+    elseif c == key_p | let index = ((index - 1) + max ) % max
+    elseif c =~ 'j\|k'
+      let cl = poslist[index][0]
+      while 1
+        let index = c ==# key_d ? (index + 1) % max : ((index - 1) + max ) % max
+        let nl = poslist[index][0]
+        if cl != nl
+          break
+        endif
+      endwhile
+    elseif c =~ 'h\|l'
+      let [cl, cc] = poslist[index]
+      while 1
+        let index = c ==# key_r ? (index + 1) % max : ((index - 1) + max ) % max
+        let [nl, nc] = poslist[index]
+        if cl == nl
+          break
+        endif
+      endwhile
+    elseif c == ';'
+      call smalls#pos#new(poslist[index]).jump()
+      break
+    endif
+    call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+    call self.hl.candidate(word, poslist[index])
+    redraw
+  endwhile
+  let self._break = 1
 endfunction
 
 function! s:smalls.get_jump_target(word) "{{{1
@@ -181,8 +231,5 @@ function! smalls#start(dir) "{{{1
   call s:smalls.start(a:dir)
 endfunction "}}}
 function! smalls#debug() "{{{
-  echo PP(s:keymap)
-  echo "---"
-  echo PP(s:smalls)
 endfunction
 " vim: foldmethod=marker

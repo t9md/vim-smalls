@@ -14,23 +14,11 @@ let s:table = {
       \ "\<C-c>": "do_cancel",
       \ "\<C-g>": "do_cancel",
       \ "\<C-b>": "do_char_backward",
-      \ "\<CR>":  "do_jump_first",
-      \ "\<C-j>": "do_jump_first",
       \ "\<Esc>": "do_cancel",
       \ }
 
-let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-let s:table[jump_trigger] = "do_jump"
-
-function! keyboard.do_jump() "{{{1
-  " throw "JUMP"
-  let self.interrupt = 1
-  let self.interrupt_msg = 'JUMP'
-endfunction
-
-function! keyboard.do_jump_first() "{{{1
-  let self.interrupt = 1
-  let self.interrupt_msg = 'JUMP_FIRST'
+function! keyboard.bind(key, action) "{{{1
+  let self._table[a:key] = a:action
 endfunction
 
 function! keyboard.read() "{{{1
@@ -51,10 +39,15 @@ function! keyboard.init(owner) "{{{1
 endfunction
 
 function! keyboard.input(c) "{{{1
-  if has_key(self._table, a:c) 
-    call self[self._table[a:c]]()
-  else
+  if !has_key(self._table, a:c) 
     call self._set(a:c)
+  else
+    let action = self._table[a:c]
+    if type(action) ==# type('')
+      call self[action]()
+    elseif type(action) ==# type({})
+      call call(action.func, action.args, action.self)
+    endif
   endif
 endfunction
 
@@ -134,6 +127,7 @@ function! s:echohl(msg, color) "{{{1
 endfunction
 
 function! s:keyboard.show_prompt() "{{{1
+  redraw
   " call s:echohl(self.cursor, "Number")
   call s:echohl("> ", 'Identifier')
   call s:echohl(self._before(),  'SmallsCli')
@@ -141,21 +135,29 @@ function! s:keyboard.show_prompt() "{{{1
   if empty(after) | let after = ' ' | endif
   call s:echohl(after[0],  'SmallsCliCursor')
   call s:echohl(after[1:],  'SmallsCli')
-  redraw
 endfunction
 
 function! smalls#keyboard#new(owner) "{{{1
   return s:keyboard.init(a:owner)
 endfunction "}}}
 
+let s:h = {}
+function! s:h.hoge(arg)
+  echo a:arg
+  call self.hoga(a:arg)
+endfunction
+function! s:h.hoga(arg)
+  echo toupper(a:arg)
+endfunction
 finish
 function! Main() "{{{1
   call s:keyboard.init({})
+  call s:keyboard.bind("\<F2>", { 'func': s:h.hoge, 'args': ["a"] , 'self': s:h })
   try
-    while 1
-      call s:keyboard.show_prompt()
-      let c = s:getchar()
-      call s:keyboard.input(c)
+    let cnt = 1
+    while (cnt < 10)
+      call s:keyboard.read()
+      let cnt += 1
     endwhile
   catch
     echo v:exception

@@ -1,4 +1,4 @@
-" let s:plog = smalls#util#import("plog")
+let s:plog = smalls#util#import("plog")
 
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
@@ -70,7 +70,6 @@ function! h.candidate(word, pos) "{{{1
   elseif self.dir ==# "all"
     let candidate   = '{k}'
   end
-
   call extend(e, self.env, 'error')
   call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
   call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))

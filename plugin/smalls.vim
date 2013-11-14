@@ -13,10 +13,11 @@ let options = {
       \ 'g:smalls_highlight': {},
       \ }
 
-      " \ 'SmallsJumpTarget':[ ['NONE',      'NONE',    'yellow', ], [ 'bold',           '#223322', 'yellow']],
+      " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
+      " \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#f92672']],
 let s:color = {
       \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE',    '#66D9EF']],
-      \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#f92672']],
+      \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#ff0000']],
       \ 'SmallsCurrent':    [['NONE',      'magenta', 'white', ], [ 'NONE',           '#f92672', '#ffffff']],
       \ 'SmallsCursor':     [['underline', 'magenta', 'white', ], [ 'bold,underline', '#f92672', '#ffffff']],
       \ 'SmallsShade':      [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#777777']],
@@ -52,7 +53,6 @@ endfunction
 function! s:set_highlight() "{{{1
   call s:clear_highlight(s:color)
   call s:set_color(s:color)
-  highlight! SmallsCursorHide none
 endfunction "}}}
 
 call s:set_options(options)
@@ -75,7 +75,7 @@ nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug()<CR>
 " Command:
 command! -nargs=1 -complete=customlist,s:dir Smalls call smalls#start(<q-args>)
 function! s:dir(a,l,p)
-  return ['forward', 'backward', 'all']
+  return ['all', 'forward', 'backward' ]
 endfunction
 
 " Finish:

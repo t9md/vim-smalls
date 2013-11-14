@@ -67,12 +67,12 @@ function! jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
   return pos2jumpk
 endfunction
 
-function! jump.start(poslist)
+function! jump.get_pos(poslist)
   let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(g:smalls_jump_keys, '\zs'))
-  return self.get_pos(jumpk2pos)
+  return self._get_pos(jumpk2pos)
 endfunction
 
-function! jump.get_pos(jumpk2pos) "{{{1
+function! jump._get_pos(jumpk2pos) "{{{1
   let pos = values(a:jumpk2pos)
   if len(pos) ==# 1
     return smalls#pos#new(pos[0])
@@ -86,7 +86,7 @@ function! jump.get_pos(jumpk2pos) "{{{1
   try
     let hl_expr = join(
           \ map(poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
-    let jumpk_hl_id = matchadd("SmallsJumpTarget", '\v'. hl_expr , 103)
+    call self.hl.hl('SmallsJumpTarget', '\v'. hl_expr)
     call self.setlines(lines_jmp)
     redraw
     let jumpk = s:getchar()
@@ -97,16 +97,26 @@ function! jump.get_pos(jumpk2pos) "{{{1
     call s:ensure(has_key(a:jumpk2pos, jumpk), 'Invalid target' )
   finally
     call self.setlines(lines_org)
-    call matchdelete(jumpk_hl_id)
+    call self.hl.clear('SmallsJumpTarget')
   endtry
 
   let dest = a:jumpk2pos[jumpk]
   return type(dest) == type([])
         \ ? smalls#pos#new(dest)
-        \ : self.get_pos(dest)
+        \ : self._get_pos(dest)
 endfunction
 
-function! smalls#jump#get_pos(poslist) "{{{1
-  return  s:jump.start(a:poslist)
+function! s:jump.new(dir, env, hl)
+  let self.dir = a:dir
+  let self.env = a:env
+  let self.hl = a:hl
+  return self
+endfunction
+
+" function! smalls#jump#get_pos(poslist) "{{{1
+  " return  s:jump.start(a:poslist)
+" endfunction "}}}
+function! smalls#jump#new(dir, env, hl) "{{{1
+  return  s:jump.new(a:dir, a:env, a:hl)
 endfunction "}}}
 " vim: foldmethod=marker

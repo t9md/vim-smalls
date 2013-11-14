@@ -59,8 +59,6 @@ function! s:smalls.finish() "{{{1
     call getchar(0)
     call self.blink_pos()
     call getchar(0)
-  " else
-    " let @/= self._word
   endif
   redraw!
   if !empty(self.lastmsg)
@@ -73,7 +71,6 @@ function! s:smalls.set_opts() "{{{1
   let opts = {
           \ '&scrolloff':  0,
           \ '&modified':   0,
-          \ '&guicursor':  'n:hor1-SmallsCursorHide',
           \ '&cursorline': 0,
           \ '&modifiable': 1,
           \ '&readonly':   0,
@@ -90,12 +87,26 @@ endfunction
 
 function! s:smalls.restore_opts() "{{{1
   for [var, val] in items(self._opts)
-    if var == '&guicursor'
-      silent set guicursor&
-    endif
     call setbufvar(bufname(''), var, val)
     unlet var val
   endfor
+endfunction
+
+function! s:smalls.cursor_hide() "{{{1
+  redir => cursor
+  silent! highlight Cursor
+  redir END
+  if cursor !~# 'xxx'
+    return ''
+  endif
+  let self.cursor_restore_cmd = 'highlight Cursor ' .
+        \  substitute(matchstr(cursor, 'xxx \zs.*'), "\n", ' ', 'g')
+
+  highlight Cursor ctermfg=NONE ctermbg=NONE guifg=NONE guibg=NONE
+endfunction
+
+function! s:smalls.cursor_restore() "{{{1
+  execute self.cursor_restore_cmd
 endfunction
 
 function! s:smalls.start(dir)  "{{{1
@@ -103,6 +114,7 @@ function! s:smalls.start(dir)  "{{{1
   try
     call self.init(dir)
     call self.set_opts()
+    call self.cursor_hide()
     let kbd = self.keyboard
     let hl = self.hl
     while 1
@@ -130,12 +142,14 @@ function! s:smalls.start(dir)  "{{{1
   finally
     call hl.clear()
     call self.restore_opts()
+    call self.cursor_restore()
     call self.finish()
   endtry
 endfunction
 
 function! s:smalls.do_jump(kbd) "{{{1
-  call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+  call self.hl.clear()
+  call self.hl.shade()
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
     call pos_new.jump()
@@ -165,7 +179,7 @@ function! s:smalls.do_excursion(kbd) "{{{1
     if c == "\<Esc>"
       break
     endif
-    if     c == key_n | let index = (index + 1) % max
+    if     c == key_n | let index = (index +  1) % max
     elseif c == key_p | let index = ((index - 1) + max ) % max
     elseif c =~ 'j\|k'
       let cl = poslist[index][0]
@@ -198,8 +212,8 @@ endfunction
 
 function! s:smalls.get_jump_target(word) "{{{1
   if empty(a:word) | return [] | endif
-  let poslist  = self.finder.all(a:word)
-  let pos_new  = smalls#jump#get_pos(poslist)
+  let poslist = self.finder.all(a:word)
+  let pos_new = smalls#jump#new(self.dir, self.env, self.hl).get_pos(poslist)
   return pos_new
 endfunction
 

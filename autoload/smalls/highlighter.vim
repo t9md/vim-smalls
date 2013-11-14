@@ -12,8 +12,8 @@ let s:priorities = {
       \ 'SmallsCandidate':  100,
       \ 'SmallsCurrent':    101,
       \ 'SmallsCursor':     102,
+      \ 'SmallsJumpTarget': 103,
       \ }
-      " \ 'SmallsJumpTarget': 103,
 
 function! h.new(dir, env) "{{{1
   let self.env = a:env
@@ -23,6 +23,7 @@ function! h.new(dir, env) "{{{1
 endfunction
 
 function! h.hl(color, pattern) "{{{1
+  " call s:plog([a:color, a:pattern])
   let self.ids[a:color] = matchadd(a:color, a:pattern, s:priorities[a:color])
 endfunction
 

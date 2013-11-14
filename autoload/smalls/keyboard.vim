@@ -12,7 +12,6 @@ let s:table = {
       \ "\<C-k>": "do_kill",
       \ "\<C-y>": "do_yank",
       \ "\<C-c>": "do_cancel",
-      \ "\<C-g>": "do_cancel",
       \ "\<C-b>": "do_char_backward",
       \ "\<Esc>": "do_cancel",
       \ }
@@ -141,14 +140,6 @@ function! smalls#keyboard#new(owner) "{{{1
   return s:keyboard.init(a:owner)
 endfunction "}}}
 
-let s:h = {}
-function! s:h.hoge(arg)
-  echo a:arg
-  call self.hoga(a:arg)
-endfunction
-function! s:h.hoga(arg)
-  echo toupper(a:arg)
-endfunction
 finish
 function! Main() "{{{1
   call s:keyboard.init({})

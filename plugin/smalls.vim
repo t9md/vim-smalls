@@ -69,10 +69,21 @@ augroup Smalls
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward")<CR>
-nnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward")<CR>
-nnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all")<CR>
-nnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all")<CR>
+nnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", 'n')<CR>
+nnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'n')<CR>
+nnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'n')<CR>
+nnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", 'n')<CR>
+
+xnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", visualmode())<CR>
+xnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", visualmode())<CR>
+xnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", visualmode())<CR>
+xnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", visualmode())<CR>
+
+onoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", 'o')<CR>
+onoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'o')<CR>
+onoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'o')<CR>
+onoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", 'o')<CR>
+
 nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug()<CR>
 
 " Command:

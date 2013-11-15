@@ -19,7 +19,9 @@ endfunction
 
 " Main:
 let s:smalls = {}
-function! s:smalls.init(dir) "{{{1
+function! s:smalls.init(dir, mode) "{{{1
+  let self.mode = a:mode
+  let self.visual_start = smalls#pos#new(getpos("'<")[1:2])
   let self.lastmsg = ''
   let self.dir = a:dir
   let self.prompt      = "> "
@@ -61,6 +63,9 @@ function! s:smalls.finish() "{{{1
     call getchar(0)
     call self.blink_pos()
     call getchar(0)
+    if self.mode !~ 'n\|o'
+      normal! gv
+    endif
   endif
   redraw!
   if !empty(self.lastmsg)
@@ -78,6 +83,7 @@ function! s:smalls.set_opts() "{{{1
           \ '&readonly':   0,
           \ '&spell':      0,
           \ }
+          " \ '&virtualedit': 'all',
           " \ '&updatetime': g,
   let curbuf = bufname('')
   for [var, val] in items(opts)
@@ -144,10 +150,10 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(dir)  "{{{1
+function! s:smalls.start(dir, mode)  "{{{1
   let dir = { 'forward': 'fwd', 'backward': 'bwd', 'all': 'all' }[a:dir]
   try
-    call self.init(dir)
+    call self.init(dir, a:mode)
     call self.set_opts()
     call self.cursor_hide()
     call self.loop()
@@ -169,15 +175,30 @@ function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.shade()
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
+    if self.mode != 'n' && self.mode != 'o'
+      normal! gv
+    endif
+    call self.adjust_col(pos_new)
     call pos_new.jump()
   endif
   let self._break = 1
 endfunction
 
+function! s:smalls.adjust_col(pos)
+  if self.mode == 'o' && self.dir =~ 'all\|fwd'
+    let a:pos.col += 1
+  endif
+endfunction
+
 function! s:smalls.do_jump_first(kbd) "{{{1
   let found = self.finder.one(a:kbd.data)
   if !empty(found)
-    call smalls#pos#new(found).jump()
+    if self.mode != 'n' && self.mode != 'o'
+      normal! gv
+    endif
+    let pos_new = smalls#pos#new(found)
+    call self.adjust_col(pos_new)
+    call pos_new.jump()
   endif
   let self._break = 1
 endfunction
@@ -200,7 +221,9 @@ function! s:smalls.do_move_next(kbd) "{{{1
     elseif c ==# "n" | let index = (index +  1) % max
     elseif c ==# "N" | let index = ((index - 1) + max ) % max
     elseif c == ';'
-      call smalls#pos#new(poslist[index]).jump()
+      let pos_new = smalls#pos#new(poslist[index])
+      call self.adjust_col(pos_new)
+      call pos_new.jump()
       break
     endif
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -248,7 +271,9 @@ function! s:smalls.do_excursion(kbd) "{{{1
         endif
       endwhile
     elseif c == ';'
-      call smalls#pos#new(poslist[index]).jump()
+      let pos_new = smalls#pos#new(poslist[index])
+      call self.adjust_col(pos_new)
+      call pos_new.jump()
       break
     endif
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -289,9 +314,10 @@ endfunction
 "}}}
 
 " PublicInterface:
-function! smalls#start(dir) "{{{1
-  call s:smalls.start(a:dir)
+function! smalls#start(dir, mode) "{{{1
+  call s:smalls.start(a:dir, a:mode)
 endfunction "}}}
 function! smalls#debug() "{{{
+  echo PP(s:smalls)
 endfunction
 " vim: foldmethod=marker

@@ -25,6 +25,11 @@ function! pos.jump() "{{{1
   call cursor(self.line, self.col)
 endfunction
 
+function! pos.jump_one_col_more() "{{{1
+  let self.col += 1
+  call self.jump()
+endfunction
+
 function! smalls#pos#new(pos) "{{{1
   return s:pos.new(a:pos)
 endfunction

@@ -150,7 +150,7 @@ function! s:smalls.start(dir)  "{{{1
   try
     call self.init(dir)
     call self.set_opts()
-    " call self.cursor_hide()
+    call self.cursor_hide()
     call self.loop()
  catch
    if v:exception ==# "NotFound"
@@ -160,7 +160,7 @@ function! s:smalls.start(dir)  "{{{1
   finally
     call self.hl.clear()
     call self.restore_opts()
-    " call self.cursor_restore()
+    call self.cursor_restore()
     call self.finish()
   endtry
 endfunction

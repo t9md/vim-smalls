@@ -23,7 +23,6 @@ function! s:smalls.init(dir) "{{{1
   let self.lastmsg = ''
   let self.dir = a:dir
   let self.prompt      = "> "
-  " let self.cancelled   = 0
   let self._notfound   = 0
   let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
   let self.env = {
@@ -185,7 +184,6 @@ endfunction
 
 function! s:smalls.do_move_next(kbd) "{{{1
   " very exprimental feature and won't document
-  " call s:plog("JJJ")
   let word = a:kbd.data
   if empty(word) | return [] | endif
   let poslist  = self.finder.all(word)
@@ -217,7 +215,6 @@ function! s:smalls.do_excursion(kbd) "{{{1
   let word = a:kbd.data
   if empty(word) | return [] | endif
   let poslist  = self.finder.all(word)
-  " let g:targets = poslist
   let max = len(poslist)
   let index = 0
   let [key_l, key_r, key_u, key_d, key_n, key_p ] = self.dir ==# 'bwd'

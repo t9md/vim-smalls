@@ -20,7 +20,8 @@ function! keyboard.bind(key, action) "{{{1
   let self._table[a:key] = a:action
 endfunction
 
-function! keyboard.read() "{{{1
+
+function! keyboard.read_timeout() "{{{1
   call self.show_prompt()
   call self.input(s:getchar())
 endfunction
@@ -34,10 +35,12 @@ function! keyboard.init(owner) "{{{1
 
   let self.interrupt     = 0
   let self.interrupt_msg = ""
+  let self.last_inpt = ''
   return self
 endfunction
 
 function! keyboard.input(c) "{{{1
+  let self.last_inpt = a:c
   if !has_key(self._table, a:c) 
     call self._set(a:c)
   else

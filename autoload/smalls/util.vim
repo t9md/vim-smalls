@@ -36,6 +36,21 @@ function! s:getchar() "{{{1
   return type(c) == type(0) ? nr2char(c) : c
 endfunction
 
+function! s:getchar_timeout(timeout) "{{{1
+  let limit = a:timeout
+  let start = reltime()
+  while 1
+    let elapsed = str2float(reltimestr(reltime(start)))
+    if getchar(1)
+      return s:getchar()
+    endif
+    if elapsed > limit
+      throw 'KEYBOARD_TIMEOUT'
+    endif
+    sleep 10m
+  endwhile
+endfunction
+
 " let s:metachar = '\=?/<>~ .{*^%|[''$()'
 " function! s:escape(char)
   " return escape(a:char, s:metachar)

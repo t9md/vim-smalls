@@ -1,5 +1,6 @@
 let s:plog = smalls#util#import("plog")
 let s:getchar = smalls#util#import("getchar")
+let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -44,13 +45,15 @@ endfunction
 
 function! s:smalls.init_keyboard() "{{{1
   let keyboard = smalls#keyboard#new(self)
+  call keyboard.bind("\<CR>",
+        \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
+  call keyboard.bind("\<F2>",
+        \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
+  call keyboard.bind("\<C-n>",
+        \ { 'func': self.do_move_next, 'args': [keyboard], 'self': self })
   let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
   call keyboard.bind(jump_trigger,
         \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
-  call keyboard.bind("\<CR>",
-        \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
-  call keyboard.bind("\<C-n>",
-        \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
   return keyboard
 endfunction
 
@@ -76,7 +79,7 @@ function! s:smalls.set_opts() "{{{1
           \ '&readonly':   0,
           \ '&spell':      0,
           \ }
-  let self._opts = {}
+          " \ '&updatetime': g,
   let curbuf = bufname('')
   for [var, val] in items(opts)
     let self._opts[var] = getbufvar(curbuf, var)
@@ -109,40 +112,55 @@ function! s:smalls.cursor_restore() "{{{1
   execute self.cursor_restore_cmd
 endfunction
 
+function! s:smalls.loop() "{{{1
+  let kbd = self.keyboard
+  let hl = self.hl
+  while 1
+    call hl.shade()
+    call kbd.show_prompt()
+
+    if ! g:smalls_jump_keys_auto_show ||
+          \ ( kbd.data_len() < g:smalls_jump_keys_auto_show_min_input_length )
+      call kbd.input(s:getchar())
+    else
+      try
+        call kbd.input(s:getchar_timeout(g:smalls_jump_keys_auto_show_timeout))
+      catch /KEYBOARD_TIMEOUT/
+        call self.do_jump(self.keyboard)
+      endtry
+    endif
+
+    if self._break
+      break
+    endif
+    call hl.clear()
+    if kbd.data_len() ==# 0
+      continue
+    endif
+    let found = self.finder.one(kbd.data)
+    if empty(found)
+      throw "NotFound"
+    endif
+    call hl.candidate(kbd.data, found)
+  endwhile
+endfunction
+
 function! s:smalls.start(dir)  "{{{1
   let dir = { 'forward': 'fwd', 'backward': 'bwd', 'all': 'all' }[a:dir]
   try
     call self.init(dir)
     call self.set_opts()
-    call self.cursor_hide()
-    let kbd = self.keyboard
-    let hl = self.hl
-    while 1
-      call hl.shade()
-      call kbd.read()
-      if self._break
-        break
-      endif
-      call hl.clear()
-      if kbd.data_len() ==# 0
-        continue
-      endif
-
-      let found = self.finder.one(kbd.data)
-      if empty(found)
-        throw "NotFound"
-      endif
-      call hl.candidate(kbd.data, found)
-    endwhile
+    " call self.cursor_hide()
+    call self.loop()
  catch
    if v:exception ==# "NotFound"
       let self._notfound = 1
     endif
     let self.lastmsg = v:exception
   finally
-    call hl.clear()
+    call self.hl.clear()
     call self.restore_opts()
-    call self.cursor_restore()
+    " call self.cursor_restore()
     call self.finish()
   endtry
 endfunction
@@ -165,10 +183,41 @@ function! s:smalls.do_jump_first(kbd) "{{{1
   let self._break = 1
 endfunction
 
-function! s:smalls.do_excursion(kbd) "{{{1
+function! s:smalls.do_move_next(kbd) "{{{1
+  " very exprimental feature and won't document
+  " call s:plog("JJJ")
   let word = a:kbd.data
   if empty(word) | return [] | endif
   let poslist  = self.finder.all(word)
+  let max = len(poslist)
+  let index = 0
+  let index = (index + 1) % max
+  call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+  call self.hl.candidate(word, poslist[index])
+  redraw
+  while 1
+    let c = s:getchar()
+    if c == "\<Esc>"
+      break
+    elseif c ==# "n" | let index = (index +  1) % max
+    elseif c ==# "N" | let index = ((index - 1) + max ) % max
+    elseif c == ';'
+      call smalls#pos#new(poslist[index]).jump()
+      break
+    endif
+    call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+    call self.hl.candidate(word, poslist[index])
+    redraw
+  endwhile
+  let self._break = 1
+endfunction
+
+function! s:smalls.do_excursion(kbd) "{{{1
+  " very exprimental feature and won't document
+  let word = a:kbd.data
+  if empty(word) | return [] | endif
+  let poslist  = self.finder.all(word)
+  " let g:targets = poslist
   let max = len(poslist)
   let index = 0
   let [key_l, key_r, key_u, key_d, key_n, key_p ] = self.dir ==# 'bwd'
@@ -181,6 +230,8 @@ function! s:smalls.do_excursion(kbd) "{{{1
     endif
     if     c == key_n | let index = (index +  1) % max
     elseif c == key_p | let index = ((index - 1) + max ) % max
+    elseif c == "\<Tab>" | let index = (index +  1) % max
+    elseif c == "\<S-Tab>" | let index = ((index - 1) + max ) % max
     elseif c =~ 'j\|k'
       let cl = poslist[index][0]
       while 1

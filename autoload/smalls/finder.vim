@@ -17,19 +17,28 @@ function! f.all(word, ...) "{{{1
   if empty(a:word)
     return targets
   endif
-
   let [opt, stopline, fname, ope] =
         \ self.dir ==# 'bwd' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
         \ self.dir ==# 'fwd' ? [ '' , self.env['w$'], 'foldclosedend', '+'] : 
         \ self.dir ==# 'all' ? [ 'c', self.env['w$'], 'foldclosedend', '+'] : throw
   try
     if self.dir ==# 'all'
-      call cursor(self.env['w0'], 1)
+      let firsttime = 1
+      call cursor(0, col('.') + 1)
     endif
     while 1
       let word = '\V' . escape(a:word, '\')
       let pos = searchpos(word, opt, stopline)
-      if pos == [0, 0] | break | endif
+      if pos == [0, 0]
+        if self.dir ==# 'all'
+          if firsttime
+            call cursor(self.env['w0'], 1)
+            let firsttime = !firsttime
+            continue
+          endif
+        endif
+        break
+      endif
 
       " skip fold
       let linum = function(fname)(pos[0])
@@ -44,8 +53,14 @@ function! f.all(word, ...) "{{{1
       if one
         return pos
       endif
-      call add(targets, pos)
 
+      if index(targets, pos) == -1
+        call add(targets, pos)
+      else
+        break
+      endif
+
+      " FIXME need cleanup?
       if self.dir ==# 'all'
         if col('.') >= col('$') - 1
           if line('.') == self.env['w$']

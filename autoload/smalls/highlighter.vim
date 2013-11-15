@@ -19,12 +19,21 @@ function! h.new(dir, env) "{{{1
   let self.env = a:env
   let self.dir = a:dir
   let self.ids = {}
+  for color in keys(s:priorities)
+    let self.ids[color] = []
+  endfor
   return self
 endfunction
 
+function! h.dump() "{{{1
+  echo PP(self)
+endfunction
+
 function! h.hl(color, pattern) "{{{1
-  " call s:plog([a:color, a:pattern])
-  let self.ids[a:color] = matchadd(a:color, a:pattern, s:priorities[a:color])
+  " call s:plog(a:color)
+  call add(self.ids[a:color],
+        \ matchadd(a:color, a:pattern, s:priorities[a:color]))
+  " call s:plog("FIN")
 endfunction
 
 function! h.clear(...) "{{{1
@@ -33,9 +42,10 @@ function! h.clear(...) "{{{1
     if !has_key(self.ids, color)
       continue
     endif
-    let id = self.ids[color]
-    call matchdelete(id)
-    unlet self.ids[color] 
+    for id in self.ids[color]
+      call matchdelete(id)
+    endfor
+    let self.ids[color] = []
   endfor
 endfunction
 

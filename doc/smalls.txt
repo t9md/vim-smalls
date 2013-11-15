@@ -42,7 +42,8 @@ MAPPINGS						    *smalls-mappings*
 n_<Plug>(smalls)
 n_<Plug>(smalls-all)
 	smalls for current window area.
-	<Plug>(smalls) is simply alias of <Plug>(smalls-all).
+	<Plug>(smalls) is simply short version of <Plug>(smalls-all).
+	Both keys are linked to same function.
 
 n_<Plug>(smalls-forward)
 	smalls for forward direction
@@ -87,6 +88,7 @@ VARIABLES						   *smalls-variables*
 	Default: {}
 
 	|Dictionary| used to update default highlight.
+
 	Format~
 	{ "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
 
@@ -104,9 +106,50 @@ VARIABLES						   *smalls-variables*
 	Example >
 	" change JumpTarget color to 'red'
 	let g:smalls_highlight = {
-	      \ 'SmallsJumpTarget':[['NONE', 'NONE', 'red'], [ 'bold', 'NONE', 'red']],
+	      \ 'SmallsJumpTarget':
+	      \     [['NONE', 'NONE', 'red'],[ 'bold', 'NONE', 'red']],
 	      \ }
 <
+AutoShowJumpKeys~
+Smalls provide feature to automatically show jump keys.
+Let's say, you want to auto-show jump key after 1.0sec but only at least two
+sarach characters are already inputed.
+Following variables controll these behavior.
+By default this feature is disabled.
+
+*g:smalls_jump_keys_auto_show*
+	Default: 0
+	
+	Set 1, to eanble auto-show-jump-keys fature.
+
+*g:smalls_jump_keys_auto_show_timeout*
+	Default: 0.5
+
+	Specify second as |Float|. 
+	If user didn't type any key for this time, automatically shown jump
+	keys as long as user's imput exceed
+	*g:smalls_jump_keys_auto_show_min_input_length* characters.
+
+*g:smalls_jump_keys_auto_show_min_input_length*
+	Default: 3
+
+	Specify length which trigger auto-show-jump-keys timeout.
+	For user input didn't exceed this length, timeout is not fired.
+	See following example.
+
+	Example-1 >
+	" After user's input reach 3 chars, with 0.5sec timeout.
+	let g:smalls_jump_keys_auto_show = 1
+	let g:smalls_jump_keys_auto_show_timeout = 0.0
+	let g:smalls_jump_keys_auto_show_min_input_length = 2
+<
+	Example-2 >
+	" always auto-show-jump-keys after user input 2 chars.
+	let g:smalls_jump_keys_auto_show = 1
+	let g:smalls_jump_keys_auto_show_timeout = 0.0
+	let g:smalls_jump_keys_auto_show_min_input_length = 2
+<
+
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
 
@@ -142,7 +185,8 @@ marker
 ============================================================================
 TODO								*smalls-todo*
 
-* jump between candidate with C-hjkl and C-n, C-p or <Tab> and customizable
+* [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
+  and customizable
 * specify search area
  - [x] harf-screen-above sk or S.
  - [x] harf-screen-below sj or s.

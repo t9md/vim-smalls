@@ -51,6 +51,18 @@ n_<Plug>(smalls-forward)
 n_<Plug>(smalls-backward)
 	smalls for backward direction
 
+x_<Plug>(smalls)
+x_<Plug>(smalls-all)
+x_<Plug>(smalls-forward)
+x_<Plug>(smalls-backward)
+	visual mode version
+
+o_<Plug>(smalls)
+o_<Plug>(smalls-all)
+o_<Plug>(smalls-forward)
+o_<Plug>(smalls-backward)
+	operator mode version
+
 ==============================================================================
 COMMANDS						    *smalls-commands*
 
@@ -169,6 +181,13 @@ If you want separate 'forward' and 'backward'
 >
 	nmap s <Plug>(smalls-forward)
 	nmap S <Plug>(smalls-backward)
+<
+If you want use 'visual' or 'operator' or both mode.
+>
+	omap s <Plug>(smalls-forward)
+	omap S <Plug>(smalls-backward)
+	xmap s <Plug>(smalls-forward)
+	xmap S <Plug>(smalls-backward)
 <
 ============================================================================
 BUG								 *smalls-bug*

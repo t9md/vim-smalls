@@ -185,7 +185,18 @@ function! s:smalls.do_jump(kbd) "{{{1
 endfunction
 
 function! s:smalls.adjust_col(pos)
-  if self.mode == 'o' && self.dir =~ 'all\|fwd'
+  if self.mode != 'o'
+    return
+  endif
+  if self.dir == 'fwd'
+    let a:pos.col += 1
+    return
+  endif
+
+  " 'all' mode possibly move backward, so only adjust forward direction carefully.
+  let org_p = self.env.p
+  if ( org_p.line < a:pos.line ) ||
+        \ (( org_p.line == a:pos.line ) && ( org_p.col < a:pos.col ))
     let a:pos.col += 1
   endif
 endfunction

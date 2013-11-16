@@ -13,6 +13,7 @@ CONTENTS						    *smalls-contents*
        Commands ............................ |smalls-commands|
        Variables .......................... |smalls-variables|
        Functions .......................... |smalls-functions|
+       Keyboard ............................ |smalls-keyboard|
        Configuration Example ................ |smalls-example|
        Bug ...................................... |smalls-bug|
        Todo  ................................... |smalls-todo|
@@ -169,6 +170,36 @@ FUNCTIONS						   *smalls-functions*
 	Main function for this plugin!
 	{direction} should be 'all', 'forward', 'backward'
 
+==============================================================================
+KEYBOARD					             *smalls-keyboard*
+
+Smalls use independent CLI to read user's imput.
+I'll explain this plugin specific keyboard keybinding in this section.
+In future, user can customize or |extend()| you own key with |Dictionary|.
+
+CLI KEYBOARD~
+cli-keyboard is basic keyboard used to search and trigger jump screen.
+key map is following.
+
+	| Key            | Actin               |
+	| -------------- | ------------------- |
+	| <C-h>          | do_delete           |
+	| <BS>           | do_delete           |
+	| <C-a>          | do_head             |
+	| <C-e>          | do_end              |
+	| <C-f>          | do_char_forward     |
+	| <C-b>          | do_char_backward    |
+	| <C-k>          | do_kill             |
+	| <C-y>          | do_yank             |
+	| <C-c>          | do_cancel           |
+	| <Esc>          | do_cancel           |
+	| <C-r>          | do_special        * |
+	| <F2>           | do_excursion      * |
+	| <Tab>          | do_candidate_next * |
+	| <CR>           | do_jump_first       |
+	| {jump_trigger} | do_jump             |
+
+	* very experimental action "don't ask what" for a meanwhile ;).
 ==============================================================================
 CONFIGURATION EXAMPLE					      *smalls-example*
 

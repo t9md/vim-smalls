@@ -161,6 +161,7 @@ endfunction
 function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.clear()
   call self.hl.shade()
+
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
     call self._jump_to_pos(pos_new)
@@ -178,6 +179,10 @@ function! s:smalls.do_jump_first(kbd) "{{{1
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
+  " let jump_to_end = 1
+  " if jump_to_end
+    " a:pos.col + keyboard_cli.data_len()
+  " endif
   " call self._adjust_col(a:pos)
   call a:pos.jump(self._is_visual())
 endfunction

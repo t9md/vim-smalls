@@ -76,7 +76,8 @@ function! s:keyboard.show_prompt() "{{{1
 endfunction
 
 function! smalls#keyboard#base#new(owner, table, prompt_str) "{{{1
-  return s:keyboard.init(a:owner, a:table, a:prompt_str)
+  let kbd = deepcopy(s:keyboard)
+  return kbd.init(a:owner, a:table, a:prompt_str)
 endfunction "}}}
 
 finish

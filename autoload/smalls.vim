@@ -44,9 +44,9 @@ function! s:smalls.init(dir, mode) "{{{1
 endfunction
 
 function! s:smalls.cli_keyboard_init() "{{{1
-    let keyboard = smalls#keyboard#cli#new(self)
-  call keyboard.bind("\<CR>",
-        \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
+  let keyboard = smalls#keyboard#cli#new(self)
+  " call keyboard.bind("\<CR>",
+        " \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
   call keyboard.bind("\<F2>",
         \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
   call keyboard.bind("\<Tab>",
@@ -218,7 +218,7 @@ function! s:smalls.do_jump_first(kbd) "{{{1
     call self.adjust_col(pos_new)
     call pos_new.jump(self._is_visual())
   endif
-  let self._break = 1
+  " let self._break = 1
 endfunction
 
 function! s:smalls.do_move_next(kbd) "{{{1

@@ -1,4 +1,5 @@
 let s:getchar = smalls#util#import("getchar")
+let s:plog    = smalls#util#import("plog")
 let s:cli_table = {
       \ "\<C-h>": "do_delete",
       \ "\<BS>":  "do_delete",
@@ -11,6 +12,7 @@ let s:cli_table = {
       \ "\<C-c>": "do_cancel",
       \ "\<C-b>": "do_char_backward",
       \ "\<Esc>": "do_cancel",
+      \ "\<CR>":  "do_jump_first",
       \ }
 
 let keyboard = {}
@@ -64,12 +66,15 @@ function! keyboard.do_cancel() "{{{1
   throw 'Canceled'
 endfunction
 
-function! keyboard.do_enter() "{{{1
-  throw 'ENTER'
+function! keyboard.do_jump_first() "{{{1
+  " call s:plog("AAA")
+  call call(self.owner.do_jump_first, [self], self.owner)
+  let self.owner._break = 1
+  " let g:V= self.owner
 endfunction
 
 function! smalls#keyboard#cli#new(owner) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, s:cli_table, "> ")
-  return extend(deepcopy(keyboard), s:keyboard, 'force')
+  return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
 " vim: foldmethod=marker

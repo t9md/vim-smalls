@@ -178,7 +178,7 @@ function! s:smalls.do_jump_first(kbd) "{{{1
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
-  call self._adjust_col(a:pos)
+  " call self._adjust_col(a:pos)
   call a:pos.jump(self._is_visual())
 endfunction
 

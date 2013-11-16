@@ -305,6 +305,7 @@ marker
 ============================================================================
 TODO								*smalls-todo*
 
+* [ ] opton to determine to jump destination is word's first
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
   and customizable
 * specify search area

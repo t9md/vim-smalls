@@ -39,12 +39,12 @@ function! s:smalls.init(dir, mode) "{{{1
         \ }
   let self.hl       = smalls#highlighter#new(a:dir, self.env)
   let self.finder   = smalls#finder#new(a:dir, self.env)
-  let self.keyboard = self.init_keyboard()
+  let self.cli_keyboard = self.cli_keyboard_init()
   let self._break = 0
 endfunction
 
-function! s:smalls.init_keyboard() "{{{1
-  let keyboard = smalls#keyboard#new(self)
+function! s:smalls.cli_keyboard_init() "{{{1
+    let keyboard = smalls#keyboard#cli#new(self)
   call keyboard.bind("\<CR>",
         \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
   call keyboard.bind("\<F2>",
@@ -60,6 +60,7 @@ function! s:smalls.init_keyboard() "{{{1
 endfunction
 
 function! s:smalls.debug(kbd) "{{{1
+
   let g:V = self.hl
 endfunction
 
@@ -123,7 +124,7 @@ function! s:smalls.cursor_restore() "{{{1
 endfunction
 
 function! s:smalls.loop() "{{{1
-  let kbd = self.keyboard
+  let kbd = self.cli_keyboard
   let hl = self.hl
   while 1
     call hl.shade()
@@ -139,7 +140,7 @@ function! s:smalls.loop() "{{{1
       try
         call kbd.input(s:getchar_timeout(g:smalls_jump_keys_auto_show_timeout))
       catch /KEYBOARD_TIMEOUT/
-        call self.do_jump(self.keyboard)
+        call self.do_jump(kbd)
       endtry
     endif
 
@@ -183,13 +184,14 @@ function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.shade()
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
-    if self.mode != 'n' && self.mode != 'o'
-      normal! gv
-    endif
     call self.adjust_col(pos_new)
-    call pos_new.jump()
+    call pos_new.jump(self._is_visual())
   endif
   let self._break = 1
+endfunction
+
+function! s:smalls._is_visual()
+  return (self.mode != 'n' && self.mode != 'o')
 endfunction
 
 function! s:smalls.adjust_col(pos)
@@ -212,12 +214,9 @@ endfunction
 function! s:smalls.do_jump_first(kbd) "{{{1
   let found = self.finder.one(a:kbd.data)
   if !empty(found)
-    if self.mode != 'n' && self.mode != 'o'
-      normal! gv
-    endif
     let pos_new = smalls#pos#new(found)
     call self.adjust_col(pos_new)
-    call pos_new.jump()
+    call pos_new.jump(self._is_visual())
   endif
   let self._break = 1
 endfunction
@@ -242,7 +241,7 @@ function! s:smalls.do_move_next(kbd) "{{{1
     elseif c == ';'
       let pos_new = smalls#pos#new(poslist[index])
       call self.adjust_col(pos_new)
-      call pos_new.jump()
+      call pos_new.jump(self._is_visual())
       break
     endif
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -292,7 +291,7 @@ function! s:smalls.do_excursion(kbd) "{{{1
     elseif c == ';'
       let pos_new = smalls#pos#new(poslist[index])
       call self.adjust_col(pos_new)
-      call pos_new.jump()
+      call pos_new.jump(self._is_visual())
       break
     endif
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')

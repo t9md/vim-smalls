@@ -28,8 +28,7 @@ let s:color = {
       \ 'SmallsCliCursor':  [['NONE',      'NONE',    'grey',  ], [ 'underline',      'NONE',    '#a6e22e']],
       \ }
       " \ 'SmallsOrigPos':    [['underline', 'NONE',    '9',     ], [ 'underline',      'NONE',    '#A6E22E']],
-
-
+      
 function! s:set_options(options) "{{{
   for [varname, value] in items(a:options)
     if !exists(varname)

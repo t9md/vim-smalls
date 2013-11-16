@@ -20,7 +20,10 @@ function! pos.set() "{{{1
   call cursor(self.line, self.col)
 endfunction
 
-function! pos.jump() "{{{1
+function! pos.jump(...) "{{{1
+  if a:0 ? a:1 : 0
+    normal! gv
+  endif
   normal! m`
   call cursor(self.line, self.col)
 endfunction

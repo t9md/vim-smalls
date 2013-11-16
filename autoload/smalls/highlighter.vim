@@ -77,6 +77,10 @@ function! h.region(pos) "{{{1
         \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
         \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
         \ }
+  " let block_pat_table = {
+        " \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
+        " \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
+        " \ }
   
   " 'all' mode possibly move backward, so only adjust forward direction carefully.
   let pat_name = self.dir

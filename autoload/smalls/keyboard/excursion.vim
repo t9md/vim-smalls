@@ -13,7 +13,7 @@ let s:key_table = {
       \        "h": "do_left",
       \        "l": "do_right",
       \        ";": "do_set",
-      \     "<CR>": "do_set",
+      \    "\<CR>": "do_set",
       \ }
 
 let keyboard = {}

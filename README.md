@@ -7,6 +7,19 @@ Without his former work, I don't think I could create smalls from scratch.
 Yet another cursor movement plugin.
 Search and jump with easymotion style.
 
+## Features
+* jump directly with easymotion style.
+* support all, forward, backward direction. but 'all' is always best I believe.
+* skip fold.
+* work for normal, operator, visual mode.
+* highlight selected area in operator and visual mode, it helps you know area to be deleted or yanked.
+* move around candidate with hkjl(excursion-mode)
+* full customizable keybinding in excursion-mode and cli-mode
+* auto-show-up easymotion style jump key at specified timeout.
+* auto-show-up timeout would't be triggerd until it exceed specified type length.
+* color customizable.
+* always ignore case for jump key(easy to type).
+
 # Movie
 ![Example](https://github.com/t9md/t9md/blob/master/img/vim-smalls.gif?raw=true)
 

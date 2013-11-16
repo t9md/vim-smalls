@@ -9,13 +9,12 @@ let h = {} | let s:h = h
 let h.ids = []
 let s:priorities = {
       \ 'SmallsShade':       99,
-      \ 'SmallsVisual':     100,
+      \ 'SmallsRegion':     102,
       \ 'SmallsCandidate':  101,
-      \ 'SmallsCurrent':    102,
-      \ 'SmallsCursor':     103,
-      \ 'SmallsJumpTarget': 104,
+      \ 'SmallsCurrent':    103,
+      \ 'SmallsCursor':     104,
+      \ 'SmallsJumpTarget': 105,
       \ }
-      " \ 'SmallsOrigPos':    101,
 
 function! h.new(dir, env) "{{{1
   let self.env = a:env
@@ -65,6 +64,36 @@ function! h.orig_pos()
   call self.hl("SmallsCursor",    s:intrpl('\v\c' . pos, self.env))
 endfunction
 
+function! h.region(pos) "{{{1
+  call self.clear("SmallsRegion")
+  let e = {
+        \ 'nl': a:pos[0],
+        \ 'nc': a:pos[1],
+        \ 'nc+1': a:pos[1] + 1,
+        \ }
+  call extend(e, self.env, 'error')
+  " let pos = '%{l}l%{c}c'
+  let pat_table = {
+        \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
+        \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
+        \ }
+  
+  " 'all' mode possibly move backward, so only adjust forward direction carefully.
+  let pat_name = self.dir
+  if self.dir     ==# 'all'
+    let org_p = self.env.p
+    if ( org_p.line < a:pos[0] ) ||
+          \ (( org_p.line == a:pos[0] ) && ( org_p.col < a:pos[1] ))
+      let pat_name = 'fwd'
+    else
+      let pat_name = 'bwd'
+    endif
+  endif
+  let pat = pat_table[pat_name]
+  call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
+endfunction
+
+
 function! h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
@@ -92,6 +121,9 @@ function! h.candidate(word, pos) "{{{1
   call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
   call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))
   call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
+  if self.env.mode != 'n'
+    call self.region(a:pos)
+  endif
 endfunction
 
 function! smalls#highlighter#new(dir, env) "{{{1

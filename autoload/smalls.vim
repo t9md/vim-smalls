@@ -26,6 +26,7 @@ function! s:smalls.init(dir, mode) "{{{1
   let self._notfound   = 0
   let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
   let self.env = {
+        \ 'mode': a:mode,
         \ 'w0': w0,
         \ 'w0-1': w0-1,
         \ 'w$': w_,
@@ -48,12 +49,10 @@ function! s:smalls.init_keyboard() "{{{1
         \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
   call keyboard.bind("\<F2>",
         \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
-  call keyboard.bind("\<C-n>",
-        \ { 'func': self.do_move_next, 'args': [keyboard], 'self': self })
   call keyboard.bind("\<Tab>",
         \ { 'func': self.do_move_next, 'args': [keyboard], 'self': self })
-  call keyboard.bind("\<F9>",
-        \ { 'func': self.debug, 'args': [keyboard], 'self': self })
+  " call keyboard.bind("\<F9>",
+        " \ { 'func': self.debug, 'args': [keyboard], 'self': self })
   let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
   call keyboard.bind(jump_trigger,
         \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })

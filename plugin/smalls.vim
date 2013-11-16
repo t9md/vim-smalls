@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_smalls')
-  finish
+  " finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo
@@ -57,7 +57,7 @@ endfunction
 function! s:set_highlight() "{{{1
   call s:clear_highlight(s:color)
   call s:set_color(s:color)
-  highlight link SmallsVisual Visual
+  highlight link SmallsRegion Visual
 endfunction "}}}
 
 call s:set_options(options)

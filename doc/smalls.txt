@@ -170,6 +170,36 @@ FUNCTIONS						   *smalls-functions*
 	Main function for this plugin!
 	{direction} should be 'all', 'forward', 'backward'
 
+
+					       *smalls-keyboard-customization*
+CAUTION~
+Following functions are provided experimentally, it may change and obsoleted.
+Use your own risk.
+see |smalls-example|
+
+*smalls#keyboard#cli#get_table()*
+	return cli mode's key_table.
+*smalls#keyboard#cli#extend_table(table)*
+	{table} is |Dictionary| which is used to merged to default key table.
+
+	Format~
+	{ "KEY": '{action}' }
+	ex) { "\<Esc>": 'do_cancel' }
+	For available action, see |smalls-keyboard| section.
+
+	To unbind action from key, use '__UNMAP__' special action.
+	The key have '__UNMAP__' action is deleted at initalization.
+
+*smalls#keyboard#cli#replace_table(table)*
+	{table} is |Dictionary| is replaced from default key table.
+	Use at your own risk.
+
+*smalls#keyboard#excursion#get_table()*
+*smalls#keyboard#excursion#extend_table(table)*
+*smalls#keyboard#excursion#replace_table(table)*
+	excursion mode version
+
+
 ==============================================================================
 KEYBOARD					             *smalls-keyboard*
 
@@ -177,29 +207,52 @@ Smalls use independent CLI to read user's imput.
 I'll explain this plugin specific keyboard keybinding in this section.
 In future, user can customize or |extend()| you own key with |Dictionary|.
 
-CLI KEYBOARD~
+							  *smalls-cli-keybind*
+CLI MODE KEYBIND~
 cli-keyboard is basic keyboard used to search and trigger jump screen.
 key map is following.
 
-	| Key            | Actin               |
-	| -------------- | ------------------- |
-	| <C-h>          | do_delete           |
-	| <BS>           | do_delete           |
-	| <C-a>          | do_head             |
-	| <C-e>          | do_end              |
-	| <C-f>          | do_char_forward     |
-	| <C-b>          | do_char_backward    |
-	| <C-k>          | do_kill             |
-	| <C-y>          | do_yank             |
-	| <C-c>          | do_cancel           |
-	| <Esc>          | do_cancel           |
-	| <C-r>          | do_special        * |
-	| <F2>           | do_excursion      * |
-	| <Tab>          | do_candidate_next * |
-	| <CR>           | do_jump_first       |
-	| {jump_trigger} | do_jump             |
-
+	| Key            | Action                 |
+	| -------------- | ---------------------- |
+	| <C-c>          | do_cancel              |
+	| <Esc>          | do_cancel              |
+	| <CR>           | do_jump_first          |
+	| <C-h>          | do_delete              |
+	| <BS>           | do_delete              |
+	| <C-a>          | do_head                |
+	| <C-e>          | do_end                 |
+	| <C-f>          | do_char_forward        |
+	| <C-b>          | do_char_backward       |
+	| <C-k>          | do_kill                |
+	| <C-y>          | do_yank                |
+	| <C-r>          | do_special        *    |
+	| <Tab>          | do_excursion_with_next |
+	| <C-n>          | do_excursion_with_next |
+	| <S-Tab>        | do_excursion_with_prev |
+	| <C-p>          | do_excursion_with_prev |
+	| {jump_trigger} | do_jump                |
 	* very experimental action "don't ask what" for a meanwhile ;).
+	
+						    *smalls-excursion-keybind*
+EXCURSION MODE KEYBIND~
+EXCURSION mode enable you to jumb between candidate with 'hjkl'.
+You can jump switch excursion mode from normal CLI mode
+
+        | Key      | Action       |
+        | -------- | ------------ |
+        | <C-c>    | do_cancel    |
+        | <Esc>    | do_back_cli  |
+        | n        | do_next      |
+        | <Tab>    | do_next      |
+        | p        | do_prev      |
+        | <S-Tab>  | do_prev      |
+        | k        | do_up        |
+        | j        | do_down      |
+        | h        | do_left      |
+        | l        | do_right     |
+        | ;        | do_set       |
+        | <CR>     | do_set       |
+                                                
 ==============================================================================
 CONFIGURATION EXAMPLE					      *smalls-example*
 
@@ -219,6 +272,23 @@ If you want use 'visual' or 'operator' or both mode.
 	omap S <Plug>(smalls-backward)
 	xmap s <Plug>(smalls-forward)
 	xmap S <Plug>(smalls-backward)
+<
+------------------------------------------------------------------------------
+(Experimental Feature)
+Advanced keyboard customization
+Read note in |smalls-keyboard-customization|.
+
+Example-1: Add <C-g> and <C-j>
+>
+	let cli_table_custom = {
+	      \ "\<C-g>": 'do_cancel',
+	      \ "\<C-j>": 'do_jump',
+	      \ }
+	call smalls#keyboard#cli#get_table()
+<
+Example-2: Disable default ';' in excursion mode
+>
+        call smalls#keyboard#excursion#extend_table({";": '__UNMAP__'})
 <
 ============================================================================
 BUG								 *smalls-bug*
@@ -245,9 +315,9 @@ TODO								*smalls-todo*
 * [x] support operator , visual mode
  - [x] also highlight selected reagion to easily undestand affected area.
 * [x] abstract keyboard object
- - [ ] customizable keybind with user's |Dictionary|.
+ - [x] customizable keybind with user's |Dictionary|.
 * [x] highlight original cursor pos when shade()ed.
-* jump line with jump target on (screen middle col) or (screen left col)
+* [decline] jump line with jump target on (screen middle col) or (screen left col)
 * [x] skip folded area
 * code cleanup [ 90 %]
 
@@ -263,7 +333,9 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
-2013-10-25:
+2013-11-17: v0.8
+	- add easymotion style jump and a lot of improvement.
+2013-10-25: v0.1
 	- initial release
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

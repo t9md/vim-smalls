@@ -63,6 +63,21 @@ function! h.orig_pos()
   call self.hl("SmallsCursor",    s:intrpl('\v\c' . pos, self.env))
 endfunction
 
+function! h.blink_orig_pos()
+  " used to notify user's mistake and spot cursor.
+  " to avoid user's input mess buffer, we consume keyinput while blinking.
+  let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
+  for i in range(2)
+    call getchar(0)
+    call self.hl("SmallsCursor", pat)
+    redraw!
+    sleep 200m
+    call self.clear()
+    redraw!
+    sleep 100m
+  endfor
+endfunction
+
 function! h.region(pos) "{{{1
   call self.clear("SmallsRegion")
   let e = {

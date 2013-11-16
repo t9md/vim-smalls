@@ -39,34 +39,17 @@ function! s:smalls.init(dir, mode) "{{{1
         \ }
   let self.hl       = smalls#highlighter#new(a:dir, self.env)
   let self.finder   = smalls#finder#new(a:dir, self.env)
-  let self.keyboard_cli = self.keyboard_cli_init()
+  let self.keyboard_cli = smalls#keyboard#cli#new(self)
   let self._break = 0
 endfunction
 
-function! s:smalls.keyboard_cli_init() "{{{1
-  let keyboard = smalls#keyboard#cli#new(self)
-  " call keyboard.bind("\<F2>",
-        " \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
-  " call keyboard.bind("\<Tab>",
-        " \ { 'func': self.do_candidate_next, 'args': [keyboard], 'self': self })
-  " call keyboard.bind("\<F9>",
-        " \ { 'func': self.debug, 'args': [keyboard], 'self': self })
-  " let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-  " call keyboard.bind(jump_trigger,
-        " \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
-  return keyboard
-endfunction
-
 function! s:smalls.debug(kbd) "{{{1
-
-  let g:V = self.hl
+  " let g:V = self.hl
 endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
-    call getchar(0)
-    call self.blink_pos()
-    call getchar(0)
+    call self.hl.blink_orig_pos()
     if self.mode !~ 'n\|o'
       normal! gv
     endif
@@ -219,96 +202,43 @@ function! s:smalls._adjust_col(pos) "{{{1
   endif
 endfunction
 
-function! s:smalls.do_candidate_next(kbd) "{{{1
-  " very exprimental feature and won't document
+function! s:smalls.do_excursion(kbd, ...) "{{{1
+  let first_dir = a:0 ? a:1 : ''
   let word = a:kbd.data
-  if empty(word) | return [] | endif
+  if  empty(word) | return [] | endif
   let poslist  = self.finder.all(word)
-  let max = len(poslist)
-  let index = 0
-  let index = (index + 1) % max
-  call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
-  call self.hl.candidate(word, poslist[index])
-  redraw
-  while 1
-    let c = s:getchar()
-    if c == "\<Esc>"
-      break
-    elseif c ==# "n" | let index = (index +  1) % max
-    elseif c ==# "N" | let index = ((index - 1) + max ) % max
-    elseif c == ';'
-      let pos_new = smalls#pos#new(poslist[index])
-      call self._jump_to_pos(pos_new)
-      break
-    endif
-    call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
-    call self.hl.candidate(word, poslist[index])
-    redraw
-  endwhile
-  let self._break = 1
-endfunction
-
-function! s:smalls.do_excursion(kbd) "{{{1
-  " very exprimental feature and won't document
-  let word = a:kbd.data
-  if empty(word) | return [] | endif
-  let poslist  = self.finder.all(word)
-  let max = len(poslist)
-  let index = 0
-  let [key_l, key_r, key_u, key_d, key_n, key_p ] = self.dir ==# 'bwd'
-        \ ? [ 'l', 'h', 'j', 'k', 'p', 'n' ]
-        \ : [ 'h', 'l', 'k', 'j', 'n', 'p' ]
-  while 1
-    let c = s:getchar()
-    if c == "\<Esc>"
-      break
-    endif
-    if     c == key_n | let index = (index +  1) % max
-    elseif c == key_p | let index = ((index - 1) + max ) % max
-    elseif c == "\<Tab>" | let index = (index +  1) % max
-    elseif c == "\<S-Tab>" | let index = ((index - 1) + max ) % max
-    elseif c =~ 'j\|k'
-      let cl = poslist[index][0]
-      while 1
-        let index = c ==# key_d ? (index + 1) % max : ((index - 1) + max ) % max
-        let nl = poslist[index][0]
-        if cl != nl
-          break
-        endif
-      endwhile
-    elseif c =~ 'h\|l'
-      let [cl, cc] = poslist[index]
-      while 1
-        let index = c ==# key_r ? (index + 1) % max : ((index - 1) + max ) % max
-        let [nl, nc] = poslist[index]
-        if cl == nl
-          break
-        endif
-      endwhile
-    elseif c == ';'
-      let pos_new = smalls#pos#new(poslist[index])
-      call self._jump_to_pos(pos_new)
-      break
-    endif
-    call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
-    call self.hl.candidate(word, poslist[index])
-    redraw
-  endwhile
-  let self._break = 1
-endfunction
-
-function! s:smalls.do_excursion2(kbd) "{{{1
-  " very exprimental feature and won't document
-  call self.keyboard_excursion = smalls#keyboard#excursion#new(self)
-  let kbd = self.keyboard_excursion
+  if len(poslist) ==# 1
+    return
+  endif
+  let kbd = smalls#keyboard#excursion#new(self, word, poslist)
   let hl = self.hl
-  while 1
-    call kbd.input(s:getchar())
-    if self._break
-      break
-    endif
-  endwhile
 
+  if self.dir == 'bwd'
+    " bwd candidate is gathered backward direction
+    " to fit kbd's next(), prev() orientation, reverse() and set index to
+    " original first candidate(which is last index after reversed
+    call reverse(kbd.poslist)
+    let kbd.index = len(kbd.poslist) - 1
+  endif
+  if !empty(first_dir)
+    call kbd['do_' . first_dir]()
+    call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+    call self.hl.candidate(word, kbd.pos())
+  endif
+
+  try
+    while 1
+      call kbd.read_input()
+      if self._break
+        break
+      endif
+      call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
+      call self.hl.candidate(word, kbd.pos())
+      redraw
+    endwhile
+  catch 'BACK_CLI'
+    let self._break = 0
+  endtry
 endfunction
 
 function! s:smalls.get_jump_target(word) "{{{1
@@ -316,28 +246,6 @@ function! s:smalls.get_jump_target(word) "{{{1
   let poslist = self.finder.all(a:word)
   let pos_new = smalls#jump#new(self.dir, self.env, self.hl).get_pos(poslist)
   return pos_new
-endfunction
-
-function! s:smalls.blink_pos() "{{{1
-  let s:blink_stay  = '200m'
-  let s:blink_sleep = '200m'
-  let [line, col ] = getpos('.')[1:2]
-  let hl_pos   = '\%' . line . 'l\%'. col .'c'
-  call self.blink("SmallsCursor", 2, hl_pos, 104)
-endfunction
-
-function! s:smalls.blink(hl, count, pattern, priority) "{{{1
- for i in range(1, a:count)
-   let id = matchadd(a:hl, a:pattern, a:priority)
-   redraw!
-   execute "sleep " . s:blink_stay
-   call matchdelete(id)
-   redraw!
-   if i >= a:count
-     break
-   endif
-   execute "sleep " . s:blink_sleep
- endfor
 endfunction
 "}}}
 

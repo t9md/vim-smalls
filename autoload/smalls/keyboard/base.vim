@@ -4,6 +4,9 @@ let s:getchar_timeout = smalls#util#import("getchar_timeout")
 let keyboard = {}
 let s:keyboard = keyboard
 
+" Usage of bind()
+" call keyboard.bind(jump_trigger,
+" \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
 function! keyboard.bind(key, action) "{{{1
   let self._table[a:key] = a:action
 endfunction
@@ -25,16 +28,13 @@ function! keyboard.init(owner, table, prompt_str) "{{{1
   let self._yanked = ''
   let self.data    = ''
   let self.cursor  = 0
-
-  " let self.interrupt     = 0
-  " let self.interrupt_msg = ""
   let self.last_input = ''
   return self
 endfunction
 
 function! keyboard.input(c) "{{{1
   let self.last_input = a:c
-  if !has_key(self._table, a:c) 
+  if !has_key(self._table, a:c)
     call self._set(a:c)
   else
     let action = self._table[a:c]
@@ -71,6 +71,7 @@ endfunction
 
 function! s:keyboard.show_prompt() "{{{1
   " call self.echohl(self.cursor, "Number")
+  " call self.echohl("[S]", 'Statement')
   call self.echohl(self._prompt_str, 'Identifier')
   call self.echohl(self._before(),  'SmallsCli')
   let after = self._after()
@@ -81,6 +82,7 @@ function! s:keyboard.show_prompt() "{{{1
 endfunction
 
 function! smalls#keyboard#base#new(owner, table, prompt_str) "{{{1
+  call filter(a:table, 'v:val != "__UNMAP__"')
   let kbd = deepcopy(s:keyboard)
   return kbd.init(a:owner, a:table, a:prompt_str)
 endfunction "}}}

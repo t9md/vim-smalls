@@ -1,24 +1,27 @@
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
 
-let s:cli_table = {
-      \ "\<C-h>": "do_delete",
-      \ "\<BS>":  "do_delete",
-      \ "\<C-a>": "do_head",
-      \ "\<C-e>": "do_end",
-      \ "\<C-f>": "do_char_forward",
-      \ "\<C-r>": "do_special",
-      \ "\<C-k>": "do_kill",
-      \ "\<C-y>": "do_yank",
-      \ "\<C-c>": "do_cancel",
-      \ "\<C-b>": "do_char_backward",
-      \ "\<Esc>": "do_cancel",
-      \ "\<CR>":  "do_jump_first",
-      \ "\<F2>":  "do_excursion",
-      \ "\<Tab>":  "do_candidate_next",
+let s:key_table = {
+      \ "\<C-c>":   "do_cancel",
+      \ "\<Esc>":   "do_cancel",
+      \ "\<CR>":    "do_jump_first",
+      \ "\<C-h>":   "do_delete",
+      \ "\<BS>":    "do_delete",
+      \ "\<C-a>":   "do_head",
+      \ "\<C-e>":   "do_end",
+      \ "\<C-f>":   "do_char_forward",
+      \ "\<C-b>":   "do_char_backward",
+      \ "\<C-k>":   "do_kill",
+      \ "\<C-y>":   "do_yank",
+      \ "\<C-r>":   "do_special",
+      \ "\<Tab>":   "do_excursion_with_next",
+      \ "\<C-n>":   "do_excursion_with_next",
+      \ "\<S-Tab>": "do_excursion_with_prev",
+      \ "\<C-p>":   "do_excursion_with_prev",
       \ }
+
 let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-let s:cli_table[jump_trigger] = 'do_jump'
+let s:key_table[jump_trigger] = 'do_jump'
 
 let keyboard = {}
 let s:keyboard = keyboard
@@ -83,28 +86,30 @@ function! keyboard.do_excursion() "{{{1
   call call(self.owner.do_excursion, [self], self.owner)
 endfunction
 
+function! keyboard.do_excursion_with_next() "{{{1
+  call call(self.owner.do_excursion, [self, 'next'], self.owner)
+endfunction
+
+function! keyboard.do_excursion_with_prev() "{{{1
+  call call(self.owner.do_excursion, [self, 'prev'], self.owner)
+endfunction
+
 function! keyboard.do_candidate_next() "{{{1
   call call(self.owner.do_candidate_next, [self], self.owner)
 endfunction
 
 
-function! smalls#keyboard#cli#new(owner) "{{{1
-  let keyboard = smalls#keyboard#base#new(a:owner, s:cli_table, "> ")
-  return extend(keyboard, s:keyboard, 'force')
+function! smalls#keyboard#cli#get_table() "{{{1
+  return s:key_table
 endfunction "}}}
-
-finish
-function! Main() "{{{1
-  call s:keyboard.init({})
-  call s:keyboard.bind("\<F2>", { 'func': s:h.hoge, 'args': ["a"] , 'self': s:h })
-  try
-    let cnt = 1
-    while (cnt < 10)
-      call s:keyboard.read()
-      let cnt += 1
-    endwhile
-  catch
-    echo v:exception
-  endtry
+function! smalls#keyboard#cli#extend_table(table) "{{{1
+  call extend(s:key_table, a:table, 'force')
+endfunction "}}}
+function! smalls#keyboard#cli#replace_table(table) "{{{1
+  let s:key_table = a:new_table
+endfunction "}}}
+function! smalls#keyboard#cli#new(owner) "{{{1
+  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, "> ")
+  return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
 " vim: foldmethod=marker

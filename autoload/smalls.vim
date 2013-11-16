@@ -70,8 +70,6 @@ function! s:smalls.set_opts() "{{{1
           \ '&readonly':   0,
           \ '&spell':      0,
           \ }
-          " \ '&virtualedit': 'all',
-          " \ '&updatetime': g,
   let curbuf = bufname('')
   for [var, val] in items(opts)
     let self._opts[var] = getbufvar(curbuf, var)
@@ -145,7 +143,7 @@ function! s:smalls.start(dir, mode)  "{{{1
     call self.set_opts()
     call self.cursor_hide()
     call self.loop()
- catch
+  catch
    if v:exception ==# "NotFound"
       let self._notfound = 1
     endif
@@ -179,11 +177,6 @@ function! s:smalls.do_jump_first(kbd) "{{{1
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
-  " let jump_to_end = 1
-  " if jump_to_end
-    " a:pos.col + keyboard_cli.data_len()
-  " endif
-  " call self._adjust_col(a:pos)
   call a:pos.jump(self._is_visual())
 endfunction
 
@@ -216,7 +209,6 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
     return
   endif
   let kbd = smalls#keyboard#excursion#new(self, word, poslist)
-  let hl = self.hl
 
   if self.dir == 'bwd'
     " bwd candidate is gathered backward direction

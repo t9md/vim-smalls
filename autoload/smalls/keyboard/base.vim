@@ -65,7 +65,6 @@ function! keyboard.echohl(msg, color) "{{{1
 endfunction
 
 function! s:keyboard.show_prompt() "{{{1
-  redraw
   " call self.echohl(self.cursor, "Number")
   call self.echohl(self._prompt_str, 'Identifier')
   call self.echohl(self._before(),  'SmallsCli')
@@ -73,6 +72,7 @@ function! s:keyboard.show_prompt() "{{{1
   if empty(after) | let after = ' ' | endif
   call self.echohl(after[0],  'SmallsCliCursor')
   call self.echohl(after[1:],  'SmallsCli')
+  redraw
 endfunction
 
 function! smalls#keyboard#base#new(owner, table, prompt_str) "{{{1

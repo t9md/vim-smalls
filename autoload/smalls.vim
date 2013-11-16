@@ -45,17 +45,15 @@ endfunction
 
 function! s:smalls.cli_keyboard_init() "{{{1
   let keyboard = smalls#keyboard#cli#new(self)
-  " call keyboard.bind("\<CR>",
-        " \ { 'func': self.do_jump_first, 'args': [keyboard], 'self': self })
-  call keyboard.bind("\<F2>",
-        \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
-  call keyboard.bind("\<Tab>",
-        \ { 'func': self.do_move_next, 'args': [keyboard], 'self': self })
+  " call keyboard.bind("\<F2>",
+        " \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
+  " call keyboard.bind("\<Tab>",
+        " \ { 'func': self.do_candidate_next, 'args': [keyboard], 'self': self })
   " call keyboard.bind("\<F9>",
         " \ { 'func': self.debug, 'args': [keyboard], 'self': self })
-  let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-  call keyboard.bind(jump_trigger,
-        \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
+  " let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+  " call keyboard.bind(jump_trigger,
+        " \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
   return keyboard
 endfunction
 
@@ -218,10 +216,10 @@ function! s:smalls.do_jump_first(kbd) "{{{1
     call self.adjust_col(pos_new)
     call pos_new.jump(self._is_visual())
   endif
-  " let self._break = 1
+  let self._break = 1
 endfunction
 
-function! s:smalls.do_move_next(kbd) "{{{1
+function! s:smalls.do_candidate_next(kbd) "{{{1
   " very exprimental feature and won't document
   let word = a:kbd.data
   if empty(word) | return [] | endif

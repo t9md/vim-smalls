@@ -13,7 +13,11 @@ let s:cli_table = {
       \ "\<C-b>": "do_char_backward",
       \ "\<Esc>": "do_cancel",
       \ "\<CR>":  "do_jump_first",
+      \ "\<F2>":  "do_excursion",
+      \ "\<Tab>":  "do_candidate_next",
       \ }
+let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+let s:cli_table[jump_trigger] = 'do_jump'
 
 let keyboard = {}
 let s:keyboard = keyboard
@@ -49,13 +53,13 @@ function! keyboard.do_end() "{{{1
 endfunction
 
 function! keyboard.do_special() "{{{1
-  redraw
   call self.echohl("[S]", 'Statement')
   call self.show_prompt()
   let c = s:getchar()
   if c == "\<C-w>"
     call self.do_set_cword()
   endif
+  redraw
 endfunction
 
 function! keyboard.do_set_cword() "{{{1
@@ -66,12 +70,22 @@ function! keyboard.do_cancel() "{{{1
   throw 'Canceled'
 endfunction
 
-function! keyboard.do_jump_first() "{{{1
-  " call s:plog("AAA")
-  call call(self.owner.do_jump_first, [self], self.owner)
-  let self.owner._break = 1
-  " let g:V= self.owner
+function! keyboard.do_jump() "{{{1
+  call call(self.owner.do_jump, [self], self.owner)
 endfunction
+
+function! keyboard.do_jump_first() "{{{1
+  call call(self.owner.do_jump_first, [self], self.owner)
+endfunction
+
+function! keyboard.do_excursion() "{{{1
+  call call(self.owner.do_excursion, [self], self.owner)
+endfunction
+
+function! keyboard.do_candidate_next() "{{{1
+  call call(self.owner.do_candidate_next, [self], self.owner)
+endfunction
+
 
 function! smalls#keyboard#cli#new(owner) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, s:cli_table, "> ")

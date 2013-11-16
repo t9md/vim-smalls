@@ -9,11 +9,13 @@ let h = {} | let s:h = h
 let h.ids = []
 let s:priorities = {
       \ 'SmallsShade':       99,
-      \ 'SmallsCandidate':  100,
-      \ 'SmallsCurrent':    101,
-      \ 'SmallsCursor':     102,
-      \ 'SmallsJumpTarget': 103,
+      \ 'SmallsVisual':     100,
+      \ 'SmallsCandidate':  101,
+      \ 'SmallsCurrent':    102,
+      \ 'SmallsCursor':     103,
+      \ 'SmallsJumpTarget': 104,
       \ }
+      " \ 'SmallsOrigPos':    101,
 
 function! h.new(dir, env) "{{{1
   let self.env = a:env
@@ -30,10 +32,9 @@ function! h.dump() "{{{1
 endfunction
 
 function! h.hl(color, pattern) "{{{1
-  " call s:plog(a:color)
   call add(self.ids[a:color],
         \ matchadd(a:color, a:pattern, s:priorities[a:color]))
-  " call s:plog("FIN")
+  " call s:plog(self.ids)
 endfunction
 
 function! h.clear(...) "{{{1
@@ -59,6 +60,11 @@ function! h.shade() "{{{1
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
 
+function! h.orig_pos()
+  let pos = '%{l}l%{c}c'
+  call self.hl("SmallsCursor",    s:intrpl('\v\c' . pos, self.env))
+endfunction
+
 function! h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
@@ -82,6 +88,7 @@ function! h.candidate(word, pos) "{{{1
     let candidate   = '{k}'
   end
   call extend(e, self.env, 'error')
+
   call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
   call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))
   call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))

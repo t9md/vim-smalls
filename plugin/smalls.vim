@@ -27,6 +27,7 @@ let s:color = {
       \ 'SmallsCli':        [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#a6e22e']],
       \ 'SmallsCliCursor':  [['NONE',      'NONE',    'grey',  ], [ 'underline',      'NONE',    '#a6e22e']],
       \ }
+      " \ 'SmallsOrigPos':    [['underline', 'NONE',    '9',     ], [ 'underline',      'NONE',    '#A6E22E']],
 
 
 function! s:set_options(options) "{{{
@@ -56,6 +57,7 @@ endfunction
 function! s:set_highlight() "{{{1
   call s:clear_highlight(s:color)
   call s:set_color(s:color)
+  highlight link SmallsVisual Visual
 endfunction "}}}
 
 call s:set_options(options)
@@ -84,10 +86,11 @@ onoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'o
 onoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'o')<CR>
 onoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", 'o')<CR>
 
-nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug()<CR>
+nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
+
 
 " Command:
-command! -nargs=1 -complete=customlist,s:dir Smalls call smalls#start(<q-args>)
+command! -nargs=1 -complete=customlist,s:dir Smalls call smalls#start(<q-args>, 'n')
 function! s:dir(a,l,p)
   return ['all', 'forward', 'backward' ]
 endfunction

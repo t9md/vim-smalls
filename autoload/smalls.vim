@@ -21,10 +21,8 @@ endfunction
 let s:smalls = {}
 function! s:smalls.init(dir, mode) "{{{1
   let self.mode = a:mode
-  let self.visual_start = smalls#pos#new(getpos("'<")[1:2])
   let self.lastmsg = ''
   let self.dir = a:dir
-  let self.prompt      = "> "
   let self._notfound   = 0
   let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
   let self.env = {
@@ -52,10 +50,18 @@ function! s:smalls.init_keyboard() "{{{1
         \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
   call keyboard.bind("\<C-n>",
         \ { 'func': self.do_move_next, 'args': [keyboard], 'self': self })
+  call keyboard.bind("\<Tab>",
+        \ { 'func': self.do_move_next, 'args': [keyboard], 'self': self })
+  call keyboard.bind("\<F9>",
+        \ { 'func': self.debug, 'args': [keyboard], 'self': self })
   let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
   call keyboard.bind(jump_trigger,
         \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
   return keyboard
+endfunction
+
+function! s:smalls.debug(kbd) "{{{1
+  let g:V = self.hl
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -122,6 +128,9 @@ function! s:smalls.loop() "{{{1
   let hl = self.hl
   while 1
     call hl.shade()
+    if kbd.data_len() ==# 0
+      call hl.orig_pos()
+    endif
     call kbd.show_prompt()
 
     if ! g:smalls_jump_keys_auto_show ||
@@ -329,6 +338,7 @@ function! smalls#start(dir, mode) "{{{1
   call s:smalls.start(a:dir, a:mode)
 endfunction "}}}
 function! smalls#debug() "{{{
-  echo PP(s:smalls)
+  let g:V = s:smalls.hl
+  " echo PP(s:smalls)
 endfunction
 " vim: foldmethod=marker

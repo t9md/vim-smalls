@@ -30,12 +30,12 @@ function! f.all(word, ...) "{{{1
       let word = '\V' . escape(a:word, '\')
       let pos = searchpos(word, opt, stopline)
       if pos == [0, 0]
-        if self.dir ==# 'all'
-          if firsttime
-            call cursor(self.env['w0'], 1)
-            let firsttime = !firsttime
-            continue
-          endif
+        if self.dir ==# 'all' && firsttime
+          " retry from w0
+          " call s:plog('first fail')
+          call cursor(self.env['w0'], 1)
+          let firsttime = !firsttime
+          continue
         endif
         break
       endif
@@ -44,12 +44,19 @@ function! f.all(word, ...) "{{{1
       let linum = function(fname)(pos[0])
       if linum != -1
         if linum ==# self.env['w$'] || linum ==# self.env['w0']
+          if self.dir ==# 'all' && firsttime
+            " retry from w0
+            call cursor(self.env['w0'], 1)
+            let firsttime = !firsttime
+            continue
+          endif
           " avoid infinit loop
           break
         endif
         call cursor(eval('linum' . ope . '1') , 1)
         continue
       endif
+
       if one
         return pos
       endif

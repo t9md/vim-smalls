@@ -31,8 +31,6 @@ function! f.all(word, ...) "{{{1
       let pos = searchpos(word, opt, stopline)
       if pos == [0, 0]
         if self.dir ==# 'all' && firsttime
-          " retry from w0
-          " call s:plog('first fail')
           call cursor(self.env['w0'], 1)
           let firsttime = !firsttime
           continue

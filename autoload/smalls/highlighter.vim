@@ -33,7 +33,6 @@ endfunction
 function! h.hl(color, pattern) "{{{1
   call add(self.ids[a:color],
         \ matchadd(a:color, a:pattern, s:priorities[a:color]))
-  " call s:plog(self.ids)
 endfunction
 
 function! h.clear(...) "{{{1

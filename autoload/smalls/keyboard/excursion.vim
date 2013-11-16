@@ -1,3 +1,40 @@
+let s:getchar = smalls#util#import("getchar")
+let s:plog    = smalls#util#import("plog")
+
+let s:excursion_table = {
+      \ "\<C-c>": "do_cancel",
+      \ "\<Esc>": "do_cancel",
+      \ }
+
+let keyboard = {}
+let s:keyboard = keyboard
+
+function! s:keyboard.do_cancel()
+  throw 'Canceled'
+endfunction
+
+function! s:keyboard.do_down()
+  throw 'Canceled'
+endfunction
+function! s:keyboard.do_up()
+  throw 'Canceled'
+endfunction
+function! s:keyboard.do_right()
+  throw 'Canceled'
+endfunction
+function! s:keyboard.do_left()
+  throw 'Canceled'
+endfunction
+function! s:keyboard.do_next()
+  throw 'Canceled'
+endfunction
+function! s:keyboard.do_prev()
+  throw 'Canceled'
+endfunction
+function! s:keyboard.do_jump()
+  throw 'Canceled'
+endfunction
+
 function! s:smalls.do_excursion(kbd) "{{{1
   " very exprimental feature and won't document
   let word = a:kbd.data
@@ -10,9 +47,6 @@ function! s:smalls.do_excursion(kbd) "{{{1
         \ : [ 'h', 'l', 'k', 'j', 'n', 'p' ]
   while 1
     let c = s:getchar()
-    if c == "\<Esc>"
-      break
-    endif
     if     c == key_n | let index = (index +  1) % max
     elseif c == key_p | let index = ((index - 1) + max ) % max
     elseif c == "\<Tab>" | let index = (index +  1) % max
@@ -47,3 +81,8 @@ function! s:smalls.do_excursion(kbd) "{{{1
   endwhile
   let self._break = 1
 endfunction
+
+function! smalls#keyboard#excursion#new(owner) "{{{1
+  let keyboard = smalls#keyboard#base#new(a:owner, s:cli_table, "[E]> ")
+  return extend(keyboard, s:keyboard, 'force')
+endfunction "}}}

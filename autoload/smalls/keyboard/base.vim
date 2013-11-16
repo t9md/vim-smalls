@@ -1,4 +1,5 @@
 let s:getchar = smalls#util#import("getchar")
+let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 let keyboard = {}
 let s:keyboard = keyboard
@@ -7,10 +8,14 @@ function! keyboard.bind(key, action) "{{{1
   let self._table[a:key] = a:action
 endfunction
 
-
-function! keyboard.read_timeout() "{{{1
+function! keyboard.read_input(...) "{{{1
   call self.show_prompt()
-  call self.input(s:getchar())
+  " optional arg is timeout, empty or -1 mean 'no timeout'.
+  if (a:0 && a:1 != -1)
+    call self.input(s:getchar_timeout(a:1))
+  else
+    call self.input(s:getchar())
+  end
 endfunction
 
 function! keyboard.init(owner, table, prompt_str) "{{{1
@@ -80,18 +85,4 @@ function! smalls#keyboard#base#new(owner, table, prompt_str) "{{{1
   return kbd.init(a:owner, a:table, a:prompt_str)
 endfunction "}}}
 
-finish
-function! Main() "{{{1
-  call s:keyboard.init({})
-  call s:keyboard.bind("\<F2>", { 'func': s:h.hoge, 'args': ["a"] , 'self': s:h })
-  try
-    let cnt = 1
-    while (cnt < 10)
-      call s:keyboard.read()
-      let cnt += 1
-    endwhile
-  catch
-    echo v:exception
-  endtry
-endfunction "}}}
 " vim: foldmethod=marker

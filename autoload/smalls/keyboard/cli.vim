@@ -1,5 +1,6 @@
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
+
 let s:cli_table = {
       \ "\<C-h>": "do_delete",
       \ "\<BS>":  "do_delete",
@@ -90,5 +91,20 @@ endfunction
 function! smalls#keyboard#cli#new(owner) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, s:cli_table, "> ")
   return extend(keyboard, s:keyboard, 'force')
+endfunction "}}}
+
+finish
+function! Main() "{{{1
+  call s:keyboard.init({})
+  call s:keyboard.bind("\<F2>", { 'func': s:h.hoge, 'args': ["a"] , 'self': s:h })
+  try
+    let cnt = 1
+    while (cnt < 10)
+      call s:keyboard.read()
+      let cnt += 1
+    endwhile
+  catch
+    echo v:exception
+  endtry
 endfunction "}}}
 " vim: foldmethod=marker

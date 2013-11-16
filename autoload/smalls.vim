@@ -39,11 +39,11 @@ function! s:smalls.init(dir, mode) "{{{1
         \ }
   let self.hl       = smalls#highlighter#new(a:dir, self.env)
   let self.finder   = smalls#finder#new(a:dir, self.env)
-  let self.cli_keyboard = self.cli_keyboard_init()
+  let self.keyboard_cli = self.keyboard_cli_init()
   let self._break = 0
 endfunction
 
-function! s:smalls.cli_keyboard_init() "{{{1
+function! s:smalls.keyboard_cli_init() "{{{1
   let keyboard = smalls#keyboard#cli#new(self)
   " call keyboard.bind("\<F2>",
         " \ { 'func': self.do_excursion, 'args': [keyboard], 'self': self })
@@ -122,25 +122,23 @@ function! s:smalls.cursor_restore() "{{{1
 endfunction
 
 function! s:smalls.loop() "{{{1
-  let kbd = self.cli_keyboard
+  let kbd = self.keyboard_cli
   let hl = self.hl
   while 1
     call hl.shade()
     if kbd.data_len() ==# 0
       call hl.orig_pos()
     endif
-    call kbd.show_prompt()
 
-    if ! g:smalls_jump_keys_auto_show ||
-          \ ( kbd.data_len() < g:smalls_jump_keys_auto_show_min_input_length )
-      call kbd.input(s:getchar())
-    else
-      try
-        call kbd.input(s:getchar_timeout(g:smalls_jump_keys_auto_show_timeout))
-      catch /KEYBOARD_TIMEOUT/
-        call self.do_jump(kbd)
-      endtry
-    endif
+    let timeout = 
+          \ ( g:smalls_jump_keys_auto_show &&
+          \ ( kbd.data_len() >= g:smalls_jump_keys_auto_show_min_input_length ))
+          \ ? g:smalls_jump_keys_auto_show_timeout : -1
+    try
+      call kbd.read_input(timeout)
+    catch /KEYBOARD_TIMEOUT/
+      call self.do_jump(kbd)
+    endtry
 
     if self._break
       break
@@ -182,17 +180,30 @@ function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.shade()
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
-    call self.adjust_col(pos_new)
-    call pos_new.jump(self._is_visual())
+    call self._jump_to_pos(pos_new)
   endif
   let self._break = 1
 endfunction
 
-function! s:smalls._is_visual()
+function! s:smalls.do_jump_first(kbd) "{{{1
+  let found = self.finder.one(a:kbd.data)
+  if !empty(found)
+    let pos_new = smalls#pos#new(found)
+    call self._jump_to_pos(pos_new)
+  endif
+  let self._break = 1
+endfunction
+
+function! s:smalls._jump_to_pos(pos) "{{{1
+  call self._adjust_col(a:pos)
+  call a:pos.jump(self._is_visual())
+endfunction
+
+function! s:smalls._is_visual() "{{{1
   return (self.mode != 'n' && self.mode != 'o')
 endfunction
 
-function! s:smalls.adjust_col(pos)
+function! s:smalls._adjust_col(pos) "{{{1
   if self.mode != 'o'
     return
   endif
@@ -200,23 +211,12 @@ function! s:smalls.adjust_col(pos)
     let a:pos.col += 1
     return
   endif
-
   " 'all' mode possibly move backward, so only adjust forward direction carefully.
   let org_p = self.env.p
   if ( org_p.line < a:pos.line ) ||
         \ (( org_p.line == a:pos.line ) && ( org_p.col < a:pos.col ))
     let a:pos.col += 1
   endif
-endfunction
-
-function! s:smalls.do_jump_first(kbd) "{{{1
-  let found = self.finder.one(a:kbd.data)
-  if !empty(found)
-    let pos_new = smalls#pos#new(found)
-    call self.adjust_col(pos_new)
-    call pos_new.jump(self._is_visual())
-  endif
-  let self._break = 1
 endfunction
 
 function! s:smalls.do_candidate_next(kbd) "{{{1
@@ -238,8 +238,7 @@ function! s:smalls.do_candidate_next(kbd) "{{{1
     elseif c ==# "N" | let index = ((index - 1) + max ) % max
     elseif c == ';'
       let pos_new = smalls#pos#new(poslist[index])
-      call self.adjust_col(pos_new)
-      call pos_new.jump(self._is_visual())
+      call self._jump_to_pos(pos_new)
       break
     endif
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -288,8 +287,7 @@ function! s:smalls.do_excursion(kbd) "{{{1
       endwhile
     elseif c == ';'
       let pos_new = smalls#pos#new(poslist[index])
-      call self.adjust_col(pos_new)
-      call pos_new.jump(self._is_visual())
+      call self._jump_to_pos(pos_new)
       break
     endif
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -297,6 +295,20 @@ function! s:smalls.do_excursion(kbd) "{{{1
     redraw
   endwhile
   let self._break = 1
+endfunction
+
+function! s:smalls.do_excursion2(kbd) "{{{1
+  " very exprimental feature and won't document
+  call self.keyboard_excursion = smalls#keyboard#excursion#new(self)
+  let kbd = self.keyboard_excursion
+  let hl = self.hl
+  while 1
+    call kbd.input(s:getchar())
+    if self._break
+      break
+    endif
+  endwhile
+
 endfunction
 
 function! s:smalls.get_jump_target(word) "{{{1

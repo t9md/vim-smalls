@@ -1,6 +1,6 @@
 *smalls.txt* spot your cursor with simple search
 
-Version: 0.5
+Version: 0.8
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-smalls
 License: Creative Commons Attribution-ShareAlike 3.0 Unported
@@ -153,14 +153,14 @@ By default this feature is disabled.
 	Example-1 >
 	" After user's input reach 3 chars, with 0.5sec timeout.
 	let g:smalls_jump_keys_auto_show = 1
-	let g:smalls_jump_keys_auto_show_timeout = 0.0
-	let g:smalls_jump_keys_auto_show_min_input_length = 2
+	let g:smalls_jump_keys_auto_show_min_input_length = 3
+	let g:smalls_jump_keys_auto_show_timeout = 0.5
 <
 	Example-2 >
 	" always auto-show-jump-keys after user input 2 chars.
 	let g:smalls_jump_keys_auto_show = 1
-	let g:smalls_jump_keys_auto_show_timeout = 0.0
 	let g:smalls_jump_keys_auto_show_min_input_length = 2
+	let g:smalls_jump_keys_auto_show_timeout = 0.0
 <
 
 ==============================================================================
@@ -242,9 +242,14 @@ TODO								*smalls-todo*
  - [x] harf-screen-below sj or s.
  - [decline] right-col s-h
  - [decline] left-col  s-l
+* [x] support operator , visual mode
+ - [x] also highlight selected reagion to easily undestand affected area.
+* [x] abstract keyboard object
+ - [ ] customizable keybind with user's |Dictionary|.
+* [x] highlight original cursor pos when shade()ed.
 * jump line with jump target on (screen middle col) or (screen left col)
 * [x] skip folded area
-* code cleanup [ 75 %]
+* code cleanup [ 90 %]
 
 ============================================================================
 SPECIAL NOTES							*smalls-note*

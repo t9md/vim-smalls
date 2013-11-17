@@ -70,29 +70,30 @@ augroup Smalls
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", 'n')<CR>
-nnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'n')<CR>
-nnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'n')<CR>
-nnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", 'n')<CR>
+" nnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", 'n')<CR>
+" nnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'n')<CR>
+" nnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'n')<CR>
+nnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start('n')<CR>
 
-xnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", visualmode())<CR>
-xnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", visualmode())<CR>
-xnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", visualmode())<CR>
-xnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", visualmode())<CR>
+" xnoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", visualmode())<CR>
+" xnoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", visualmode())<CR>
+" xnoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", visualmode())<CR>
+xnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start(visualmode())<CR>
 
-onoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", 'o')<CR>
-onoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'o')<CR>
-onoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'o')<CR>
-onoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start("all", 'o')<CR>
+" onoremap <silent> <Plug>(smalls-forward)  :<C-u>call smalls#start("forward", 'o')<CR>
+" onoremap <silent> <Plug>(smalls-backward) :<C-u>call smalls#start("backward", 'o')<CR>
+" onoremap <silent> <Plug>(smalls-all)      :<C-u>call smalls#start("all", 'o')<CR>
+onoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start('o')<CR>
 
 nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
 
 
 " Command:
-command! -nargs=1 -complete=customlist,s:dir Smalls call smalls#start(<q-args>, 'n')
-function! s:dir(a,l,p)
-  return ['all', 'forward', 'backward' ]
-endfunction
+" command! -nargs=1 -complete=customlist,s:dir Smalls call smalls#start(<q-args>, 'n')
+command! Smalls call smalls#start('n')
+" function! s:dir(a,l,p)
+  " return ['all', 'forward', 'backward' ]
+" endfunction
 
 " Finish:
 let &cpo = s:old_cpo

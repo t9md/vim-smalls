@@ -19,10 +19,9 @@ endfunction
 
 " Main:
 let s:smalls = {}
-function! s:smalls.init(dir, mode) "{{{1
+function! s:smalls.init(mode) "{{{1
   let self.mode = a:mode
   let self.lastmsg = ''
-  let self.dir = a:dir
   let self._notfound   = 0
   let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
   let self.env = {
@@ -37,8 +36,8 @@ function! s:smalls.init(dir, mode) "{{{1
         \ 'c-1': c-1,
         \ 'c+1': c+1,
         \ }
-  let self.hl       = smalls#highlighter#new(a:dir, self.env)
-  let self.finder   = smalls#finder#new(a:dir, self.env)
+  let self.hl       = smalls#highlighter#new(self.env)
+  let self.finder   = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
   let self._break = 0
 endfunction
@@ -136,10 +135,9 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(dir, mode)  "{{{1
-  let dir = { 'forward': 'fwd', 'backward': 'bwd', 'all': 'all' }[a:dir]
+function! s:smalls.start(mode)  "{{{1
   try
-    call self.init(dir, a:mode)
+    call self.init(a:mode)
     call self.set_opts()
     call self.cursor_hide()
     call self.loop()
@@ -188,11 +186,7 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self.mode != 'o'
     return
   endif
-  if self.dir == 'fwd'
-    let a:pos.col += 1
-    return
-  endif
-  " 'all' mode possibly move backward, so only adjust forward direction carefully.
+  " possibly move backward, so only adjust forward direction carefully.
   let org_p = self.env.p
   if ( org_p.line < a:pos.line ) ||
         \ (( org_p.line == a:pos.line ) && ( org_p.col < a:pos.col ))
@@ -210,13 +204,6 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   endif
   let kbd = smalls#keyboard#excursion#new(self, word, poslist)
 
-  if self.dir == 'bwd'
-    " bwd candidate is gathered backward direction
-    " to fit kbd's next(), prev() orientation, reverse() and set index to
-    " original first candidate(which is last index after reversed
-    call reverse(kbd.poslist)
-    let kbd.index = len(kbd.poslist) - 1
-  endif
   if !empty(first_dir)
     call kbd['do_' . first_dir]()
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -241,14 +228,14 @@ endfunction
 function! s:smalls.get_jump_target(word) "{{{1
   if empty(a:word) | return [] | endif
   let poslist = self.finder.all(a:word)
-  let pos_new = smalls#jump#new(self.dir, self.env, self.hl).get_pos(poslist)
+  let pos_new = smalls#jump#new(self.env, self.hl).get_pos(poslist)
   return pos_new
 endfunction
 "}}}
 
 " PublicInterface:
-function! smalls#start(dir, mode) "{{{1
-  call s:smalls.start(a:dir, a:mode)
+function! smalls#start(mode) "{{{1
+  call s:smalls.start(a:mode)
 endfunction "}}}
 function! smalls#debug() "{{{
   let g:V = s:smalls.hl

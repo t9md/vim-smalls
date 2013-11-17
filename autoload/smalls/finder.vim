@@ -1,9 +1,8 @@
 let s:plog = smalls#util#import("plog")
 
 let f = {} | let s:f = f
-function! f.new(dir, env) "{{{1
+function! f.new(env) "{{{1
   let self.env = a:env
-  let self.dir = a:dir
   return self
 endfunction
 
@@ -17,20 +16,14 @@ function! f.all(word, ...) "{{{1
   if empty(a:word)
     return targets
   endif
-  let [opt, stopline, fname, ope] =
-        \ self.dir ==# 'bwd' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
-        \ self.dir ==# 'fwd' ? [ '' , self.env['w$'], 'foldclosedend', '+'] : 
-        \ self.dir ==# 'all' ? [ 'c', self.env['w$'], 'foldclosedend', '+'] : throw
   try
-    if self.dir ==# 'all'
-      let firsttime = 1
-      call cursor(0, col('.') + 1)
-    endif
+    let firsttime = 1
+    call cursor(0, col('.') + 1)
     while 1
       let word = '\V' . escape(a:word, '\')
-      let pos = searchpos(word, opt, stopline)
+      let pos = searchpos(word, 'c', 'w$')
       if pos == [0, 0]
-        if self.dir ==# 'all' && firsttime
+        if firsttime
           call cursor(self.env['w0'], 1)
           let firsttime = !firsttime
           continue
@@ -39,10 +32,10 @@ function! f.all(word, ...) "{{{1
       endif
 
       " skip fold
-      let linum = function(fname)(pos[0])
+      let linum = foldclosedend(pos[0])
       if linum != -1
         if linum ==# self.env['w$'] || linum ==# self.env['w0']
-          if self.dir ==# 'all' && firsttime
+          if firsttime
             " retry from w0
             call cursor(self.env['w0'], 1)
             let firsttime = !firsttime
@@ -51,7 +44,7 @@ function! f.all(word, ...) "{{{1
           " avoid infinit loop
           break
         endif
-        call cursor(eval('linum' . ope . '1') , 1)
+        call cursor(linum + 1 , 1)
         continue
       endif
 
@@ -66,16 +59,14 @@ function! f.all(word, ...) "{{{1
       endif
 
       " FIXME need cleanup?
-      if self.dir ==# 'all'
-        if col('.') >= col('$') - 1
-          let cl = line('.')
-          if cl == self.env['w$']
-            break
-          endif
-          call cursor(cl+1, 1)
+      if col('.') >= col('$') - 1
+        let cl = line('.')
+        if cl == self.env['w$']
+          break
         endif
-        call cursor(0, col('.') + 1)
+        call cursor(cl+1, 1)
       endif
+      call cursor(0, col('.') + 1)
     endwhile
   finally
     call self.env.p.set()
@@ -83,7 +74,7 @@ function! f.all(word, ...) "{{{1
   return targets
 endfunction
 
-function! smalls#finder#new(dir, env) "{{{1
-  return s:f.new(a:dir, a:env)
+function! smalls#finder#new(env) "{{{1
+  return s:f.new(a:env)
 endfunction
 " vim: foldmethod=marker

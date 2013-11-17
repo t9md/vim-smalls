@@ -78,6 +78,10 @@ function! keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self], self.owner)
 endfunction
 
+function! keyboard.do_jump_wordend() "{{{1
+  call call(self.owner.do_jump, [self, 1], self.owner)
+endfunction
+
 function! keyboard.do_jump_first() "{{{1
   call call(self.owner.do_jump_first, [self], self.owner)
 endfunction

@@ -150,12 +150,16 @@ function! s:smalls.start(mode)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.do_jump(kbd) "{{{1
+function! s:smalls.do_jump(kbd, ...) "{{{1
+  let jump_end = a:0 ? 1 : 0
   call self.hl.clear()
   call self.hl.shade()
 
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
+    if jump_end
+      let pos_new.col += a:kbd.data_len() - 1
+    endif
     call self._jump_to_pos(pos_new)
   endif
   let self._break = 1

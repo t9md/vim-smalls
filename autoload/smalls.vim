@@ -210,7 +210,6 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   try
     while 1
       call kbd.read_input()
-      call s:plog(kbd.pos())
       if self._break
         break
       endif

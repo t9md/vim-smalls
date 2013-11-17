@@ -68,10 +68,11 @@ function! f.all(word, ...) "{{{1
       " FIXME need cleanup?
       if self.dir ==# 'all'
         if col('.') >= col('$') - 1
-          if line('.') == self.env['w$']
+          let cl = line('.')
+          if cl == self.env['w$']
             break
           endif
-          normal! +
+          call cursor(cl+1, 1)
         endif
         call cursor(0, col('.') + 1)
       endif
@@ -79,6 +80,7 @@ function! f.all(word, ...) "{{{1
   finally
     call self.env.p.set()
   endtry
+  call s:plog(targets)
   return targets
 endfunction
 

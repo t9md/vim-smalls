@@ -27,10 +27,10 @@ Search and jump with easymotion style.
 
     " map normal-mode 's' for simple search
     nmap s <Plug>(smalls)
+    " if you want to use smalls in visual/operator or both mode.
+    omap s <Plug>(smalls)
+    xmap s <Plug>(smalls)
 
-    " or 
-    nmap s <Plug>(smalls-forward)
-    nmap S <Plug>(smalls-backward)
 
 # Related work
 If you don't like this plugin? It's ok, there are a lot of plugins like bellow.  

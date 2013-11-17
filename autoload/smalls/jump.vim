@@ -106,17 +106,13 @@ function! jump._get_pos(jumpk2pos) "{{{1
         \ : self._get_pos(dest)
 endfunction
 
-function! s:jump.new(dir, env, hl)
-  let self.dir = a:dir
+function! s:jump.new(env, hl)
   let self.env = a:env
   let self.hl = a:hl
   return self
 endfunction
 
-" function! smalls#jump#get_pos(poslist) "{{{1
-  " return  s:jump.start(a:poslist)
-" endfunction "}}}
-function! smalls#jump#new(dir, env, hl) "{{{1
-  return  s:jump.new(a:dir, a:env, a:hl)
+function! smalls#jump#new(env, hl) "{{{1
+  return  s:jump.new(a:env, a:hl)
 endfunction "}}}
 " vim: foldmethod=marker

@@ -16,9 +16,8 @@ let s:priorities = {
       \ 'SmallsJumpTarget': 105,
       \ }
 
-function! h.new(dir, env) "{{{1
+function! h.new(env) "{{{1
   let self.env = a:env
-  let self.dir = a:dir
   let self.ids = {}
   for color in keys(s:priorities)
     let self.ids[color] = []
@@ -50,11 +49,7 @@ endfunction
 
 function! h.shade() "{{{1
   if ! g:smalls_shade | return | endif
-  let pos = '%{l}l%{c}c'
-  let pat = 
-        \ self.dir ==# "fwd" ? s:intrpl(pos . '\_.*%{w$}l', self.env):
-        \ self.dir ==# "bwd" ? s:intrpl('%{w0}l\_.*' . pos, self.env):
-        \ self.dir ==# "all" ? s:intrpl('%{w0}l\_.*%{w$}l', self.env): throw
+  let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
 
@@ -86,28 +81,14 @@ function! h.region(pos) "{{{1
         \ 'nc+1': a:pos[1] + 1,
         \ }
   call extend(e, self.env, 'error')
-  " let pos = '%{l}l%{c}c'
-  let pat_table = {
-        \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
-        \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
-        \ }
-  " let block_pat_table = {
-        " \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
-        " \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
-        " \ }
-  
-  " 'all' mode possibly move backward, so only adjust forward direction carefully.
-  let pat_name = self.dir
-  if self.dir     ==# 'all'
-    let org_p = self.env.p
-    if ( org_p.line < a:pos[0] ) ||
-          \ (( org_p.line == a:pos[0] ) && ( org_p.col < a:pos[1] ))
-      let pat_name = 'fwd'
-    else
-      let pat_name = 'bwd'
-    endif
+  " possibly move backward, so only adjust forward direction carefully.
+  let org_p = self.env.p
+  if ( org_p.line < a:pos[0] ) ||
+        \ (( org_p.line == a:pos[0] ) && ( org_p.col < a:pos[1] ))
+    let pat =  '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c'
+  else
+    let pat = '%{nl}l%>{nc}c\_.*%{l}l%<{c}c'
   endif
-  let pat = pat_table[pat_name]
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction
 
@@ -123,17 +104,7 @@ function! h.candidate(word, pos) "{{{1
         \ 'ke':   a:pos[1] + wordlen - 1,
         \ }
 
-  if self.dir     ==# 'fwd'
-    let curline     = '%{l}l%>{c}c{k}'
-    let next2end    = '%>{l}l{k}%<{w$+1}l'
-    let candidate   = '('. curline .')|('. next2end .')'
-  elseif self.dir ==# "bwd"
-    let curline     = '%{l}l{k}%<{c+1}c'
-    let next2top    = '%>{w0-1}l{k}%<{l}l'
-    let candidate   = '('.curline .')|('. next2top .')'
-  elseif self.dir ==# "all"
-    let candidate   = '{k}'
-  end
+  let candidate   = '{k}'
   call extend(e, self.env, 'error')
 
   call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
@@ -144,7 +115,7 @@ function! h.candidate(word, pos) "{{{1
   endif
 endfunction
 
-function! smalls#highlighter#new(dir, env) "{{{1
-  return s:h.new(a:dir, a:env)
+function! smalls#highlighter#new(env) "{{{1
+  return s:h.new(a:env)
 endfunction
 " vim: foldmethod=marker

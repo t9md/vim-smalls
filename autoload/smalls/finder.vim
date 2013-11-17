@@ -80,7 +80,6 @@ function! f.all(word, ...) "{{{1
   finally
     call self.env.p.set()
   endtry
-  call s:plog(targets)
   return targets
 endfunction
 

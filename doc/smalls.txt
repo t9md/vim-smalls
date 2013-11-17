@@ -281,16 +281,16 @@ marker
 ============================================================================
 TODO								*smalls-todo*
 
-* [ ] opton to determine to jump destination is word's first
+* [ ] option to determine to jump destination wether word's first or end
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
   and customizable
 * specify search area
- - [x] harf-screen-above sk or S.
- - [x] harf-screen-below sj or s.
+ - [x] harf-screen-above sk or S. [delete this feature]
+ - [x] harf-screen-below sj or s. [delete this feature] 
  - [decline] right-col s-h
  - [decline] left-col  s-l
 * [x] support operator , visual mode
- - [x] also highlight selected reagion to easily undestand affected area.
+ - [x] highlight selected reagion to easily undestand affected area.
 * [x] abstract keyboard object
  - [x] customizable keybind with user's |Dictionary|.
 * [x] highlight original cursor pos when shade()ed.

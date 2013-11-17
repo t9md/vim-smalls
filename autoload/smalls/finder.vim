@@ -21,7 +21,7 @@ function! f.all(word, ...) "{{{1
     call cursor(0, col('.') + 1)
     while 1
       let word = '\V' . escape(a:word, '\')
-      let pos = searchpos(word, 'c', 'w$')
+      let pos = searchpos(word, 'c', self.env['w$'])
       if pos == [0, 0]
         if firsttime
           call cursor(self.env['w0'], 1)
@@ -34,15 +34,14 @@ function! f.all(word, ...) "{{{1
       " skip fold
       let linum = foldclosedend(pos[0])
       if linum != -1
-        if linum ==# self.env['w$'] || linum ==# self.env['w0']
-          if firsttime
-            " retry from w0
+        if linum ==# self.env['w$']
+          if ! firsttime
+            break
+          else
             call cursor(self.env['w0'], 1)
             let firsttime = !firsttime
             continue
           endif
-          " avoid infinit loop
-          break
         endif
         call cursor(linum + 1 , 1)
         continue

@@ -42,10 +42,6 @@ function! s:smalls.init(mode) "{{{1
   let self._break = 0
 endfunction
 
-function! s:smalls.debug(kbd) "{{{1
-  " let g:V = self.hl
-endfunction
-
 function! s:smalls.finish() "{{{1
   if self._notfound
     call self.hl.blink_orig_pos()
@@ -183,6 +179,7 @@ function! s:smalls._is_visual() "{{{1
 endfunction
 
 function! s:smalls._adjust_col(pos) "{{{1
+  " this function is not used now.
   if self.mode != 'o'
     return
   endif
@@ -213,6 +210,7 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   try
     while 1
       call kbd.read_input()
+      call s:plog(kbd.pos())
       if self._break
         break
       endif
@@ -238,7 +236,7 @@ function! smalls#start(mode) "{{{1
   call s:smalls.start(a:mode)
 endfunction "}}}
 function! smalls#debug() "{{{
-  let g:V = s:smalls.hl
+  " let g:V = s:smalls.hl
   " echo PP(s:smalls)
 endfunction
 " vim: foldmethod=marker

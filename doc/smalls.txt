@@ -126,7 +126,7 @@ By default this feature is disabled.
 	Specify second as |Float|. 
 	If user didn't type any key for this time, automatically shown jump
 	keys as long as user's imput exceed
-	*g:smalls_jump_keys_auto_show_min_input_length* characters.
+	|g:smalls_jump_keys_auto_show_min_input_length| characters.
 
 *g:smalls_jump_keys_auto_show_min_input_length*
 	Default: 3

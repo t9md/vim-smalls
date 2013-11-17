@@ -1,6 +1,6 @@
 *smalls.txt* spot your cursor with simple search
 
-Version: 0.8
+Version: 0.9
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-smalls
 License: Creative Commons Attribution-ShareAlike 3.0 Unported

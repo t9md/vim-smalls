@@ -56,9 +56,11 @@ function! s:keyboard.do_down() "{{{1
 endfunction
 
 function! s:keyboard.do_ud(dir) "{{{1
-  let cl = self.line()
-  while cl == self.line()
-    call self['do_' . a:dir]()
+  let fn = 'do_' . a:dir
+  let [cl, cc] = self.pos()
+  call self[fn]()
+  while cl == self.line() && cc != self.col()
+    call self[fn]()
   endwhile
 endfunction
 

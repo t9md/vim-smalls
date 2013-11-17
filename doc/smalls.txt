@@ -318,6 +318,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-17:
+	- add do_jump_wordend action in cli kbd.
 2013-11-17: v0.9
 	- delete 'forward' and 'backward', now only 'all' mode.
 2013-11-17: v0.8

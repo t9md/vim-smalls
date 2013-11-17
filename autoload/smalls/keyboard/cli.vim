@@ -1,6 +1,9 @@
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
 
+if !exists('g:loaded_smalls')
+  runtime plugin/smalls.vim
+endif
 let s:key_table = {
       \ "\<C-c>":   "do_cancel",
       \ "\<Esc>":   "do_cancel",

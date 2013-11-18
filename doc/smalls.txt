@@ -154,6 +154,25 @@ FUNCTIONS						   *smalls-functions*
 *smalls#start({mode})*
 	Main function for this plugin.
 
+*smalls#highlighter#extend_priority(table)*
+	{table} is |Dictionary| which have following format.
+	{ 'ColorName': Number...}
+	Use this func to modify highlight color priority
+	Here is  default color priority, higher value overwrite lower color.
+>
+	let s:priorities = {
+	      \ 'SmallsShade':      101,
+	      \ 'SmallsCandidate':  103,
+	      \ 'SmallsRegion':     105,
+	      \ 'SmallsCurrent':    107,
+	      \ 'SmallsCursor':     109,
+	      \ 'SmallsJumpTarget': 111,
+	      \ }
+<
+	if you don't want 'SmallsCandidate' is ovewritten by SmallsRegion,
+	|smalls-example|.
+
+
 					       *smalls-keyboard-customization*
 CAUTION~
 Following functions are provided experimentally, it may change and obsoleted.
@@ -249,6 +268,10 @@ Additionally if you want use smalls in 'visual' or 'operator' or both mode.
 >
 	omap s <Plug>(smalls)
 	xmap s <Plug>(smalls)
+<
+lower the priority of 'SmallsRegion' to show Candidate in region.
+>
+	smalls#highlighter#extend_priority({'SmallsRegion': 101})
 <
 ------------------------------------------------------------------------------
 (Experimental Feature)

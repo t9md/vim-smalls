@@ -6,12 +6,12 @@ endfunction "}}}
 let h = {} | let s:h = h
 let h.ids = []
 let s:priorities = {
-      \ 'SmallsShade':       99,
-      \ 'SmallsRegion':     102,
-      \ 'SmallsCandidate':  101,
-      \ 'SmallsCurrent':    103,
-      \ 'SmallsCursor':     104,
-      \ 'SmallsJumpTarget': 105,
+      \ 'SmallsShade':      101,
+      \ 'SmallsCandidate':  103,
+      \ 'SmallsRegion':     105,
+      \ 'SmallsCurrent':    107,
+      \ 'SmallsCursor':     109,
+      \ 'SmallsJumpTarget': 111,
       \ }
 
 function! h.new(env) "{{{1
@@ -115,5 +115,11 @@ endfunction
 
 function! smalls#highlighter#new(env) "{{{1
   return s:h.new(a:env)
+endfunction
+function! smalls#highlighter#extend_priority(table) "{{{1
+  call extend(s:priorities, a:table, 'force')
+endfunction
+function! smalls#highlighter#get_table() "{{{1
+  return s:priorities
 endfunction
 " vim: foldmethod=marker

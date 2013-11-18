@@ -1,9 +1,6 @@
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
 
-if !exists('g:loaded_smalls')
-  runtime plugin/smalls.vim
-endif
 let s:key_table = {
       \ "\<C-c>":   "do_cancel",
       \ "\<Esc>":   "do_cancel",
@@ -23,8 +20,6 @@ let s:key_table = {
       \ "\<C-p>":   "do_excursion_with_prev",
       \ }
 
-let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-let s:key_table[jump_trigger] = 'do_jump'
 
 let keyboard = {}
 let s:keyboard = keyboard
@@ -116,6 +111,8 @@ function! smalls#keyboard#cli#replace_table(table) "{{{1
   let s:key_table = a:new_table
 endfunction "}}}
 function! smalls#keyboard#cli#new(owner) "{{{1
+  let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+  let s:key_table[jump_trigger] = 'do_jump'
   let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, "> ")
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}

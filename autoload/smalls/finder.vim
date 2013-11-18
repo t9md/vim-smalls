@@ -61,6 +61,11 @@ function! f.all(word, ...) "{{{1
       if col('.') >= col('$') - 1
         let cl = line('.')
         if cl == self.env['w$']
+          if firsttime
+            call cursor(self.env['w0'], 1)
+            let firsttime = !firsttime
+            continue
+          endif
           break
         endif
         call cursor(cl+1, 1)
@@ -73,6 +78,7 @@ function! f.all(word, ...) "{{{1
   endtry
   return targets
 endfunction
+
 
 function! smalls#finder#new(env) "{{{1
   return s:f.new(a:env)

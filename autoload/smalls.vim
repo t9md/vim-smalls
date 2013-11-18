@@ -35,6 +35,7 @@ function! s:smalls.init(mode) "{{{1
         \ 'c': c,
         \ 'c-1': c-1,
         \ 'c+1': c+1,
+        \ 'c+2': c+2,
         \ }
   let self.hl       = smalls#highlighter#new(self.env)
   let self.finder   = smalls#finder#new(self.env)

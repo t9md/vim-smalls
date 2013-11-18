@@ -12,71 +12,86 @@ endfunction
 
 function! f.all(word, ...) "{{{1
   let one = a:0
-  let targets = []
+  let self.found = []
   if empty(a:word)
-    return targets
+    return found
   endif
+  let word = '\V' . escape(a:word, '\')
   try
-    let firsttime = 1
-    call cursor(0, col('.') + 1)
-    while 1
-      let word = '\V' . escape(a:word, '\')
-      let pos = searchpos(word, 'c', self.env['w$'])
-      if pos == [0, 0]
-        if firsttime
-          call cursor(self.env['w0'], 1)
-          let firsttime = !firsttime
-          continue
-        endif
-        break
-      endif
-
-      " skip fold
-      let linum = foldclosedend(pos[0])
-      if linum != -1
-        if linum ==# self.env['w$']
-          if ! firsttime
-            break
-          else
-            call cursor(self.env['w0'], 1)
-            let firsttime = !firsttime
-            continue
-          endif
-        endif
-        call cursor(linum + 1 , 1)
-        continue
-      endif
-
-      if one
-        return pos
-      endif
-
-      if index(targets, pos) == -1
-        call add(targets, pos)
-      else
-        break
-      endif
-
-      " FIXME need cleanup?
-      if col('.') >= col('$') - 1
-        let cl = line('.')
-        if cl == self.env['w$']
-          if firsttime
-            call cursor(self.env['w0'], 1)
-            let firsttime = !firsttime
-            continue
-          endif
-          break
-        endif
-        call cursor(cl+1, 1)
-      else
-        call cursor(0, col('.') + 1)
-      endif
-    endwhile
+    call self.move_next_col()
+    call self.search(word, 'c', self.env['w$'], one)
+    if one && !empty(self.found)
+      return self.found[0]
+    endif
+    " retry from line('w0')
+    call self.move_begin_of_window()
+    call self.search(word, 'c', self.env['w$'], one)
+    if one && !empty(self.found)
+      return self.found[0]
+    endif
   finally
     call self.env.p.set()
   endtry
-  return targets
+  return self.found
+endfunction
+
+function! f.search(word, opt, stopline, one) "{{{1
+  while 1
+    let pos = searchpos(a:word, a:opt, a:stopline)
+    if pos == [0, 0]
+      break
+    endif
+    " skip fold
+    let linum = foldclosedend(pos[0])
+    if linum != -1
+      if linum == self.env['w$']
+        break
+      endif
+      call cursor(linum + 1 , 1)
+      continue
+    endif
+
+    if index(self.found, pos) != -1 | break | endif
+    " call s:plog(pos)
+    call add(self.found, pos)
+    if a:one | break | endif
+
+    if self.is_EOL()
+      call self.move_next_head_of_line()
+    else
+      call self.move_next_col()
+    endif
+  endwhile
+endfunction
+
+
+function! f.retry() "{{{1
+  if self.firsttime
+    call self.move_begin_of_window()
+    let self.firsttime = !self.firsttime
+    return 1
+  else
+    return 0
+  endif
+endfunction
+function! f.is_EOL() "{{{1
+  return (col('.') >= col('$') - 1)
+endfunction
+
+function! f.is_end_of_window() "{{{1
+  return line('.') == self.env['w$']
+endfunction
+
+function! f.move_begin_of_window() "{{{1
+  call cursor(self.env['w0'], 1)
+endfunction
+
+function! f.move_next_head_of_line() "{{{1
+  call cursor(line('.') + 1, 1)
+endfunction
+
+function! f.move_next_col() "{{{1
+  call cursor(0, col('.') + 1)
 endfunction
 
 

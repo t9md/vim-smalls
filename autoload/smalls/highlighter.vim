@@ -1,5 +1,3 @@
-let s:plog = smalls#util#import("plog")
-
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
   return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
@@ -87,7 +85,7 @@ function! h.region(pos) "{{{1
         \ (( org_p.line == a:pos[0] ) && ( org_p.col < a:pos[1] ))
     let pat =  '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c'
   else
-    let pat = '%{nl}l%>{nc}c\_.*%{l}l%<{c}c'
+    let pat = '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c'
   endif
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction

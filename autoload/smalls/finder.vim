@@ -64,8 +64,9 @@ function! f.all(word, ...) "{{{1
           break
         endif
         call cursor(cl+1, 1)
+      else
+        call cursor(0, col('.') + 1)
       endif
-      call cursor(0, col('.') + 1)
     endwhile
   finally
     call self.env.p.set()

@@ -15,9 +15,10 @@ let options = {
       \ 'g:smalls_jump_keys_auto_show_timeout': 0.5,
       \ 'g:smalls_jump_keys_auto_show_min_input_length': 3,
       \ }
+      " \ 'g:smalls_jump_wordend_normal': 0,
 
-      " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
       " \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#ff0000']],
+      " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
 let s:color = {
       \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE',    '#66D9EF']],
       \ 'SmallsCurrent':    [['NONE',      'magenta', 'white', ], [ 'NONE',           '#f92672', '#ffffff']],

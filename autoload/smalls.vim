@@ -23,15 +23,30 @@ function! s:smalls.init(mode) "{{{1
   let self.mode = a:mode
   let self.lastmsg = ''
   let self._notfound   = 0
-  let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
+
+  if self._is_visual()
+    " to get precise start point in visual mode.
+    " exe 'normal! ' . "\<Esc>"
+    exe 'normal! gvo' | exe "normal! " . "\<Esc>"
+  endif
+
+  let [l, c, w0, w_ ] = [ line('.'), col('.'), line('w0'), line('w$') ]
+
+  if self._is_visual()
+    " for neatly revert original visual start/end pos
+    exe 'normal! gvo' | exe "normal! " . "\<Esc>"
+  endif
+        " \ 'p': smalls#pos#new([c,l]),
   let self.env = {
         \ 'mode': a:mode,
         \ 'w0': w0,
         \ 'w0-1': w0-1,
         \ 'w$': w_,
         \ 'w$+1': w_+1,
-        \ 'p': smalls#pos#new(getpos('.')[1:2]),
+        \ 'p': smalls#pos#new([l, c]),
         \ 'l': l,
+        \ 'l-1': l-1,
+        \ 'l+1': l+1,
         \ 'c': c,
         \ 'c-1': c-1,
         \ 'c+1': c+1,
@@ -139,8 +154,12 @@ function! s:smalls.start(mode)  "{{{1
     call self.cursor_hide()
     call self.loop()
   catch
-   if v:exception ==# "NotFound"
+    if v:exception ==# "NotFound"
       let self._notfound = 1
+    elseif v:exception ==# "Canceled"
+      if self.mode !~ 'n\|o'
+        normal! gv
+      endif
     endif
     let self.lastmsg = v:exception
   finally
@@ -152,15 +171,15 @@ function! s:smalls.start(mode)  "{{{1
 endfunction
 
 function! s:smalls.do_jump(kbd, ...) "{{{1
-  let jump_end = a:0 ? 1 : 0
+  " let wordend = a:0 ? 1 : 0
   call self.hl.clear()
   call self.hl.shade()
 
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
-    if jump_end
-      let pos_new.col += a:kbd.data_len() - 1
-    endif
+    " if wordend
+      " let pos_new.col += a:kbd.data_len() - 1
+    " endif
     call self._jump_to_pos(pos_new)
   endif
   let self._break = 1
@@ -176,6 +195,7 @@ function! s:smalls.do_jump_first(kbd) "{{{1
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
+  call s:smalls._adjust_col(a:pos)
   call a:pos.jump(self._is_visual())
 endfunction
 
@@ -184,17 +204,44 @@ function! s:smalls._is_visual() "{{{1
 endfunction
 
 function! s:smalls._adjust_col(pos) "{{{1
-  " this function is not used now.
-  if self.mode != 'o'
+  if self.mode == 'n'
     return
   endif
+
   " possibly move backward, so only adjust forward direction carefully.
-  let org_p = self.env.p
-  if ( org_p.line < a:pos.line ) ||
-        \ (( org_p.line == a:pos.line ) && ( org_p.col < a:pos.col ))
-    let a:pos.col += 1
+  if self.mode ==# 'o'
+    if self._is_forward(a:pos)
+      let a:pos.col += self.keyboard_cli.data_len() - 1
+      let a:pos.col += 1
+      if a:pos.col > len(getline(a:pos.line))
+        let a:pos.line += 1
+        let a:pos.col = 1
+      endif
+    endif
+  endif
+
+  if self._is_visual()
+    if self.mode =~# 'v\|V'
+      if self._is_forward(a:pos)
+        let a:pos.col += self.keyboard_cli.data_len() - 1
+      endif
+    elseif self.mode ==# "\<C-v>"
+      if self._is_col_forward(a:pos.col)
+          let a:pos.col += self.keyboard_cli.data_len() - 1
+      endif
+    endif
   endif
 endfunction
+
+function! s:smalls._is_forward(dst_pos) "{{{1
+  return ( self.env.p.line < a:dst_pos.line ) ||
+        \ (( self.env.p.line == a:dst_pos.line ) && ( self.env.p.col < a:dst_pos.col ))
+endfunction
+
+function! s:smalls._is_col_forward(col) "{{{1
+  return ( self.env.p.col < a:col )
+endfunction
+
 
 function! s:smalls.do_excursion(kbd, ...) "{{{1
   let first_dir = a:0 ? a:1 : ''

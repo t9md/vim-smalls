@@ -1,3 +1,5 @@
+let s:plog    = smalls#util#import("plog")
+
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
   return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
@@ -71,25 +73,65 @@ function! h.blink_orig_pos()
   endfor
 endfunction
 
-function! h.region(pos) "{{{1
+function! h.region(pos, word) "{{{1
+  let wordlen = len(a:word)
   call self.clear("SmallsRegion")
   let e = {
         \ 'nl': a:pos[0],
+        \ 'nl+1': a:pos[0] + 1,
+        \ 'nl-1': a:pos[0] - 1,
         \ 'nc': a:pos[1],
         \ 'nc+1': a:pos[1] + 1,
+        \ 'nc-1': a:pos[1] - 1,
+        \ 'ke+1': a:pos[1] + wordlen,
         \ }
   call extend(e, self.env, 'error')
+
   " possibly move backward, so only adjust forward direction carefully.
-  let org_p = self.env.p
-  if ( org_p.line < a:pos[0] ) ||
-        \ (( org_p.line == a:pos[0] ) && ( org_p.col < a:pos[1] ))
-    let pat =  '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c'
+  if self._is_forward(a:pos)
+    let pat =
+          \ self.env.mode =~# 'v\|o' ? '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c' :
+          \ self.env.mode ==# 'V' ? '%{l}l\_.*%{nl}l' :
+          \ self.env.mode ==# "\<C-v>" ?
+          \   ( self._is_col_forward(a:pos[1])
+          \   ? '\v\c%>{l-1}l%>{c-1}c.*%<{nl+1}l%<{ke+1}c'
+          \   : '\v\c%>{l-1}l%>{nc-1}c.*%<{nl+1}l%<{c+1}c' )
+          \ : throw
   else
-    let pat = '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c'
+    let pat =
+          \ self.env.mode =~# 'v\|o' ? '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c' :
+          \ self.env.mode ==# 'V' ? '%{nl}l\_.*%{l}l' :
+          \ self.env.mode ==# "\<C-v>" ?
+          \   ( self._is_col_forward(a:pos[1])
+          \   ? '\v\c%>{nl-1}l%>{c-1}c.*%<{l+1}l%<{ke+1}c'
+          \   : '\v\c%>{nl-1}l%>{nc-1}c.*%<{l+1}l%<{c+1}c' )
+          \ : throw
   endif
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction
 
+function! h.select(pos)
+  exe 'normal! ' . "<Esc>"
+  call self.env.p.set()
+  exe 'normal! ' . self.env.mode
+  call cursor(a:pos)
+endfunction
+
+function! h._is_forward(dst_pos) "{{{1
+  return ( self.env.p.line < a:dst_pos[0] ) ||
+        \ (( self.env.p.line == a:dst_pos[0] ) && ( self.env.p.col < a:dst_pos[1] ))
+endfunction
+
+function! h._is_col_forward(col) "{{{1
+  return ( self.env.p.col < a:col )
+endfunction
+
+
+function! h.jump_target(poslist) "{{{1
+  let hl_expr = join(
+        \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
+  call self.hl('SmallsJumpTarget', '\v'. hl_expr)
+endfunction
 
 function! h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
@@ -107,9 +149,9 @@ function! h.candidate(word, pos) "{{{1
 
   call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
   call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))
-  call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
+  " call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
   if self.env.mode != 'n'
-    call self.region(a:pos)
+    call self.region(a:pos, a:word)
   endif
 endfunction
 

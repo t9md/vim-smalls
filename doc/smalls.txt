@@ -225,7 +225,8 @@ key map is following.
 	| <C-e>          | do_end                 |
 	| <C-f>          | do_char_forward        |
 	| <C-b>          | do_char_backward       |
-	| <C-k>          | do_kill                |
+	| <C-k>          | do_kill_to_end         |
+	| <C-u>          | do_kill_line           |
 	| <C-y>          | do_yank                |
 	| <C-r>          | do_special        *1   |
 	| <Tab>          | do_excursion_with_next |
@@ -233,7 +234,6 @@ key map is following.
 	| <S-Tab>        | do_excursion_with_prev |
 	| <C-p>          | do_excursion_with_prev |
 	| {jump_trigger} | do_jump                |
-	| NOT_MAPPED     | do_jump_wordend        |
 	*1 very experimental action "don't ask what" for a meanwhile ;).
 	
 						    *smalls-excursion-keybind*
@@ -290,15 +290,10 @@ Example-2: Disable default ';' in excursion mode
 >
         call smalls#keyboard#excursion#extend_table({";": '__UNMAP__'})
 <
-
-Example-3 map <C-g> to jump word's end of char in cli mode
->
-	call smalls#keyboard#cli#extend_table({
-	      \ "\<C-g>": 'do_jump_wordend'})
-<
 ============================================================================
 BUG								 *smalls-bug*
 
+Undojoin side-effect~
 Jump-marker is accompalished by temporarily replace buffer with marker.
 To avoid this temporal edit affect undo history, smalls use 'undojoin'.
 
@@ -306,7 +301,21 @@ To minimize this buffer editing effect to aff so 'undo' after
 showing jump marker don't put cursor to original pos. This caused as the 
 side-effect of 'undojoin' to minimize effect
 
-marker
+Operator visualization ara is not completetely precise~
+You can change operator's default behavior with |o_v|, |o_V|, |o_CTRL-V|.
+It forces some operator work as charwise, linewise, blockwise.
+But smalls visualize area the operator affact as charwise regardless
+operator's wise.
+And for |o_CTRL-V|, is worse than other operator modifier, since Vim's default
+|exclusive|, |inclusive| concept is not intuitive, smalls try to behave as
+mach inclusive as posible, this need column adjustment when post cursor to new
+position, but you combine |o_CTRL-V| with smalls, this column adjustment
+result in eating too much character than you specify with position.
+for example when you map s as o_<Plug>(smalls), ds behavie inclusive, but you
+modify d(operator) with |o_CTRL-V| like d<C-v>s then position the cursor, it's
+result may not you expected. but from smalls's pluign side, there is no way to
+know operator modifier, its limitation and won't fix probably.
+So "" DONT USE |o_CTRL-V| with o_<Plug>(smalls) "" for now.
 
 ============================================================================
 TODO								*smalls-todo*
@@ -341,6 +350,9 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-20:
+	- del do_jump_wordend action.
+	- now all operator movin is visualized and inclusive behavior.
 2013-11-18:
 	- fix keyboard customization issue for cli kbd.
 2013-11-17:

@@ -11,7 +11,8 @@ let s:key_table = {
       \ "\<C-e>":   "do_end",
       \ "\<C-f>":   "do_char_forward",
       \ "\<C-b>":   "do_char_backward",
-      \ "\<C-k>":   "do_kill",
+      \ "\<C-k>":   "do_kill_to_end",
+      \ "\<C-u>":   "do_kill_line",
       \ "\<C-y>":   "do_yank",
       \ "\<C-r>":   "do_special",
       \ "\<Tab>":   "do_excursion_with_next",
@@ -41,9 +42,14 @@ function! keyboard.do_delete() "{{{1
   let self.data = self._before()
 endfunction
 
-function! keyboard.do_kill() "{{{1
+function! keyboard.do_kill_to_end() "{{{1
   let self._yanked = self._after()
   let self.data = self._before()
+endfunction
+
+function! keyboard.do_kill_line() "{{{1
+  let self._yanked = self.data
+  let self.data = ''
 endfunction
 
 function! keyboard.do_yank() "{{{1
@@ -112,7 +118,9 @@ function! smalls#keyboard#cli#replace_table(table) "{{{1
 endfunction "}}}
 function! smalls#keyboard#cli#new(owner) "{{{1
   let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-  let s:key_table[jump_trigger] = 'do_jump'
+  if ! has_key(s:key_table, jump_trigger)
+    let s:key_table[jump_trigger] = 'do_jump'
+  endif
   let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, "> ")
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}

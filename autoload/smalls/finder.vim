@@ -16,7 +16,7 @@ function! f.all(word, ...) "{{{1
   if empty(a:word)
     return found
   endif
-  let word = '\V' . escape(a:word, '\')
+  let word = '\V\c' . escape(a:word, '\')
   try
     call self.move_next_col()
     call self.search(word, 'c', self.env['w$'], one)
@@ -52,7 +52,6 @@ function! f.search(word, opt, stopline, one) "{{{1
     endif
 
     if index(self.found, pos) != -1 | break | endif
-    " call s:plog(pos)
     call add(self.found, pos)
     if a:one | break | endif
 

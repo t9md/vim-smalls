@@ -73,6 +73,7 @@ augroup END
 nnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start('n')<CR>
 xnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start(visualmode())<CR>
 onoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start('o')<CR>
+" onoremap <silent> <Plug>(smalls-operator-v) :<C-u>call smalls#start('o')<CR>
 
 " nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
 

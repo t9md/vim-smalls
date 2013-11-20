@@ -108,6 +108,14 @@ VARIABLES						   *smalls-variables*
 	      \     [['NONE', 'NONE', 'red'],[ 'bold', 'NONE', 'red']],
 	      \ }
 <
+*g:smalls_blink_on_notfound*
+	Default: 1
+
+	Blink original cursor position when pattern inputted not found.
+	This blinking is for notification and while blinking extra character
+	you typed is consumed by smalls plugin, this is for avoiding extra
+	char you typed mess buffer's content.
+
 AutoShowJumpKeys~
 Smalls provide feature to automatically show jump keys.
 Let's say, you want to auto-show jump key after 1.0sec but only at least two
@@ -149,7 +157,8 @@ By default this feature is disabled.
 <
 *g:smalls_operator_always_inclusive*
 	Default: 0
-	CAUTION: Not Recomended~
+
+	CAUTION: Not Recomended to change this var~
 	If you set to 1, o_<Plug>(smalls) eat end of char(|inclusive|).
 
 	for example, assume you have following line.
@@ -165,7 +174,7 @@ By default this feature is disabled.
 	But this setting lead unexpected result for |o_CTRL-V|.
 	See also |smalls-bug|.
 
-	You Should user vim's native opeartor modifier~
+	RECOMMENDED: use vim's native opeartor modifier~
 	In my opinion, its' better to use motion-modifier rather than
 	setting this variable to 1.
 	For example, you can delete last ')' in above example, by 
@@ -339,7 +348,7 @@ is specified or not.
 TODO								*smalls-todo*
 
 * [x] option to determine to jump destination wether word's first or end
- - not otion, implemented as action.
+ - not option, implemented as action.
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
   and customizable
 * specify search area
@@ -368,6 +377,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-20:
+	- introduce g:smalls_operator_always_inclusive variable.
 2013-11-20:
 	- del do_jump_wordend action.
 	- now all operator movin is visualized and inclusive behavior.

@@ -60,7 +60,9 @@ endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
-    call self.hl.blink_orig_pos()
+    if g:smalls_blink_on_notfound
+      call self.hl.blink_orig_pos()
+    endif
     if self.mode !~ 'n\|o'
       normal! gv
     endif

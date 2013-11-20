@@ -147,6 +147,31 @@ By default this feature is disabled.
 	let g:smalls_jump_keys_auto_show_min_input_length = 2
 	let g:smalls_jump_keys_auto_show_timeout = 0.0
 <
+*g:smalls_operator_always_inclusive*
+	Default: 0
+	CAUTION: Not Recomended~
+	If you set to 1, o_<Plug>(smalls) eat end of char(|inclusive|).
+
+	for example, assume you have following line.
+>
+	let a:pos.col += self.keyboard_cli.data_len() - 1
+	          ^ cursor
+<
+	If excute 'd, o_<Plug>(smalls), )'.
+
+	Default 0: deletion exclude end of match ')'.
+	Default 1: deletion include end of match ')'.
+
+	But this setting lead unexpected result for |o_CTRL-V|.
+	See also |smalls-bug|.
+
+	You Should user vim's native opeartor modifier~
+	In my opinion, its' better to use motion-modifier rather than
+	setting this variable to 1.
+	For example, you can delete last ')' in above example, by 
+	'd, v, o_<Plug>(smalls), )'. the 'v' is operator modifier that force
+	motion behave charwise, means operator affect same area as
+	charwise-visual. See |o_v|, |o_V|, |o_CTRL-V|.
 
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
@@ -302,20 +327,13 @@ showing jump marker don't put cursor to original pos. This caused as the
 side-effect of 'undojoin' to minimize effect
 
 Operator visualization ara is not completetely precise~
-You can change operator's default behavior with |o_v|, |o_V|, |o_CTRL-V|.
-It forces some operator work as charwise, linewise, blockwise.
-But smalls visualize area the operator affact as charwise regardless
-operator's wise.
-And for |o_CTRL-V|, is worse than other operator modifier, since Vim's default
-|exclusive|, |inclusive| concept is not intuitive, smalls try to behave as
-mach inclusive as posible, this need column adjustment when post cursor to new
-position, but you combine |o_CTRL-V| with smalls, this column adjustment
-result in eating too much character than you specify with position.
-for example when you map s as o_<Plug>(smalls), ds behavie inclusive, but you
-modify d(operator) with |o_CTRL-V| like d<C-v>s then position the cursor, it's
-result may not you expected. but from smalls's pluign side, there is no way to
-know operator modifier, its limitation and won't fix probably.
-So "" DONT USE |o_CTRL-V| with o_<Plug>(smalls) "" for now.
+As VIm's provided feature, you can change operator's default behavior by 
+forcing wise of motion such as |o_v|, |o_V|, |o_CTRL-V|.
+These 'motion-modifier' enables you to forces some operator explicitly behave 
+as charwise, linewise, blockwise.
+But smalls visualization for operator always assume motion is charwise, 
+because smalls plugin side have no way to know whether these motion-modifier
+is specified or not.
 
 ============================================================================
 TODO								*smalls-todo*

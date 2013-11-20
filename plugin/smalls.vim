@@ -14,6 +14,7 @@ let options = {
       \ 'g:smalls_jump_keys_auto_show': 0,
       \ 'g:smalls_jump_keys_auto_show_timeout': 0.5,
       \ 'g:smalls_jump_keys_auto_show_min_input_length': 3,
+      \ 'g:smalls_operator_always_inclusive': 0,
       \ }
       " \ 'g:smalls_jump_wordend_normal': 0,
 

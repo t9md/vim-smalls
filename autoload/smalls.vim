@@ -198,8 +198,8 @@ function! s:smalls._jump_to_pos(pos) "{{{1
   " FIXME
   " I can't determine my mind how much adjustment is appropriate.
   " need deep consideration
-  " call s:smalls._adjust_col(a:pos)
-  call s:smalls._adjust_col_aggressive(a:pos)
+  call s:smalls._adjust_col(a:pos)
+  " call s:smalls._adjust_col_aggressive(a:pos)
   call a:pos.jump(self._is_visual())
 endfunction
 
@@ -207,29 +207,34 @@ function! s:smalls._is_visual() "{{{1
   return (self.mode != 'n' && self.mode != 'o')
 endfunction
 
-function! s:smalls._adjust_col(pos) "{{{1
+function! s:smalls._need_adjust_col(pos)
   if self.mode == 'n'
-    return
-  endif
-  if self.mode ==# 'o'
-    if self._is_forward(a:pos)
-      let a:pos.col += self.keyboard_cli.data_len() - 1
-    endif
-    return
-  endif
-
-  if self._is_visual()
+    return 0
+  elseif self.mode ==# 'o'
+    return self._is_forward(a:pos)
+  elseif self._is_visual()
     if self.mode =~# 'v\|V'
-      if self._is_forward(a:pos)
-        let a:pos.col += self.keyboard_cli.data_len() - 1
-      endif
+      return self._is_forward(a:pos)
     elseif self.mode ==# "\<C-v>"
-      if self._is_col_forward(a:pos.col)
-          let a:pos.col += self.keyboard_cli.data_len() - 1
+      return self._is_col_forward(a:pos.col)
+  endif
+endfunction
+
+function! s:smalls._adjust_col(pos) "{{{1
+  if self._need_adjust_col(a:pos)
+    let a:pos.col += self.keyboard_cli.data_len() - 1
+  endif
+  if self.mode ==# 'o' && g:smalls_operator_always_inclusive
+    if self._is_forward(a:pos)
+      let a:pos.col += 1
+      if a:pos.col > len(getline(a:pos.line))
+        let a:pos.line += 1
+        let a:pos.col = 1
       endif
     endif
   endif
 endfunction
+
 
 function! s:smalls._adjust_col_aggressive(pos) "{{{1
   if self.mode == 'n'

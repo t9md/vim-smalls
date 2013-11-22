@@ -71,6 +71,7 @@ function! s:smalls.finish() "{{{1
   if !empty(self.lastmsg)
     call s:msg(self.lastmsg)
   endif
+  let g:smalls_current_mode = ''
 endfunction
 
 function! s:smalls.set_opts() "{{{1
@@ -117,6 +118,7 @@ endfunction
 
 function! s:smalls.loop() "{{{1
   let kbd = self.keyboard_cli
+  let g:smalls_current_mode = 'cli'
   let hl = self.hl
   while 1
     call hl.shade()
@@ -279,6 +281,8 @@ endfunction
 
 
 function! s:smalls.do_excursion(kbd, ...) "{{{1
+  " force to update statusline by meaningless option update ':help statusline'
+  let g:smalls_current_mode = 'excursion' | let &ro = &ro
   let first_dir = a:0 ? a:1 : ''
   let word = a:kbd.data
   if  empty(word) | return [] | endif
@@ -305,6 +309,8 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
       redraw
     endwhile
   catch 'BACK_CLI'
+  " force to update statusline by meaningless option update ':help statusline'
+    let g:smalls_current_mode = 'cli' | let &ro = &ro
     let self._break = 0
   endtry
 endfunction

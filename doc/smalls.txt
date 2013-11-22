@@ -182,6 +182,19 @@ By default this feature is disabled.
 	motion behave charwise, means operator affect same area as
 	charwise-visual. See |o_v|, |o_V|, |o_CTRL-V|.
 
+*g:smalls_current_mode*
+	Default: ''
+	automatically updated while using smalls
+	value shoud be one of [ '', 'cli', 'excursion' ]
+
+	Don't set this variable manually, its meaningless since its'
+	dynamically updated by plugin.
+	This variable could be used in |statusline| or plugin like bellow
+	  * powerline
+	  * airline
+	  * lightline
+	  * ezline ( I'm author )
+
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
 
@@ -377,6 +390,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-22:
+	- introduce g:smalls_current_mode for affiliation to statusline plugin
 2013-11-20:
 	- introduce g:smalls_operator_always_inclusive variable.
 2013-11-20:

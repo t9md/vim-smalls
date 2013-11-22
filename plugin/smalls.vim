@@ -16,6 +16,7 @@ let options = {
       \ 'g:smalls_jump_keys_auto_show_min_input_length': 3,
       \ 'g:smalls_operator_always_inclusive': 0,
       \ 'g:smalls_blink_on_notfound': 1,
+      \ 'g:smalls_current_mode': '',
       \ }
       " \ 'g:smalls_jump_wordend_normal': 0,
 

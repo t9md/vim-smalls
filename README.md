@@ -22,6 +22,7 @@ Search and jump with easymotion style.
 
 # Movie
 ![Movie](http://gifzo.net/pfYsE0wfcX.gif)
+![Movie](http://gifzo.net/pfYsE0wfcX)
 
 # Configuration example
 

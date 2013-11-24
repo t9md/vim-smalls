@@ -7,7 +7,7 @@ let s:old_cpo = &cpo
 set cpo&vim
 
 " Main:
-let options = {
+let s:options = {
       \ 'g:smalls_shade' : 1,
       \ 'g:smalls_jump_keys': ';ABCDEFGHIJKLMNOPQRSTUVWXYZ',
       \ 'g:smalls_highlight': {},
@@ -62,7 +62,7 @@ function! s:set_highlight() "{{{1
   highlight link SmallsRegion Visual
 endfunction "}}}
 
-call s:set_options(options)
+call s:set_options(s:options)
 call extend(s:color, g:smalls_highlight)
 call s:set_highlight()
 

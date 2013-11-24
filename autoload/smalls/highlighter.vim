@@ -5,8 +5,8 @@ function! s:intrpl(string, vars) "{{{1
   return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
 endfunction "}}}
 
-let h = {} | let s:h = h
-let h.ids = []
+let s:h = {}
+let s:h.ids = []
 let s:priorities = {
       \ 'SmallsShade':      101,
       \ 'SmallsCandidate':  103,
@@ -16,7 +16,7 @@ let s:priorities = {
       \ 'SmallsJumpTarget': 111,
       \ }
 
-function! h.new(env) "{{{1
+function! s:h.new(env) "{{{1
   let self.env = a:env
   let self.ids = {}
   for color in keys(s:priorities)
@@ -25,16 +25,16 @@ function! h.new(env) "{{{1
   return self
 endfunction
 
-function! h.dump() "{{{1
+function! s:h.dump() "{{{1
   echo PP(self)
 endfunction
 
-function! h.hl(color, pattern) "{{{1
+function! s:h.hl(color, pattern) "{{{1
   call add(self.ids[a:color],
         \ matchadd(a:color, a:pattern, s:priorities[a:color]))
 endfunction
 
-function! h.clear(...) "{{{1
+function! s:h.clear(...) "{{{1
   let colors = a:0 ? a:000 : keys(self.ids)
   for color in colors
     if !has_key(self.ids, color)
@@ -47,18 +47,18 @@ function! h.clear(...) "{{{1
   endfor
 endfunction
 
-function! h.shade() "{{{1
+function! s:h.shade() "{{{1
   if ! g:smalls_shade | return | endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
 
-function! h.orig_pos()
+function! s:h.orig_pos()
   let pos = '%{l}l%{c}c'
   call self.hl("SmallsCursor",    s:intrpl('\v\c' . pos, self.env))
 endfunction
 
-function! h.blink_orig_pos()
+function! s:h.blink_orig_pos()
   " used to notify user's mistake and spot cursor.
   " to avoid user's input mess buffer, we consume keyinput while blinking.
   let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
@@ -73,7 +73,7 @@ function! h.blink_orig_pos()
   endfor
 endfunction
 
-function! h.region(pos, word) "{{{1
+function! s:h.region(pos, word) "{{{1
   let wordlen = len(a:word)
   call self.clear("SmallsRegion")
   let e = {
@@ -110,30 +110,30 @@ function! h.region(pos, word) "{{{1
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction
 
-function! h.select(pos)
+function! s:h.select(pos)
   exe 'normal! ' . "<Esc>"
   call self.env.p.set()
   exe 'normal! ' . self.env.mode
   call cursor(a:pos)
 endfunction
 
-function! h._is_forward(dst_pos) "{{{1
+function! s:h._is_forward(dst_pos) "{{{1
   return ( self.env.p.line < a:dst_pos[0] ) ||
         \ (( self.env.p.line == a:dst_pos[0] ) && ( self.env.p.col < a:dst_pos[1] ))
 endfunction
 
-function! h._is_col_forward(col) "{{{1
+function! s:h._is_col_forward(col) "{{{1
   return ( self.env.p.col < a:col )
 endfunction
 
 
-function! h.jump_target(poslist) "{{{1
+function! s:h.jump_target(poslist) "{{{1
   let hl_expr = join(
         \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
   call self.hl('SmallsJumpTarget', '\v'. hl_expr)
 endfunction
 
-function! h.candidate(word, pos) "{{{1
+function! s:h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
   let wordlen = len(a:word)

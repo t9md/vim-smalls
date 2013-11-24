@@ -22,45 +22,44 @@ let s:key_table = {
       \ }
 
 
-let keyboard = {}
-let s:keyboard = keyboard
-function! keyboard.do_head() "{{{1
+let s:keyboard = {}
+function! s:keyboard.do_head() "{{{1
   let self.cursor = 0
 endfunction
 
 
-function! keyboard.do_char_forward() "{{{1
+function! s:keyboard.do_char_forward() "{{{1
   let self.cursor = min([self.cursor+1, self.data_len()])
 endfunction
 
-function! keyboard.do_char_backward() "{{{1
+function! s:keyboard.do_char_backward() "{{{1
   let self.cursor = max([self.cursor-1, 0 ])
 endfunction
 
-function! keyboard.do_delete() "{{{1
+function! s:keyboard.do_delete() "{{{1
   call self.do_char_backward()
   let self.data = self._before()
 endfunction
 
-function! keyboard.do_kill_to_end() "{{{1
+function! s:keyboard.do_kill_to_end() "{{{1
   let self._yanked = self._after()
   let self.data = self._before()
 endfunction
 
-function! keyboard.do_kill_line() "{{{1
+function! s:keyboard.do_kill_line() "{{{1
   let self._yanked = self.data
   let self.data = ''
 endfunction
 
-function! keyboard.do_yank() "{{{1
+function! s:keyboard.do_yank() "{{{1
   call self._set(self._yanked)
 endfunction
 
-function! keyboard.do_end() "{{{1
+function! s:keyboard.do_end() "{{{1
   let self.cursor = len(self.data)
 endfunction
 
-function! keyboard.do_special() "{{{1
+function! s:keyboard.do_special() "{{{1
   call self.echohl("[S]", 'Statement')
   call self.show_prompt()
   let c = s:getchar()
@@ -70,39 +69,39 @@ function! keyboard.do_special() "{{{1
   redraw
 endfunction
 
-function! keyboard.do_set_cword() "{{{1
+function! s:keyboard.do_set_cword() "{{{1
   call self._set(expand('<cword>'))
 endfunction
 
-function! keyboard.do_cancel() "{{{1
+function! s:keyboard.do_cancel() "{{{1
   throw 'Canceled'
 endfunction
 
-function! keyboard.do_jump() "{{{1
+function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self], self.owner)
 endfunction
 
-function! keyboard.do_jump_wordend() "{{{1
+function! s:keyboard.do_jump_wordend() "{{{1
   call call(self.owner.do_jump, [self, 1], self.owner)
 endfunction
 
-function! keyboard.do_jump_first() "{{{1
+function! s:keyboard.do_jump_first() "{{{1
   call call(self.owner.do_jump_first, [self], self.owner)
 endfunction
 
-function! keyboard.do_excursion() "{{{1
+function! s:keyboard.do_excursion() "{{{1
   call call(self.owner.do_excursion, [self], self.owner)
 endfunction
 
-function! keyboard.do_excursion_with_next() "{{{1
+function! s:keyboard.do_excursion_with_next() "{{{1
   call call(self.owner.do_excursion, [self, 'next'], self.owner)
 endfunction
 
-function! keyboard.do_excursion_with_prev() "{{{1
+function! s:keyboard.do_excursion_with_prev() "{{{1
   call call(self.owner.do_excursion, [self, 'prev'], self.owner)
 endfunction
 
-function! keyboard.do_candidate_next() "{{{1
+function! s:keyboard.do_candidate_next() "{{{1
   call call(self.owner.do_candidate_next, [self], self.owner)
 endfunction
 

@@ -327,6 +327,7 @@ endfunction
 function! smalls#start(mode) "{{{1
   call s:smalls.start(a:mode)
 endfunction "}}}
+
 function! smalls#debug() "{{{
   " let g:V = s:smalls.hl
   " echo PP(s:smalls)

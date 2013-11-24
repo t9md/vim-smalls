@@ -19,8 +19,7 @@ let s:key_table = {
       \    "\<CR>": "do_set",
       \ }
 
-let keyboard = {}
-let s:keyboard = keyboard
+let s:keyboard = {}
 
 function! s:keyboard.init(word, poslist) "{{{1
   let self.index   = 0

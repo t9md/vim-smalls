@@ -1,6 +1,5 @@
-" POS:
-let pos = {} | let s:pos = pos
-function! pos.new(pos) "{{{1
+let s:pos = {}
+function! s:pos.new(pos) "{{{1
   " pos should size one List of [line, col]
   let o = deepcopy(self)
   let o.line = a:pos[0]
@@ -8,19 +7,19 @@ function! pos.new(pos) "{{{1
   return o
 endfunction
 
-function! pos.to_s() "{{{1
+function! s:pos.to_s() "{{{1
   return string(self.to_list())
 endfunction
 
-function! pos.to_list() "{{{1
+function! s:pos.to_list() "{{{1
   return [self.line, self.col]
 endfunction
 
-function! pos.set() "{{{1
+function! s:pos.set() "{{{1
   call cursor(self.line, self.col)
 endfunction
 
-function! pos.jump(...) "{{{1
+function! s:pos.jump(...) "{{{1
   if a:0 ? a:1 : 0
     normal! gv
   endif
@@ -28,7 +27,7 @@ function! pos.jump(...) "{{{1
   call cursor(self.line, self.col)
 endfunction
 
-function! pos.jump_one_col_more() "{{{1
+function! s:pos.jump_one_col_more() "{{{1
   let self.col += 1
   call self.jump()
 endfunction

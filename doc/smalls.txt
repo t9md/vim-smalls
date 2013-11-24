@@ -390,6 +390,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-25:
+	- Critical bug fix, eliminate unnecessary global variables.
 2013-11-22:
 	- introduce g:smalls_current_mode for affiliation to statusline plugin
 2013-11-20:

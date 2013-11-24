@@ -1,16 +1,16 @@
 let s:plog = smalls#util#import("plog")
 
-let f = {} | let s:f = f
-function! f.new(env) "{{{1
+let s:f = {}
+function! s:f.new(env) "{{{1
   let self.env = a:env
   return self
 endfunction
 
-function! f.one(word) "{{{1
+function! s:f.one(word) "{{{1
   return self.all(a:word, 1)
 endfunction
 
-function! f.all(word, ...) "{{{1
+function! s:f.all(word, ...) "{{{1
   let one = a:0
   let self.found = []
   if empty(a:word)
@@ -35,7 +35,7 @@ function! f.all(word, ...) "{{{1
   return self.found
 endfunction
 
-function! f.search(word, opt, stopline, one) "{{{1
+function! s:f.search(word, opt, stopline, one) "{{{1
   while 1
     let pos = searchpos(a:word, a:opt, a:stopline)
     if pos == [0, 0]
@@ -64,7 +64,7 @@ function! f.search(word, opt, stopline, one) "{{{1
 endfunction
 
 
-function! f.retry() "{{{1
+function! s:f.retry() "{{{1
   if self.firsttime
     call self.move_begin_of_window()
     let self.firsttime = !self.firsttime
@@ -73,23 +73,23 @@ function! f.retry() "{{{1
     return 0
   endif
 endfunction
-function! f.is_EOL() "{{{1
+function! s:f.is_EOL() "{{{1
   return (col('.') >= col('$') - 1)
 endfunction
 
-function! f.is_end_of_window() "{{{1
+function! s:f.is_end_of_window() "{{{1
   return line('.') == self.env['w$']
 endfunction
 
-function! f.move_begin_of_window() "{{{1
+function! s:f.move_begin_of_window() "{{{1
   call cursor(self.env['w0'], 1)
 endfunction
 
-function! f.move_next_head_of_line() "{{{1
+function! s:f.move_next_head_of_line() "{{{1
   call cursor(line('.') + 1, 1)
 endfunction
 
-function! f.move_next_col() "{{{1
+function! s:f.move_next_col() "{{{1
   call cursor(0, col('.') + 1)
 endfunction
 

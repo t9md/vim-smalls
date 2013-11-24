@@ -2,8 +2,8 @@ let s:ensure  = smalls#util#import("ensure")
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
 
-let jump = {} | let s:jump = jump
-function! jump.setlines(lines) "{{{1
+let s:jump = {}
+function! s:jump.setlines(lines) "{{{1
   try
     undojoin
   catch
@@ -13,7 +13,7 @@ function! jump.setlines(lines) "{{{1
   endfor
 endfunction
 
-function! jump.preserve_lines(pos2jumpk) "{{{1
+function! s:jump.preserve_lines(pos2jumpk) "{{{1
   let r = {}
   for pos in keys(a:pos2jumpk)
     let lnum = str2nr(split(pos, ',')[0])
@@ -24,7 +24,7 @@ function! jump.preserve_lines(pos2jumpk) "{{{1
   return r
 endfunction
 
-function! jump.gen_jump_lines(lines_org, pos2jumpk) "{{{1
+function! s:jump.gen_jump_lines(lines_org, pos2jumpk) "{{{1
   let r = copy(a:lines_org)
   for pos in sort(keys(a:pos2jumpk))
     let jump_key = a:pos2jumpk[pos]
@@ -43,7 +43,7 @@ function! jump.gen_jump_lines(lines_org, pos2jumpk) "{{{1
   return r
 endfunction
 
-function! jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
+function! s:jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
   " * jumpk2pos       * pos2jumpk
   " --------------    ----------------------
   " jumpk : pos        pos         : jumpk    
@@ -67,12 +67,12 @@ function! jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
   return pos2jumpk
 endfunction
 
-function! jump.get_pos(poslist)
+function! s:jump.get_pos(poslist)
   let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(g:smalls_jump_keys, '\zs'))
   return self._get_pos(jumpk2pos)
 endfunction
 
-function! jump._get_pos(jumpk2pos) "{{{1
+function! s:jump._get_pos(jumpk2pos) "{{{1
   let pos = values(a:jumpk2pos)
   if len(pos) ==# 1
     return smalls#pos#new(pos[0])

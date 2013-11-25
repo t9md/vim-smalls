@@ -16,11 +16,6 @@ let s:key_table = {
       \        "h": "do_left",
       \        "l": "do_right",
       \        ";": "do_set",
-      \        "d": "do_d",
-      \        "y": "do_y",
-      \        "v": "do_v",
-      \        "V": "do_V",
-      \   "\<C-v>": "do_CtrlV",
       \    "\<CR>": "do_set",
       \ }
 
@@ -106,28 +101,6 @@ function! s:keyboard._do_normal(key) "{{{1
   let pos_new = smalls#pos#new(self.pos())
   execute 'normal! ' . a:key
   call self.owner._jump_to_pos(pos_new)
-endfunction
-
-function! s:keyboard.do_d() "{{{1
-  call self._do_normal('d')
-  let self.owner._break = 1
-endfunction
-
-function! s:keyboard.do_y() "{{{1
-  call self._do_normal('y')
-  let self.owner._break = 1
-endfunction
-
-function! s:keyboard.do_v() "{{{1
-  call self._do_normal('v')
-endfunction
-
-function! s:keyboard.do_V() "{{{1
-  call self._do_normal('V')
-endfunction
-
-function! s:keyboard.do_CtrlV() "{{{1
-  call self._do_normal("\<C-v>")
 endfunction
 
 function! smalls#keyboard#excursion#get_table() "{{{1

@@ -122,9 +122,9 @@ function! s:smalls.loop() "{{{1
   let hl = self.hl
   while 1
     call hl.shade()
-    if kbd.data_len() ==# 0
+    " if kbd.data_len() ==# 0
       call hl.orig_pos()
-    endif
+    " endif
 
     let timeout = 
           \ ( g:smalls_jump_keys_auto_show &&
@@ -300,6 +300,7 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
 
   try
     while 1
+      call self.hl.orig_pos()
       call kbd.read_input()
       if self._break
         break

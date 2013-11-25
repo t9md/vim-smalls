@@ -1,6 +1,6 @@
 *smalls.txt* spot your cursor with simple search
 
-Version: 0.8
+Version: 0.9
 Author : t9md <taqumd@gmail.com>
 GitHub : https://github.com/t9md/vim-smalls
 License: Creative Commons Attribution-ShareAlike 3.0 Unported
@@ -41,34 +41,19 @@ It's ok, there are a lot of plugins like bellow.
 MAPPINGS						    *smalls-mappings*
 
 n_<Plug>(smalls)
-n_<Plug>(smalls-all)
 	smalls for current window area.
-	<Plug>(smalls) is simply short version of <Plug>(smalls-all).
-	Both keys are linked to same function.
-
-n_<Plug>(smalls-forward)
-	smalls for forward direction
-
-n_<Plug>(smalls-backward)
-	smalls for backward direction
 
 x_<Plug>(smalls)
-x_<Plug>(smalls-all)
-x_<Plug>(smalls-forward)
-x_<Plug>(smalls-backward)
 	visual mode version
 
 o_<Plug>(smalls)
-o_<Plug>(smalls-all)
-o_<Plug>(smalls-forward)
-o_<Plug>(smalls-backward)
 	operator mode version
 
 ==============================================================================
 COMMANDS						    *smalls-commands*
 
-*:Smalls* {direction}
-	{direction} should be 'all', 'forward', 'backward'
+*:Smalls*
+	Command version.
 
 ==============================================================================
 VARIABLES						   *smalls-variables*
@@ -123,6 +108,14 @@ VARIABLES						   *smalls-variables*
 	      \     [['NONE', 'NONE', 'red'],[ 'bold', 'NONE', 'red']],
 	      \ }
 <
+*g:smalls_blink_on_notfound*
+	Default: 1
+
+	Blink original cursor position when pattern inputted not found.
+	This blinking is for notification and while blinking extra character
+	you typed is consumed by smalls plugin, this is for avoiding extra
+	char you typed mess buffer's content.
+
 AutoShowJumpKeys~
 Smalls provide feature to automatically show jump keys.
 Let's say, you want to auto-show jump key after 1.0sec but only at least two
@@ -141,7 +134,7 @@ By default this feature is disabled.
 	Specify second as |Float|. 
 	If user didn't type any key for this time, automatically shown jump
 	keys as long as user's imput exceed
-	*g:smalls_jump_keys_auto_show_min_input_length* characters.
+	|g:smalls_jump_keys_auto_show_min_input_length| characters.
 
 *g:smalls_jump_keys_auto_show_min_input_length*
 	Default: 3
@@ -162,13 +155,69 @@ By default this feature is disabled.
 	let g:smalls_jump_keys_auto_show_min_input_length = 2
 	let g:smalls_jump_keys_auto_show_timeout = 0.0
 <
+*g:smalls_operator_always_inclusive*
+	Default: 0
+
+	CAUTION: Not Recomended to change this var~
+	If you set to 1, o_<Plug>(smalls) eat end of char(|inclusive|).
+
+	for example, assume you have following line.
+>
+	let a:pos.col += self.keyboard_cli.data_len() - 1
+	          ^ cursor
+<
+	If excute 'd, o_<Plug>(smalls), )'.
+
+	Default 0: deletion exclude end of match ')'.
+	Default 1: deletion include end of match ')'.
+
+	But this setting lead unexpected result for |o_CTRL-V|.
+	See also |smalls-bug|.
+
+	RECOMMENDED: use vim's native opeartor modifier~
+	In my opinion, its' better to use motion-modifier rather than
+	setting this variable to 1.
+	For example, you can delete last ')' in above example, by 
+	'd, v, o_<Plug>(smalls), )'. the 'v' is operator modifier that force
+	motion behave charwise, means operator affect same area as
+	charwise-visual. See |o_v|, |o_V|, |o_CTRL-V|.
+
+*g:smalls_current_mode*
+	Default: ''
+	automatically updated while using smalls
+	value shoud be one of [ '', 'cli', 'excursion' ]
+
+	Don't set this variable manually, its meaningless since its'
+	dynamically updated by plugin.
+	This variable could be used in |statusline| or plugin like bellow
+	  * powerline
+	  * airline
+	  * lightline
+	  * ezline ( I'm author )
 
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
 
-*smalls#start(direction)*
-	Main function for this plugin!
-	{direction} should be 'all', 'forward', 'backward'
+*smalls#start({mode})*
+	Main function for this plugin.
+
+*smalls#highlighter#extend_priority(table)*
+	{table} is |Dictionary| which have following format.
+	{ 'ColorName': Number...}
+	Use this func to modify highlight color priority
+	Here is  default color priority, higher value overwrite lower color.
+>
+	let s:priorities = {
+	      \ 'SmallsShade':      101,
+	      \ 'SmallsCandidate':  103,
+	      \ 'SmallsRegion':     105,
+	      \ 'SmallsCurrent':    107,
+	      \ 'SmallsCursor':     109,
+	      \ 'SmallsJumpTarget': 111,
+	      \ }
+<
+	if you don't want 'SmallsCandidate' is ovewritten by SmallsRegion,
+	|smalls-example|.
 
 
 					       *smalls-keyboard-customization*
@@ -223,15 +272,16 @@ key map is following.
 	| <C-e>          | do_end                 |
 	| <C-f>          | do_char_forward        |
 	| <C-b>          | do_char_backward       |
-	| <C-k>          | do_kill                |
+	| <C-k>          | do_kill_to_end         |
+	| <C-u>          | do_kill_line           |
 	| <C-y>          | do_yank                |
-	| <C-r>          | do_special        *    |
+	| <C-r>          | do_special        *1   |
 	| <Tab>          | do_excursion_with_next |
 	| <C-n>          | do_excursion_with_next |
 	| <S-Tab>        | do_excursion_with_prev |
 	| <C-p>          | do_excursion_with_prev |
 	| {jump_trigger} | do_jump                |
-	* very experimental action "don't ask what" for a meanwhile ;).
+	*1 very experimental action "don't ask what" for a meanwhile ;).
 	
 						    *smalls-excursion-keybind*
 EXCURSION MODE KEYBIND~
@@ -261,17 +311,14 @@ set in your '.vimrc'
 	" map normal-mode 's' for simple search
 	nmap s <Plug>(smalls)
 <
-If you want separate 'forward' and 'backward'
+Additionally if you want use smalls in 'visual' or 'operator' or both mode.
 >
-	nmap s <Plug>(smalls-forward)
-	nmap S <Plug>(smalls-backward)
+	omap s <Plug>(smalls)
+	xmap s <Plug>(smalls)
 <
-If you want use 'visual' or 'operator' or both mode.
+lower the priority of 'SmallsRegion' to show Candidate in region.
 >
-	omap s <Plug>(smalls-forward)
-	omap S <Plug>(smalls-backward)
-	xmap s <Plug>(smalls-forward)
-	xmap S <Plug>(smalls-backward)
+	smalls#highlighter#extend_priority({'SmallsRegion': 101})
 <
 ------------------------------------------------------------------------------
 (Experimental Feature)
@@ -284,7 +331,7 @@ Example-1: Add <C-g> and <C-j>
 	      \ "\<C-g>": 'do_cancel',
 	      \ "\<C-j>": 'do_jump',
 	      \ }
-	call smalls#keyboard#cli#get_table()
+        call smalls#keyboard#excursion#extend_table(cli_table_custom)
 <
 Example-2: Disable default ';' in excursion mode
 >
@@ -293,6 +340,7 @@ Example-2: Disable default ';' in excursion mode
 ============================================================================
 BUG								 *smalls-bug*
 
+Undojoin side-effect~
 Jump-marker is accompalished by temporarily replace buffer with marker.
 To avoid this temporal edit affect undo history, smalls use 'undojoin'.
 
@@ -300,21 +348,29 @@ To minimize this buffer editing effect to aff so 'undo' after
 showing jump marker don't put cursor to original pos. This caused as the 
 side-effect of 'undojoin' to minimize effect
 
-marker
+Operator visualization ara is not completetely precise~
+As VIm's provided feature, you can change operator's default behavior by 
+forcing wise of motion such as |o_v|, |o_V|, |o_CTRL-V|.
+These 'motion-modifier' enables you to forces some operator explicitly behave 
+as charwise, linewise, blockwise.
+But smalls visualization for operator always assume motion is charwise, 
+because smalls plugin side have no way to know whether these motion-modifier
+is specified or not.
 
 ============================================================================
 TODO								*smalls-todo*
 
-* [ ] opton to determine to jump destination is word's first
+* [x] option to determine to jump destination wether word's first or end
+ - not option, implemented as action.
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
   and customizable
 * specify search area
- - [x] harf-screen-above sk or S.
- - [x] harf-screen-below sj or s.
+ - [x] harf-screen-above sk or S. [delete this feature]
+ - [x] harf-screen-below sj or s. [delete this feature] 
  - [decline] right-col s-h
  - [decline] left-col  s-l
 * [x] support operator , visual mode
- - [x] also highlight selected reagion to easily undestand affected area.
+ - [x] highlight selected reagion to easily undestand affected area.
 * [x] abstract keyboard object
  - [x] customizable keybind with user's |Dictionary|.
 * [x] highlight original cursor pos when shade()ed.
@@ -334,6 +390,21 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-25:
+	- Critical bug fix, eliminate unnecessary global variables.
+2013-11-22:
+	- introduce g:smalls_current_mode for affiliation to statusline plugin
+2013-11-20:
+	- introduce g:smalls_operator_always_inclusive variable.
+2013-11-20:
+	- del do_jump_wordend action.
+	- now all operator movin is visualized and inclusive behavior.
+2013-11-18:
+	- fix keyboard customization issue for cli kbd.
+2013-11-17:
+	- add do_jump_wordend action in cli kbd.
+2013-11-17: v0.9
+	- delete 'forward' and 'backward', now only 'all' mode.
 2013-11-17: v0.8
 	- add easymotion style jump and a lot of improvement.
 2013-10-25: v0.1

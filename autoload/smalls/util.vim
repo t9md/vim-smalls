@@ -29,8 +29,6 @@ function! s:prompt(msg) "{{{1
   echohl None
 endfunction
 
-
-
 function! s:getchar() "{{{1
   let c = getchar()
   return type(c) == type(0) ? nr2char(c) : c

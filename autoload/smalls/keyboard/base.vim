@@ -1,17 +1,16 @@
 let s:getchar = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
-let keyboard = {}
-let s:keyboard = keyboard
+let s:keyboard = {}
 
 " Usage of bind()
-" call keyboard.bind(jump_trigger,
+" call s:keyboard.bind(jump_trigger,
 " \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
-function! keyboard.bind(key, action) "{{{1
+function! s:keyboard.bind(key, action) "{{{1
   let self._table[a:key] = a:action
 endfunction
 
-function! keyboard.read_input(...) "{{{1
+function! s:keyboard.read_input(...) "{{{1
   call self.show_prompt()
   " optional arg is timeout, empty or -1 mean 'no timeout'.
   if (a:0 && a:1 != -1)
@@ -21,7 +20,7 @@ function! keyboard.read_input(...) "{{{1
   end
 endfunction
 
-function! keyboard.init(owner, table, prompt_str) "{{{1
+function! s:keyboard.init(owner, table, prompt_str) "{{{1
   let self._table  = a:table
   let self._prompt_str = a:prompt_str
   let self.owner   = a:owner
@@ -32,7 +31,7 @@ function! keyboard.init(owner, table, prompt_str) "{{{1
   return self
 endfunction
 
-function! keyboard.input(c) "{{{1
+function! s:keyboard.input(c) "{{{1
   let self.last_input = a:c
   if !has_key(self._table, a:c)
     call self._set(a:c)
@@ -46,24 +45,24 @@ function! keyboard.input(c) "{{{1
   endif
 endfunction
 
-function! keyboard.data_len() "{{{1
+function! s:keyboard.data_len() "{{{1
   return len(self.data)
 endfunction
 
-function! keyboard._set(c) "{{{1
+function! s:keyboard._set(c) "{{{1
   let self.data = self._before() . a:c .  self._after()
   let self.cursor += len(a:c)
 endfunction 
 
-function! keyboard._before() "{{{1
+function! s:keyboard._before() "{{{1
   return  self.cursor == 0 ? '' : self.data[ : self.cursor - 1]
 endfunction
 
-function! keyboard._after() "{{{1
+function! s:keyboard._after() "{{{1
   return self.data[self.cursor : ]
 endfunction
 
-function! keyboard.echohl(msg, color) "{{{1
+function! s:keyboard.echohl(msg, color) "{{{1
   silent execute 'echohl ' . a:color
   echon a:msg
   echohl Normal

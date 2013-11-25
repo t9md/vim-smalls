@@ -11,7 +11,8 @@ let s:key_table = {
       \ "\<C-e>":   "do_end",
       \ "\<C-f>":   "do_char_forward",
       \ "\<C-b>":   "do_char_backward",
-      \ "\<C-k>":   "do_kill",
+      \ "\<C-k>":   "do_kill_to_end",
+      \ "\<C-u>":   "do_kill_line",
       \ "\<C-y>":   "do_yank",
       \ "\<C-r>":   "do_special",
       \ "\<Tab>":   "do_excursion_with_next",
@@ -20,43 +21,45 @@ let s:key_table = {
       \ "\<C-p>":   "do_excursion_with_prev",
       \ }
 
-let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-let s:key_table[jump_trigger] = 'do_jump'
 
-let keyboard = {}
-let s:keyboard = keyboard
-function! keyboard.do_head() "{{{1
+let s:keyboard = {}
+function! s:keyboard.do_head() "{{{1
   let self.cursor = 0
 endfunction
 
 
-function! keyboard.do_char_forward() "{{{1
+function! s:keyboard.do_char_forward() "{{{1
   let self.cursor = min([self.cursor+1, self.data_len()])
 endfunction
 
-function! keyboard.do_char_backward() "{{{1
+function! s:keyboard.do_char_backward() "{{{1
   let self.cursor = max([self.cursor-1, 0 ])
 endfunction
 
-function! keyboard.do_delete() "{{{1
+function! s:keyboard.do_delete() "{{{1
   call self.do_char_backward()
   let self.data = self._before()
 endfunction
 
-function! keyboard.do_kill() "{{{1
+function! s:keyboard.do_kill_to_end() "{{{1
   let self._yanked = self._after()
   let self.data = self._before()
 endfunction
 
-function! keyboard.do_yank() "{{{1
+function! s:keyboard.do_kill_line() "{{{1
+  let self._yanked = self.data
+  let self.data = ''
+endfunction
+
+function! s:keyboard.do_yank() "{{{1
   call self._set(self._yanked)
 endfunction
 
-function! keyboard.do_end() "{{{1
+function! s:keyboard.do_end() "{{{1
   let self.cursor = len(self.data)
 endfunction
 
-function! keyboard.do_special() "{{{1
+function! s:keyboard.do_special() "{{{1
   call self.echohl("[S]", 'Statement')
   call self.show_prompt()
   let c = s:getchar()
@@ -66,35 +69,39 @@ function! keyboard.do_special() "{{{1
   redraw
 endfunction
 
-function! keyboard.do_set_cword() "{{{1
+function! s:keyboard.do_set_cword() "{{{1
   call self._set(expand('<cword>'))
 endfunction
 
-function! keyboard.do_cancel() "{{{1
+function! s:keyboard.do_cancel() "{{{1
   throw 'Canceled'
 endfunction
 
-function! keyboard.do_jump() "{{{1
+function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self], self.owner)
 endfunction
 
-function! keyboard.do_jump_first() "{{{1
+function! s:keyboard.do_jump_wordend() "{{{1
+  call call(self.owner.do_jump, [self, 1], self.owner)
+endfunction
+
+function! s:keyboard.do_jump_first() "{{{1
   call call(self.owner.do_jump_first, [self], self.owner)
 endfunction
 
-function! keyboard.do_excursion() "{{{1
+function! s:keyboard.do_excursion() "{{{1
   call call(self.owner.do_excursion, [self], self.owner)
 endfunction
 
-function! keyboard.do_excursion_with_next() "{{{1
+function! s:keyboard.do_excursion_with_next() "{{{1
   call call(self.owner.do_excursion, [self, 'next'], self.owner)
 endfunction
 
-function! keyboard.do_excursion_with_prev() "{{{1
+function! s:keyboard.do_excursion_with_prev() "{{{1
   call call(self.owner.do_excursion, [self, 'prev'], self.owner)
 endfunction
 
-function! keyboard.do_candidate_next() "{{{1
+function! s:keyboard.do_candidate_next() "{{{1
   call call(self.owner.do_candidate_next, [self], self.owner)
 endfunction
 
@@ -109,6 +116,10 @@ function! smalls#keyboard#cli#replace_table(table) "{{{1
   let s:key_table = a:new_table
 endfunction "}}}
 function! smalls#keyboard#cli#new(owner) "{{{1
+  let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+  if ! has_key(s:key_table, jump_trigger)
+    let s:key_table[jump_trigger] = 'do_jump'
+  endif
   let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, "> ")
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}

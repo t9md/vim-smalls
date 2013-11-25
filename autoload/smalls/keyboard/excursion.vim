@@ -1,5 +1,8 @@
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
+" if !exists('g:loaded_smalls')
+  " runtime plugin/smalls.vim
+" endif
 
 let s:key_table = {
       \   "\<C-c>": "do_cancel",
@@ -16,8 +19,7 @@ let s:key_table = {
       \    "\<CR>": "do_set",
       \ }
 
-let keyboard = {}
-let s:keyboard = keyboard
+let s:keyboard = {}
 
 function! s:keyboard.init(word, poslist) "{{{1
   let self.index   = 0

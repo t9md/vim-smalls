@@ -1,89 +1,100 @@
 let s:plog = smalls#util#import("plog")
 
-let f = {} | let s:f = f
-function! f.new(dir, env) "{{{1
+let s:f = {}
+function! s:f.new(env) "{{{1
   let self.env = a:env
-  let self.dir = a:dir
   return self
 endfunction
 
-function! f.one(word) "{{{1
+function! s:f.one(word) "{{{1
   return self.all(a:word, 1)
 endfunction
 
-function! f.all(word, ...) "{{{1
+function! s:f.all(word, ...) "{{{1
   let one = a:0
-  let targets = []
+  let self.found = []
   if empty(a:word)
-    return targets
+    return found
   endif
-  let [opt, stopline, fname, ope] =
-        \ self.dir ==# 'bwd' ? [ 'b', self.env['w0'], 'foldclosed',    '-'] :
-        \ self.dir ==# 'fwd' ? [ '' , self.env['w$'], 'foldclosedend', '+'] : 
-        \ self.dir ==# 'all' ? [ 'c', self.env['w$'], 'foldclosedend', '+'] : throw
+  let word = '\V\c' . escape(a:word, '\')
   try
-    if self.dir ==# 'all'
-      let firsttime = 1
-      call cursor(0, col('.') + 1)
+    call self.move_next_col()
+    call self.search(word, 'c', self.env['w$'], one)
+    if one && !empty(self.found)
+      return self.found[0]
     endif
-    while 1
-      let word = '\V' . escape(a:word, '\')
-      let pos = searchpos(word, opt, stopline)
-      if pos == [0, 0]
-        if self.dir ==# 'all' && firsttime
-          call cursor(self.env['w0'], 1)
-          let firsttime = !firsttime
-          continue
-        endif
-        break
-      endif
-
-      " skip fold
-      let linum = function(fname)(pos[0])
-      if linum != -1
-        if linum ==# self.env['w$'] || linum ==# self.env['w0']
-          if self.dir ==# 'all' && firsttime
-            " retry from w0
-            call cursor(self.env['w0'], 1)
-            let firsttime = !firsttime
-            continue
-          endif
-          " avoid infinit loop
-          break
-        endif
-        call cursor(eval('linum' . ope . '1') , 1)
-        continue
-      endif
-
-      if one
-        return pos
-      endif
-
-      if index(targets, pos) == -1
-        call add(targets, pos)
-      else
-        break
-      endif
-
-      " FIXME need cleanup?
-      if self.dir ==# 'all'
-        if col('.') >= col('$') - 1
-          let cl = line('.')
-          if cl == self.env['w$']
-            break
-          endif
-          call cursor(cl+1, 1)
-        endif
-        call cursor(0, col('.') + 1)
-      endif
-    endwhile
+    " retry from line('w0')
+    call self.move_begin_of_window()
+    call self.search(word, 'c', self.env['w$'], one)
+    if one && !empty(self.found)
+      return self.found[0]
+    endif
   finally
     call self.env.p.set()
   endtry
-  return targets
+  return self.found
 endfunction
 
-function! smalls#finder#new(dir, env) "{{{1
-  return s:f.new(a:dir, a:env)
+function! s:f.search(word, opt, stopline, one) "{{{1
+  while 1
+    let pos = searchpos(a:word, a:opt, a:stopline)
+    if pos == [0, 0]
+      break
+    endif
+    " skip fold
+    let linum = foldclosedend(pos[0])
+    if linum != -1
+      if linum == self.env['w$']
+        break
+      endif
+      call cursor(linum + 1 , 1)
+      continue
+    endif
+
+    if index(self.found, pos) != -1 | break | endif
+    call add(self.found, pos)
+    if a:one | break | endif
+
+    if self.is_EOL()
+      call self.move_next_head_of_line()
+    else
+      call self.move_next_col()
+    endif
+  endwhile
+endfunction
+
+
+function! s:f.retry() "{{{1
+  if self.firsttime
+    call self.move_begin_of_window()
+    let self.firsttime = !self.firsttime
+    return 1
+  else
+    return 0
+  endif
+endfunction
+function! s:f.is_EOL() "{{{1
+  return (col('.') >= col('$') - 1)
+endfunction
+
+function! s:f.is_end_of_window() "{{{1
+  return line('.') == self.env['w$']
+endfunction
+
+function! s:f.move_begin_of_window() "{{{1
+  call cursor(self.env['w0'], 1)
+endfunction
+
+function! s:f.move_next_head_of_line() "{{{1
+  call cursor(line('.') + 1, 1)
+endfunction
+
+function! s:f.move_next_col() "{{{1
+  call cursor(0, col('.') + 1)
+endfunction
+
+
+function! smalls#finder#new(env) "{{{1
+  return s:f.new(a:env)
 endfunction
 " vim: foldmethod=marker

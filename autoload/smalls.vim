@@ -19,37 +19,50 @@ endfunction
 
 " Main:
 let s:smalls = {}
-function! s:smalls.init(dir, mode) "{{{1
+function! s:smalls.init(mode) "{{{1
   let self.mode = a:mode
   let self.lastmsg = ''
-  let self.dir = a:dir
   let self._notfound   = 0
-  let [c, l, w0, w_ ] = [col('.'), line('.'), line('w0'), line('w$') ]
+
+  if self._is_visual()
+    " to get precise start point in visual mode.
+    " exe 'normal! ' . "\<Esc>"
+    exe 'normal! gvo' | exe "normal! " . "\<Esc>"
+  endif
+
+  let [l, c, w0, w_ ] = [ line('.'), col('.'), line('w0'), line('w$') ]
+
+  if self._is_visual()
+    " for neatly revert original visual start/end pos
+    exe 'normal! gvo' | exe "normal! " . "\<Esc>"
+  endif
+        " \ 'p': smalls#pos#new([c,l]),
   let self.env = {
         \ 'mode': a:mode,
         \ 'w0': w0,
         \ 'w0-1': w0-1,
         \ 'w$': w_,
         \ 'w$+1': w_+1,
-        \ 'p': smalls#pos#new(getpos('.')[1:2]),
+        \ 'p': smalls#pos#new([l, c]),
         \ 'l': l,
+        \ 'l-1': l-1,
+        \ 'l+1': l+1,
         \ 'c': c,
         \ 'c-1': c-1,
         \ 'c+1': c+1,
+        \ 'c+2': c+2,
         \ }
-  let self.hl       = smalls#highlighter#new(a:dir, self.env)
-  let self.finder   = smalls#finder#new(a:dir, self.env)
+  let self.hl       = smalls#highlighter#new(self.env)
+  let self.finder   = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
   let self._break = 0
 endfunction
 
-function! s:smalls.debug(kbd) "{{{1
-  " let g:V = self.hl
-endfunction
-
 function! s:smalls.finish() "{{{1
   if self._notfound
-    call self.hl.blink_orig_pos()
+    if g:smalls_blink_on_notfound
+      call self.hl.blink_orig_pos()
+    endif
     if self.mode !~ 'n\|o'
       normal! gv
     endif
@@ -58,6 +71,7 @@ function! s:smalls.finish() "{{{1
   if !empty(self.lastmsg)
     call s:msg(self.lastmsg)
   endif
+  let g:smalls_current_mode = ''
 endfunction
 
 function! s:smalls.set_opts() "{{{1
@@ -104,6 +118,7 @@ endfunction
 
 function! s:smalls.loop() "{{{1
   let kbd = self.keyboard_cli
+  let g:smalls_current_mode = 'cli'
   let hl = self.hl
   while 1
     call hl.shade()
@@ -136,16 +151,19 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(dir, mode)  "{{{1
-  let dir = { 'forward': 'fwd', 'backward': 'bwd', 'all': 'all' }[a:dir]
+function! s:smalls.start(mode)  "{{{1
   try
-    call self.init(dir, a:mode)
+    call self.init(a:mode)
     call self.set_opts()
     call self.cursor_hide()
     call self.loop()
   catch
-   if v:exception ==# "NotFound"
+    if v:exception ==# "NotFound"
       let self._notfound = 1
+    elseif v:exception ==# "Canceled"
+      if self.mode !~ 'n\|o'
+        normal! gv
+      endif
     endif
     let self.lastmsg = v:exception
   finally
@@ -156,12 +174,16 @@ function! s:smalls.start(dir, mode)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.do_jump(kbd) "{{{1
+function! s:smalls.do_jump(kbd, ...) "{{{1
+  " let wordend = a:0 ? 1 : 0
   call self.hl.clear()
   call self.hl.shade()
 
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
+    " if wordend
+      " let pos_new.col += a:kbd.data_len() - 1
+    " endif
     call self._jump_to_pos(pos_new)
   endif
   let self._break = 1
@@ -177,6 +199,11 @@ function! s:smalls.do_jump_first(kbd) "{{{1
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
+  " FIXME
+  " I can't determine my mind how much adjustment is appropriate.
+  " need deep consideration
+  call s:smalls._adjust_col(a:pos)
+  " call s:smalls._adjust_col_aggressive(a:pos)
   call a:pos.jump(self._is_visual())
 endfunction
 
@@ -184,23 +211,78 @@ function! s:smalls._is_visual() "{{{1
   return (self.mode != 'n' && self.mode != 'o')
 endfunction
 
-function! s:smalls._adjust_col(pos) "{{{1
-  if self.mode != 'o'
-    return
-  endif
-  if self.dir == 'fwd'
-    let a:pos.col += 1
-    return
-  endif
-  " 'all' mode possibly move backward, so only adjust forward direction carefully.
-  let org_p = self.env.p
-  if ( org_p.line < a:pos.line ) ||
-        \ (( org_p.line == a:pos.line ) && ( org_p.col < a:pos.col ))
-    let a:pos.col += 1
+function! s:smalls._need_adjust_col(pos)
+  if self.mode == 'n'
+    return 0
+  elseif self.mode ==# 'o'
+    return self._is_forward(a:pos)
+  elseif self._is_visual()
+    if self.mode =~# 'v\|V'
+      return self._is_forward(a:pos)
+    elseif self.mode ==# "\<C-v>"
+      return self._is_col_forward(a:pos.col)
   endif
 endfunction
 
+function! s:smalls._adjust_col(pos) "{{{1
+  if self._need_adjust_col(a:pos)
+    let a:pos.col += self.keyboard_cli.data_len() - 1
+  endif
+  if self.mode ==# 'o' && g:smalls_operator_always_inclusive
+    if self._is_forward(a:pos)
+      let a:pos.col += 1
+      if a:pos.col > len(getline(a:pos.line))
+        let a:pos.line += 1
+        let a:pos.col = 1
+      endif
+    endif
+  endif
+endfunction
+
+
+function! s:smalls._adjust_col_aggressive(pos) "{{{1
+  if self.mode == 'n'
+    return
+  endif
+
+  " possibly move backward, so only adjust forward direction carefully.
+  if self.mode ==# 'o'
+    if self._is_forward(a:pos)
+      let a:pos.col += self.keyboard_cli.data_len() - 1
+      let a:pos.col += 1
+      if a:pos.col > len(getline(a:pos.line))
+        let a:pos.line += 1
+        let a:pos.col = 1
+      endif
+    endif
+  endif
+
+  if self._is_visual()
+    if self.mode =~# 'v\|V'
+      if self._is_forward(a:pos)
+        let a:pos.col += self.keyboard_cli.data_len() - 1
+      endif
+    elseif self.mode ==# "\<C-v>"
+      if self._is_col_forward(a:pos.col)
+          let a:pos.col += self.keyboard_cli.data_len() - 1
+      endif
+    endif
+  endif
+endfunction
+
+function! s:smalls._is_forward(dst_pos) "{{{1
+  return ( self.env.p.line < a:dst_pos.line ) ||
+        \ (( self.env.p.line == a:dst_pos.line ) && ( self.env.p.col < a:dst_pos.col ))
+endfunction
+
+function! s:smalls._is_col_forward(col) "{{{1
+  return ( self.env.p.col < a:col )
+endfunction
+
+
 function! s:smalls.do_excursion(kbd, ...) "{{{1
+  " force to update statusline by meaningless option update ':help statusline'
+  let g:smalls_current_mode = 'excursion' | let &ro = &ro
   let first_dir = a:0 ? a:1 : ''
   let word = a:kbd.data
   if  empty(word) | return [] | endif
@@ -210,13 +292,6 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   endif
   let kbd = smalls#keyboard#excursion#new(self, word, poslist)
 
-  if self.dir == 'bwd'
-    " bwd candidate is gathered backward direction
-    " to fit kbd's next(), prev() orientation, reverse() and set index to
-    " original first candidate(which is last index after reversed
-    call reverse(kbd.poslist)
-    let kbd.index = len(kbd.poslist) - 1
-  endif
   if !empty(first_dir)
     call kbd['do_' . first_dir]()
     call self.hl.clear('SmallsCurrent', 'SmallsCursor', 'SmallsCandidate')
@@ -234,6 +309,8 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
       redraw
     endwhile
   catch 'BACK_CLI'
+  " force to update statusline by meaningless option update ':help statusline'
+    let g:smalls_current_mode = 'cli' | let &ro = &ro
     let self._break = 0
   endtry
 endfunction
@@ -241,17 +318,18 @@ endfunction
 function! s:smalls.get_jump_target(word) "{{{1
   if empty(a:word) | return [] | endif
   let poslist = self.finder.all(a:word)
-  let pos_new = smalls#jump#new(self.dir, self.env, self.hl).get_pos(poslist)
+  let pos_new = smalls#jump#new(self.env, self.hl).get_pos(poslist)
   return pos_new
 endfunction
 "}}}
 
 " PublicInterface:
-function! smalls#start(dir, mode) "{{{1
-  call s:smalls.start(a:dir, a:mode)
+function! smalls#start(mode) "{{{1
+  call s:smalls.start(a:mode)
 endfunction "}}}
+
 function! smalls#debug() "{{{
-  let g:V = s:smalls.hl
+  " let g:V = s:smalls.hl
   " echo PP(s:smalls)
 endfunction
 " vim: foldmethod=marker

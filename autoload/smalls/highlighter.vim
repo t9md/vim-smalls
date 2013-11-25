@@ -1,24 +1,23 @@
-let s:plog = smalls#util#import("plog")
+let s:plog    = smalls#util#import("plog")
 
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
   return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
 endfunction "}}}
 
-let h = {} | let s:h = h
-let h.ids = []
+let s:h = {}
+let s:h.ids = []
 let s:priorities = {
-      \ 'SmallsShade':       99,
-      \ 'SmallsRegion':     102,
-      \ 'SmallsCandidate':  101,
-      \ 'SmallsCurrent':    103,
-      \ 'SmallsCursor':     104,
-      \ 'SmallsJumpTarget': 105,
+      \ 'SmallsShade':      101,
+      \ 'SmallsCandidate':  103,
+      \ 'SmallsRegion':     105,
+      \ 'SmallsCurrent':    107,
+      \ 'SmallsCursor':     109,
+      \ 'SmallsJumpTarget': 111,
       \ }
 
-function! h.new(dir, env) "{{{1
+function! s:h.new(env) "{{{1
   let self.env = a:env
-  let self.dir = a:dir
   let self.ids = {}
   for color in keys(s:priorities)
     let self.ids[color] = []
@@ -26,16 +25,16 @@ function! h.new(dir, env) "{{{1
   return self
 endfunction
 
-function! h.dump() "{{{1
+function! s:h.dump() "{{{1
   echo PP(self)
 endfunction
 
-function! h.hl(color, pattern) "{{{1
+function! s:h.hl(color, pattern) "{{{1
   call add(self.ids[a:color],
         \ matchadd(a:color, a:pattern, s:priorities[a:color]))
 endfunction
 
-function! h.clear(...) "{{{1
+function! s:h.clear(...) "{{{1
   let colors = a:0 ? a:000 : keys(self.ids)
   for color in colors
     if !has_key(self.ids, color)
@@ -48,22 +47,18 @@ function! h.clear(...) "{{{1
   endfor
 endfunction
 
-function! h.shade() "{{{1
+function! s:h.shade() "{{{1
   if ! g:smalls_shade | return | endif
-  let pos = '%{l}l%{c}c'
-  let pat = 
-        \ self.dir ==# "fwd" ? s:intrpl(pos . '\_.*%{w$}l', self.env):
-        \ self.dir ==# "bwd" ? s:intrpl('%{w0}l\_.*' . pos, self.env):
-        \ self.dir ==# "all" ? s:intrpl('%{w0}l\_.*%{w$}l', self.env): throw
+  let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
 endfunction "}}}
 
-function! h.orig_pos()
+function! s:h.orig_pos()
   let pos = '%{l}l%{c}c'
   call self.hl("SmallsCursor",    s:intrpl('\v\c' . pos, self.env))
 endfunction
 
-function! h.blink_orig_pos()
+function! s:h.blink_orig_pos()
   " used to notify user's mistake and spot cursor.
   " to avoid user's input mess buffer, we consume keyinput while blinking.
   let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
@@ -78,41 +73,67 @@ function! h.blink_orig_pos()
   endfor
 endfunction
 
-function! h.region(pos) "{{{1
+function! s:h.region(pos, word) "{{{1
+  let wordlen = len(a:word)
   call self.clear("SmallsRegion")
   let e = {
         \ 'nl': a:pos[0],
+        \ 'nl+1': a:pos[0] + 1,
+        \ 'nl-1': a:pos[0] - 1,
         \ 'nc': a:pos[1],
         \ 'nc+1': a:pos[1] + 1,
+        \ 'nc-1': a:pos[1] - 1,
+        \ 'ke+1': a:pos[1] + wordlen,
         \ }
   call extend(e, self.env, 'error')
-  " let pos = '%{l}l%{c}c'
-  let pat_table = {
-        \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
-        \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
-        \ }
-  " let block_pat_table = {
-        " \ 'fwd': '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c',
-        " \ 'bwd': '%{nl}l%>{nc}c\_.*%{l}l%<{c}c',
-        " \ }
-  
-  " 'all' mode possibly move backward, so only adjust forward direction carefully.
-  let pat_name = self.dir
-  if self.dir     ==# 'all'
-    let org_p = self.env.p
-    if ( org_p.line < a:pos[0] ) ||
-          \ (( org_p.line == a:pos[0] ) && ( org_p.col < a:pos[1] ))
-      let pat_name = 'fwd'
-    else
-      let pat_name = 'bwd'
-    endif
+
+  " possibly move backward, so only adjust forward direction carefully.
+  if self._is_forward(a:pos)
+    let pat =
+          \ self.env.mode =~# 'v\|o' ? '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c' :
+          \ self.env.mode ==# 'V' ? '%{l}l\_.*%{nl}l' :
+          \ self.env.mode ==# "\<C-v>" ?
+          \   ( self._is_col_forward(a:pos[1])
+          \   ? '\v\c%>{l-1}l%>{c-1}c.*%<{nl+1}l%<{ke+1}c'
+          \   : '\v\c%>{l-1}l%>{nc-1}c.*%<{nl+1}l%<{c+1}c' )
+          \ : throw
+  else
+    let pat =
+          \ self.env.mode =~# 'v\|o' ? '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c' :
+          \ self.env.mode ==# 'V' ? '%{nl}l\_.*%{l}l' :
+          \ self.env.mode ==# "\<C-v>" ?
+          \   ( self._is_col_forward(a:pos[1])
+          \   ? '\v\c%>{nl-1}l%>{c-1}c.*%<{l+1}l%<{ke+1}c'
+          \   : '\v\c%>{nl-1}l%>{nc-1}c.*%<{l+1}l%<{c+1}c' )
+          \ : throw
   endif
-  let pat = pat_table[pat_name]
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction
 
+function! s:h.select(pos)
+  exe 'normal! ' . "<Esc>"
+  call self.env.p.set()
+  exe 'normal! ' . self.env.mode
+  call cursor(a:pos)
+endfunction
 
-function! h.candidate(word, pos) "{{{1
+function! s:h._is_forward(dst_pos) "{{{1
+  return ( self.env.p.line < a:dst_pos[0] ) ||
+        \ (( self.env.p.line == a:dst_pos[0] ) && ( self.env.p.col < a:dst_pos[1] ))
+endfunction
+
+function! s:h._is_col_forward(col) "{{{1
+  return ( self.env.p.col < a:col )
+endfunction
+
+
+function! s:h.jump_target(poslist) "{{{1
+  let hl_expr = join(
+        \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
+  call self.hl('SmallsJumpTarget', '\v'. hl_expr)
+endfunction
+
+function! s:h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
   let wordlen = len(a:word)
@@ -123,28 +144,24 @@ function! h.candidate(word, pos) "{{{1
         \ 'ke':   a:pos[1] + wordlen - 1,
         \ }
 
-  if self.dir     ==# 'fwd'
-    let curline     = '%{l}l%>{c}c{k}'
-    let next2end    = '%>{l}l{k}%<{w$+1}l'
-    let candidate   = '('. curline .')|('. next2end .')'
-  elseif self.dir ==# "bwd"
-    let curline     = '%{l}l{k}%<{c+1}c'
-    let next2top    = '%>{w0-1}l{k}%<{l}l'
-    let candidate   = '('.curline .')|('. next2top .')'
-  elseif self.dir ==# "all"
-    let candidate   = '{k}'
-  end
+  let candidate   = '{k}'
   call extend(e, self.env, 'error')
 
   call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
   call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))
-  call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
+  " call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
   if self.env.mode != 'n'
-    call self.region(a:pos)
+    call self.region(a:pos, a:word)
   endif
 endfunction
 
-function! smalls#highlighter#new(dir, env) "{{{1
-  return s:h.new(a:dir, a:env)
+function! smalls#highlighter#new(env) "{{{1
+  return s:h.new(a:env)
+endfunction
+function! smalls#highlighter#extend_priority(table) "{{{1
+  call extend(s:priorities, a:table, 'force')
+endfunction
+function! smalls#highlighter#get_table() "{{{1
+  return s:priorities
 endfunction
 " vim: foldmethod=marker

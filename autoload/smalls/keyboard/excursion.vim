@@ -16,12 +16,12 @@ let s:key_table = {
       \        "h": "do_left",
       \        "l": "do_right",
       \        ";": "do_set",
-      \        "v": "do_direct",
-      \        "d": "do_direct",
-      \        "y": "do_direct",
-      \   "\<C-v>": "do_direct",
       \    "\<CR>": "do_set",
       \ }
+      " \        "v": "do_direct",
+      " \        "d": "do_direct",
+      " \        "y": "do_direct",
+      " \   "\<C-v>": "do_direct",
 
 let s:keyboard = {}
 

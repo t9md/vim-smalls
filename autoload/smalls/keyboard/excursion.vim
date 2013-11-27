@@ -16,6 +16,10 @@ let s:key_table = {
       \        "h": "do_left",
       \        "l": "do_right",
       \        ";": "do_set",
+      \        "v": "do_direct",
+      \        "d": "do_direct",
+      \        "y": "do_direct",
+      \   "\<C-v>": "do_direct",
       \    "\<CR>": "do_set",
       \ }
 
@@ -95,6 +99,13 @@ function! s:keyboard.do_set() "{{{1
   let pos_new = smalls#pos#new(self.pos())
   call self.owner._jump_to_pos(pos_new)
   let self.owner._break = 1
+endfunction
+
+function! s:keyboard.do_direct() "{{{1
+  exe 'normal! ' . self.last_input
+  let pos_new = smalls#pos#new(self.pos())
+  call self.owner._set_to_pos(pos_new)
+  " let self.owner._break = 1
 endfunction
 
 function! s:keyboard._do_normal(key) "{{{1

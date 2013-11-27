@@ -207,6 +207,11 @@ function! s:smalls._jump_to_pos(pos) "{{{1
   call a:pos.jump(self._is_visual())
 endfunction
 
+function! s:smalls._set_to_pos(pos) "{{{1
+  call s:smalls._adjust_col(a:pos)
+  call a:pos.jump()
+endfunction
+
 function! s:smalls._is_visual() "{{{1
   return (self.mode != 'n' && self.mode != 'o')
 endfunction

@@ -48,3 +48,24 @@ delete, yank 等の operator と組み合わせて使用する motion。operator
 * [easymotion](https://github.com/Lokaltog/vim-easymotion)
 * [clever-f](https://github.com/rhysd/clever-f.vim)
 * [sneak](https://github.com/justinmk/vim-sneak)
+
+# なぜ作ったか？
+* 複数文字で検索して、一発で候補に飛びたい。
+easymotion は 'word の先頭', 'word の終わり', '行' 等、移動前に移動先の性質を判断してから呼び出す必要があり、脳が疲れる。キータイプが少し増えてもいいからもう少し気楽に呼び出したい。
+呼び出し前に移動先が、行か、word start か word end かを決定するなんて出来ない。
+* forwad, backward はいらない。見えている window 全体を対象として移動したい。
+要は一つのキーのみから呼び出したい。現在のカーソル位置から移動先への相対位置から forward, backward 判断してキーを選ぶのが疲れる。
+* ジャンプの移動先を選ぶのに大文字押したくない。
+Shift キーと組み合わせて大文字(Capital Letter)を入力したくない。小文字だけでジャンプ出来たほうが結果的に速い。
+* しかし結果的には excursion-mode が副産物として出来たので、単なる search > easymotion style jump プラグインではなくなった。
+
+# smalls-mode
+
+smalls.vim には２つのモードがある。
+
+| モード     | 説明         |
+| ---------- |-------------|
+| cli-mode   | <Plug>(smalls) で入るモード、候補の選択とジャンプ。`<C-e>`や`<Tab>`等を入力することで excursion-mode に入る |
+| excursion-mode  | excursion (小旅行)モード。cli-mode で絞り込んだ候補間をjkhl で移動したり、`d`(削除), `y`(ヤンク)等を行う。|
+
+# cli-mode

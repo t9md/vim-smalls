@@ -23,8 +23,9 @@ delete, yank 等の operator と組み合わせて使用する motion。operator
 * fold された範囲を移動候補からスキップ(デフォルトの '/' でカーソルが fold に埋もれてしまう恐怖から開放)
 * normal, visual, operator モードから呼び出し可能。
 * visual, operator モードでは、作用範囲をハイライトして視覚化。例えば、d の作用範囲を見た目で確認しながら決定。
-* 移動候補間を hkjlnp 等のキーで自由に移動( excursion-mode )
-* cli-mode, excursion-mode それぞれで、キーバインドをフルカスタマイズ可能。
+* 移動候補間を jkhlnp 等のキーで自由に移動( excursion-mode )
+* cli-mode, excursion-mode それぞれで、どのキーがどの動作になるか、というキーバインドをフルカスタマイズ可能。
+* cli-mode から excursion-mode のアクションを直接呼び出し可能。( _action_missing() fook による。)
 * 一定時間キー入力がない場合に、easymotion スタイルのジャンプキーを自動表示
 * ジャンプキーの自動表示が発動する最低文字数は変更可能(例: 最低3文字を超えてから有効にする。)
 * 色のカスタマイズ

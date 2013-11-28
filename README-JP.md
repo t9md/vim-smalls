@@ -72,6 +72,22 @@ nmap s <Plug>(smalls)
 2. 1文字入力, 候補が表示される。`<Tab>`キーを押す。この時点で excursion-mode に入る。
 3. jkhlやnpを押してみよう。候補間を移動できる。`v`, `V`, `<C-v>` で visual 選択も出来る。`d` で delete、`y` でヤンク。
 
+直接 excursion モードに入るキーマップも用意しています。  
+ここでは、`<C-e>` にマッピングします。
+
+```Vim
+nmap <C-e> <Plug>(smalls-excursion)
+```
+
+1. `<C-e>` を押す。
+2. 何か一文字入力。例えば `,` とする。この時点で excursion-mode に入る。
+3. hjklnp 等で移動し、`d`で削除、`y` でヤンク等する。
+
+この方法のメリットは、excursion-mode に切り替える操作が発生しない点です。  
+デメリットは、着地候補絞り込みの入力文字数が固定になる点です。  
+入力文字数が `g:smalls_direct_excursion_min_input_length` の値を超えると、自動的に excursion-mode に入ります。  
+デフォルトは `1` です。  
+
 # 果たしてコレは便利なのか？
 
 デフォルトの `f` や `t` の方が速く、脳内のコンテキストスイッチも少ないので良い、という場面は多くあるでしょう。  
@@ -156,6 +172,7 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | `<C-v>`   | do_select_CTRL_V | 着地候補までを CTRL_V |
 | `;`       | do_set           | 着地候補に着地        |
 | `<CR>`    | do_set           | 着地候補に着地        |
+| 1-9の数字 | do_feed_count    | カウントを指定        |
 
 # カスタマイズ
 
@@ -168,6 +185,27 @@ TODO
 * カーソルの色を変える拡張実装がされるのを待つ。
 * ステータスラインの下の `[Excursion]` を視る。
 * [vim-ezbar](https://github.com/t9md/vim-ezbar) を使用し、設定例を参考にステータスバーの色ごと変えることで気付き易くする。
+
+## excursion-mode にいちいち切り替えるのが面倒。
+`<Plug>(smalls-excursion)` を使用して下さい。
+
+1文字ではなく、2文字入力後に excursion-mode に入るようにしたい。  
+以下の設定で可能です。  
+```Vim
+let g:smalls_direct_excursion_min_input_length = 2
+```
+
+## excursion-mode で、`l`, `h` で行を超えて移動したい。
+excursion-mode の `do_next`, `do_prev` アクションがそれです。
+以下の設定で可能です。
+
+```Vim
+call smalls#keyboard#cli#extend_table({ "l": do_next, "h": do_prev, })
+```
+
+## excursion-mode で、移動数をカウント指定したい。
+一桁のカウント(1-9 まで)には対応しています。  
+例えば `3n` で 3つ先の着地点へ移動が出来ます。
 
 ## `d` の operator モードから呼び出した時、word の末尾の文字が消されずに残る。
 `g:smalls_operator_always_inclusive = 1`する事で変更可能です。  

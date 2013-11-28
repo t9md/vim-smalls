@@ -49,6 +49,11 @@ x_<Plug>(smalls)
 o_<Plug>(smalls)
 	operator mode version
 
+n_<Plug>(smalls-excursion)
+x_<Plug>(smalls-excursion)
+o_<Plug>(smalls-excursion)
+	directly switch to excursion-mode after 
+
 ==============================================================================
 COMMANDS						    *smalls-commands*
 
@@ -194,6 +199,11 @@ By default this feature is disabled.
 	  * airline
 	  * lightline
 	  * ezline ( I'm author )
+
+*g:smalls_direct_excursion_min_input_length*
+	Default: 1
+	In '<Plug>(smalls-excursion)' and if input exceed this value,
+	automatically enter excursion mode.
 
 ==============================================================================
 FUNCTIONS						   *smalls-functions*

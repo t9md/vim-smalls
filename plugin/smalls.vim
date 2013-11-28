@@ -17,6 +17,7 @@ let s:options = {
       \ 'g:smalls_operator_always_inclusive': 0,
       \ 'g:smalls_blink_on_notfound': 1,
       \ 'g:smalls_current_mode': '',
+      \ 'g:smalls_direct_excursion_min_input_length': 1,
       \ }
       " \ 'g:smalls_jump_wordend_normal': 0,
 
@@ -73,10 +74,13 @@ augroup Smalls
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start('n')<CR>
-xnoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start(visualmode())<CR>
-onoremap <silent> <Plug>(smalls)          :<C-u>call smalls#start('o')<CR>
-" onoremap <silent> <Plug>(smalls-operator-v) :<C-u>call smalls#start('o')<CR>
+nnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('n')<CR>
+xnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start(visualmode())<CR>
+onoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('o')<CR>
+
+nnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('n', 1)<CR>
+xnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start(visualmode(), 1)<CR>
+onoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('o', 1)<CR>
 
 " nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
 

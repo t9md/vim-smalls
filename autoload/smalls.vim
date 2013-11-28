@@ -123,9 +123,13 @@ function! s:smalls.loop() "{{{1
   let hl = self.hl
   while 1
     call hl.shade()
-    " if kbd.data_len() ==# 0
-      call hl.orig_pos()
-    " endif
+    call hl.orig_pos()
+
+    if self.direction_excursion &&
+          \ kbd.data_len() >=# g:smalls_direct_excursion_min_input_length
+      call self.do_excursion(kbd)
+      return
+    endif
 
     let timeout = 
           \ ( g:smalls_jump_keys_auto_show &&
@@ -136,6 +140,7 @@ function! s:smalls.loop() "{{{1
     catch /KEYBOARD_TIMEOUT/
       call self.do_jump(kbd)
     endtry
+
 
     if self._break
       break
@@ -152,8 +157,9 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(mode)  "{{{1
+function! s:smalls.start(mode, direction_excursion)  "{{{1
   try
+    let self.direction_excursion = a:direction_excursion
     call self.init(a:mode)
     call self.set_opts()
     call self.cursor_hide()
@@ -335,8 +341,9 @@ endfunction
 "}}}
 
 " PublicInterface:
-function! smalls#start(mode) "{{{1
-  call s:smalls.start(a:mode)
+function! smalls#start(mode, ...) "{{{1
+  let direction_excursion = a:0 ? 1 : 0
+  call s:smalls.start(a:mode, direction_excursion)
 endfunction "}}}
 
 function! smalls#debug() "{{{

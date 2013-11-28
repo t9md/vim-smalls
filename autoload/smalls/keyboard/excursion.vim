@@ -26,12 +26,16 @@ let s:key_table = {
       \        ";": "do_set",
       \    "\<CR>": "do_set",
       \ }
-      " \    "\<F9>": "do_debug",
+
+for s:n in range(1,20)
+  let s:key_table[s:n] = "do_feed_count"
+endfor
 
 let s:keyboard = {}
 
 function! s:keyboard.init(word, poslist) "{{{1
   let self.index   = 0
+  let self.count   = 1
   let self.word    = a:word
   let self.poslist = a:poslist
   let self.max     = len(a:poslist)
@@ -59,11 +63,17 @@ function! s:keyboard.pos() "{{{1
 endfunction
 
 function! s:keyboard.do_up() "{{{1
-  call self.do_ud('prev')
+  for n in range(self.count)
+    call self.do_ud('prev')
+  endfor
+  let self.count = 1
 endfunction
 
 function! s:keyboard.do_down() "{{{1
-  call self.do_ud('next')
+  for n in range(self.count)
+    call self.do_ud('next')
+  endfor
+  let self.count = 1
 endfunction
 
 function! s:keyboard.do_ud(dir) "{{{1
@@ -76,11 +86,17 @@ function! s:keyboard.do_ud(dir) "{{{1
 endfunction
 
 function! s:keyboard.do_right() "{{{1
-  call self.do_lr('next')
+  for n in range(self.count)
+    call self.do_lr('next')
+  endfor
+  let self.count = 1
 endfunction
 
 function! s:keyboard.do_left() "{{{1
-  call self.do_lr('prev')
+  for n in range(self.count)
+    call self.do_lr('prev')
+  endfor
+  let self.count = 1
 endfunction
 
 function! s:keyboard.do_lr(dir) "{{{1
@@ -93,14 +109,30 @@ function! s:keyboard.do_lr(dir) "{{{1
 endfunction
 
 function! s:keyboard.do_next() "{{{1
-  let self.index = (self.index + 1) % self.max
+  for n in range(self.count)
+    let self.index = (self.index + 1) % self.max
+  endfor
+  let self.count = 1
 endfunction
 
 function! s:keyboard.do_prev() "{{{1
-  let self.index = ((self.index - 1) + self.max ) % self.max
+  for n in range(self.count)
+    let self.index = ((self.index - 1) + self.max ) % self.max
+  endfor
+  let self.count = 1
 endfunction
 
 function! s:keyboard.do_set() "{{{1
+  let pos_new = smalls#pos#new(self.pos())
+  call self.owner._jump_to_pos(pos_new)
+  let self.owner._break = 1
+endfunction
+
+function! s:keyboard.do_feed_count() "{{{1
+  let self.count = str2nr(self.last_input)
+endfunction
+
+function! s:keyboard._action_missing(action) "{{{1
   let pos_new = smalls#pos#new(self.pos())
   call self.owner._jump_to_pos(pos_new)
   let self.owner._break = 1
@@ -153,7 +185,6 @@ function! s:keyboard._do_normal(key) "{{{1
 endfunction
 
 function! s:keyboard.do_debug() "{{{1
-  " call s:plog( self.owner.env.mode )
 endfunction
 
 function! smalls#keyboard#excursion#get_table() "{{{1

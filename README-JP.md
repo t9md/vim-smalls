@@ -100,7 +100,7 @@ smalls.vim には２つのモードがある。
 
 | モード     | 説明        |
 | ---------- |-------------|
-| cli-mode   | <Plug>(smalls) で入るモード、候補の選択とジャンプ。 <br> `<C-e>`や`<Tab>`等を入力することで excursion-mode に入る |
+| cli-mode   | `<Plug>(smalls)` で入るモード、候補の選択とジャンプ。 <br> `<C-e>`や`<Tab>`等を入力することで excursion-mode に入る |
 | excursion-mode  | excursion (小旅行)モード。 <br> cli-mode で絞り込んだ候補間をjkhl で移動したり、`d`(削除), `y`(ヤンク)等を行う。|
 
 

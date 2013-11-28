@@ -9,7 +9,7 @@ Lokaltog 氏が考えたアイデアとコードの土台がなければ smalls 
 大きく、以下の２つの特徴を持つ。
 
 * cli-mode
-文字列を検索して easymotion スタイルでジャンプ。( cli-mode )
+文字列を検索して easymotion スタイルでジャンプ
 
 * excursion-mode
 delete, yank 等の operator と組み合わせて使用する motion。operator の作用範囲を視覚化出来る点が特徴

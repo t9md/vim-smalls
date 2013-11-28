@@ -1,7 +1,7 @@
 # まず最初に
 
 
-[vim-easymotion](https://github.com/Lokaltog/vim-easymotion) という素晴らしいプラグインを作られた Lokaltog 氏に感謝します。
+[vim-easymotion](https://github.com/Lokaltog/vim-easymotion) という素晴らしいプラグインを作られた Lokaltog 氏に感謝します。  
 Lokaltog 氏が考えたアイデアとコードの土台がなければ smalls は決して作れませんでした。
 
 # コレは何？

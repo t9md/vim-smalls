@@ -51,14 +51,14 @@ function! s:h.shade() "{{{1
   if ! g:smalls_shade | return | endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
-endfunction "}}}
+endfunction
 
-function! s:h.orig_pos()
+function! s:h.orig_pos() "{{{1
   let pos = '%{l}l%{c}c'
   call self.hl("SmallsPos",    s:intrpl('\v\c' . pos, self.env))
 endfunction
 
-function! s:h.blink_orig_pos()
+function! s:h.blink_orig_pos() "{{{1
   " used to notify user's mistake and spot cursor.
   " to avoid user's input mess buffer, we consume keyinput while blinking.
   let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
@@ -110,7 +110,7 @@ function! s:h.region(pos, word) "{{{1
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction
 
-function! s:h.select(pos)
+function! s:h.select(pos) "{{{1
   exe 'normal! ' . "<Esc>"
   call self.env.p.set()
   exe 'normal! ' . self.env.mode

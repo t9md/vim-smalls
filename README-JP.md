@@ -173,7 +173,7 @@ TODO
 `g:smalls_operator_always_inclusive = 1`する事で変更可能です。  
 副作用があるため、この設定はあまりお勧めしません。  
 `:help g:smalls_operator_always_inclusive` に詳細が書かれています。  
-それよりは、`dvs` や `dVs` で operator のモーション-wise を明示的に指定する方が良いです。  
+それよりは、`dvs` や `dVs` で operator の motion-wise を明示的に指定する方が良いです。  
 あるいは、normal モードから smalls に入り、excursion モードから `d` したり、cli-mode から `<C-d>` で直接消す方が良いかもしれません。  
 
 ## キーバインドをカスタマイズしたい。

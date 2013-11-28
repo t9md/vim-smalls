@@ -98,11 +98,12 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 後述するが、このキーバインドは全て変更可能。  
 
 | *Key*          | *Action*                        | *Description*                       |
+| -------------- | ------------------------------- | ----------------------------------- |
 | <C-c>          | do_cancel                       | キャンセル                          |
 | <Esc>          | do_cancel                       | キャンセル                          |
 | <CR>           | do_jump_first                   | デフォルト候補に着地                |
 | <C-h>          | do_delete                       | カーソル後方の文字を削除            |
-| <BS>           | do_delete                       | カーソル後方の文字を削除
+| <BS>           | do_delete                       | カーソル後方の文字を削除            |
 | <C-a>          | do_head                         | カーソルを行頭へ                    |
 | <C-f>          | do_char_forward                 | カーソルを1文字進める               |
 | <C-b>          | do_char_backward                | カーソルを1文字戻す                 |
@@ -123,6 +124,7 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 ## excursion-mode
 
 | *Key*   | *Action*         | *Description*         |
+| ------- | ---------------- | --------------------- |
 | <C-c>   | do_cancel        | キャンセル            |
 | <C-e>   | do_back_cli      | cli-mode へ戻る       |
 | <Esc>   | do_back_cli      | cli-mode へ戻る       |
@@ -151,13 +153,14 @@ TODO
 # FAQ
 
 ## excursion-mode に入った事が視覚的に分かりにくい。
-A. 
+*A. *
 * 慣れる。
 * カーソルの色を変える拡張実装がされるのを待つ。
 * ステータスラインの下の `[Excursion]` を視る。
 * [vim-ezbar](https://github.com/t9md/vim-ezbar) を使用し、設定例を参考にステータスバーの色ごと変えることで気付き易くする。
 
 ## `d` の operator モードから呼び出した時、word の末尾の文字が消されずに残る。
+*A.*
 `g:smalls_operator_always_inclusive = 1`する事で変更可能です。
 副作用があるため、この設定は非推奨です。
 `:help g:smalls_operator_always_inclusive` に詳細が書かれています。
@@ -165,7 +168,7 @@ A.
 あるいは、normal モードから smalls に入り、excursion モードから `d` したり、cli-mode から `<C-d>` で直接消す方が良いかもしれません。
 
 ## キーバインドをカスタマイズしたい。
-A.
+*A.*
 `:help smalls-example` に載っています。
 ここでも例を示します。
 一部のみ変更する場合は以下。

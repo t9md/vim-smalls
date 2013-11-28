@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_smalls')
-  " finish
+  finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo
@@ -31,7 +31,7 @@ let s:color = {
       \ 'SmallsCli':        [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#a6e22e']],
       \ 'SmallsCliCursor':  [['NONE',      'NONE',    'grey',  ], [ 'underline',      'NONE',    '#a6e22e']],
       \ }
-      
+
 function! s:set_options(options) "{{{
   for [varname, value] in items(a:options)
     if !exists(varname)

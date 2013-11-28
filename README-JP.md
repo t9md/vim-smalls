@@ -51,8 +51,9 @@ delete, yank 等の operator と組み合わせて使用する motion。operator
 
 # 簡単な使い方
 vimrc に以下の設定をする。
+
 ```Vim
-    nmap s <Plug>(smalls)
+nmap s <Plug>(smalls)
 ```
 
 文字がたくさん書かれたファイルを開く(マルチバイト文字のファイル以外。プログラムのソースコードが良い)。
@@ -175,12 +176,12 @@ TODO
 一部のみ変更する場合は以下。  
 
 ```Vim
-  let cli_table_custom = {
-        \ "\<C-g>": 'do_cancel',
-        \ "\<C-j>": 'do_jump',
-        \ }
-  " 以下は cli-mode のキーテーブルを変更。同様に smalls#keyboard#excursion もある。
-  call smalls#keyboard#cli#extend_table(cli_table_custom)
+let cli_table_custom = {
+      \ "\<C-g>": 'do_cancel',
+      \ "\<C-j>": 'do_jump',
+      \ }
+" 以下は cli-mode のキーテーブルを変更。同様に smalls#keyboard#excursion もある。
+call smalls#keyboard#cli#extend_table(cli_table_custom)
 ```
 
 `smalls#keyboard#excursion#replace_table(table)` を使えば、キーテーブルを丸ごと入れ替えることも可能。  

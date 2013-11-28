@@ -6,9 +6,14 @@ Lokaltog 氏が考えたアイデアとコードの土台がなければ smalls 
 
 # コレは何？
 カーソル移動プラグインの一つ。  
-以下の2種類の使い方がある。  
-* 文字列を検索して easymotion スタイルでジャンプ。( cli-mode )
-* delete, yank 等の operator と組み合わせて使用する motion。operator の作用範囲を視覚化出来る点が特徴 ( excursion-mode )
+大きく、以下の２つの特徴を持つ。
+
+* cli-mode
+文字列を検索して easymotion スタイルでジャンプ。( cli-mode )
+
+* excursion-mode
+delete, yank 等の operator と組み合わせて使用する motion。operator の作用範囲を視覚化出来る点が特徴
+
 基本的な方針として、現在の Window 内で見えている範囲を対象とする(つまり、スクロールはしない)。  
 
 ## 特徴

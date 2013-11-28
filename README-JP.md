@@ -187,5 +187,5 @@ TODO
 以下を設定すると、excursion モードでは何もしなくなる。  
 
 ```Vim
-call smalls#keyboard#excursion#replace_table({}
+call smalls#keyboard#excursion#replace_table({})
 ```

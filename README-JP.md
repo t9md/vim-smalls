@@ -112,8 +112,8 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | `<C-a>`          | do_head                         | カーソルを行頭へ                    |
 | `<C-f>`          | do_char_forward                 | カーソルを1文字進める               |
 | `<C-b>`          | do_char_backward                | カーソルを1文字戻す                 |
-| `<C-k>`          | do_kill_to_end                  | 行末まで削除してyank                |
-| `<C-u>`          | do_kill_line                    | 行をクリアしてyank                  |
+| `<C-k>`          | do_kill_to_end                  | 行末まで削除                        |
+| `<C-u>`          | do_kill_line                    | 行をクリア                          |
 | `<C-r>`          | do_special                      | 実験的機能(意味なし)                |
 | `<C-e>`          | do_excursion                    | excursion-mode に入る               |
 | `<C-d>`          | do_excursion_with_delete        | excursion-mode の delete            |

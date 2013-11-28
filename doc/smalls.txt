@@ -331,7 +331,7 @@ Example-1: Add <C-g> and <C-j>
 	      \ "\<C-g>": 'do_cancel',
 	      \ "\<C-j>": 'do_jump',
 	      \ }
-        call smalls#keyboard#excursion#extend_table(cli_table_custom)
+        call smalls#keyboard#cli#extend_table(cli_table_custom)
 <
 Example-2: Disable default ';' in excursion mode
 >

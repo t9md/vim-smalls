@@ -94,7 +94,7 @@ VARIABLES						   *smalls-variables*
       	 SmallsCandidate    used to current sewarching keyword
       	 SmallsJumpTarget   used to standout jump target
       	 SmallsCurrent      current searching keyword
-      	 SmallsCursor       indicate last inputted char within keyword
+      	 SmallsPos          used to standout original pos
       	 SmallsShade        used in shade effect
 
 	{Value} is array to define actual color, should have two element.
@@ -212,7 +212,7 @@ FUNCTIONS						   *smalls-functions*
 	      \ 'SmallsCandidate':  103,
 	      \ 'SmallsRegion':     105,
 	      \ 'SmallsCurrent':    107,
-	      \ 'SmallsCursor':     109,
+	      \ 'SmallsPos':        109,
 	      \ 'SmallsJumpTarget': 111,
 	      \ }
 <
@@ -360,6 +360,12 @@ is specified or not.
 ============================================================================
 TODO								*smalls-todo*
 
+* [x] rewrite region selection
+ - add select()  action to pos.vim and select actually then use '`<', '`>' to
+   get area of highlight. so need rewriten highlighter.region() action.
+* [x] further flexible keybord table setting
+ - directly call excurtion mode keybind from cli mode with introducing
+   Ruby's method_missing like convention. => _actin_missing() implemented.
 * [x] option to determine to jump destination wether word's first or end
  - not option, implemented as action.
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 

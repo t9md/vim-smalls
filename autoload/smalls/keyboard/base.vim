@@ -1,4 +1,5 @@
 let s:getchar = smalls#util#import("getchar")
+let s:plog = smalls#util#import("plog")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 let s:keyboard = {}
@@ -38,7 +39,11 @@ function! s:keyboard.input(c) "{{{1
   else
     let action = self._table[a:c]
     if type(action) ==# type('')
-      call self[action]()
+      if has_key(self, action)
+        call self[action]()
+      else
+        call self._action_missing(action)
+      endif
     elseif type(action) ==# type({})
       call call(action.func, action.args, action.self)
     endif
@@ -47,6 +52,11 @@ endfunction
 
 function! s:keyboard.data_len() "{{{1
   return len(self.data)
+endfunction
+
+function! s:keyboard._action_missing(action) "{{{1
+  " called when 'ation' was not found in _table
+  " here hook do NOTHING, should be overwitten in subclass
 endfunction
 
 function! s:keyboard._set(c) "{{{1

@@ -1,3 +1,4 @@
+" let s:plog = smalls#util#import("plog")
 let s:pos = {}
 function! s:pos.new(pos) "{{{1
   " pos should size one List of [line, col]
@@ -20,8 +21,8 @@ function! s:pos.set() "{{{1
 endfunction
 
 function! s:pos.jump(...) "{{{1
-  if a:0 ? a:1 : 0
-    normal! gv
+  if a:0
+    execute "normal! " . a:1
   endif
   normal! m`
   call cursor(self.line, self.col)

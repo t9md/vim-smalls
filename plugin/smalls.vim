@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_smalls')
-  finish
+  " finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo
@@ -23,10 +23,10 @@ let s:options = {
       " \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#ff0000']],
       " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
 let s:color = {
-      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE',    '#66D9EF']],
+      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           '#403D3D', '#66D9EF']],
       \ 'SmallsCurrent':    [['NONE',      'magenta', 'white', ], [ 'NONE',           '#f92672', '#ffffff']],
       \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#f92672']],
-      \ 'SmallsCursor':     [['underline', 'magenta', 'white', ], [ 'bold,underline', 'LawnGreen', 'Black']],
+      \ 'SmallsPos':        [['underline', 'magenta', 'white', ], [ 'bold,underline', 'LawnGreen', 'Black']],
       \ 'SmallsShade':      [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#777777']],
       \ 'SmallsCli':        [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#a6e22e']],
       \ 'SmallsCliCursor':  [['NONE',      'NONE',    'grey',  ], [ 'underline',      'NONE',    '#a6e22e']],

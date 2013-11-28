@@ -10,9 +10,9 @@ let s:h.ids = []
 let s:priorities = {
       \ 'SmallsShade':      101,
       \ 'SmallsCandidate':  103,
-      \ 'SmallsRegion':     105,
+      \ 'SmallsRegion':     102,
       \ 'SmallsCurrent':    107,
-      \ 'SmallsCursor':     109,
+      \ 'SmallsPos':        109,
       \ 'SmallsJumpTarget': 111,
       \ }
 
@@ -55,7 +55,7 @@ endfunction "}}}
 
 function! s:h.orig_pos()
   let pos = '%{l}l%{c}c'
-  call self.hl("SmallsCursor",    s:intrpl('\v\c' . pos, self.env))
+  call self.hl("SmallsPos",    s:intrpl('\v\c' . pos, self.env))
 endfunction
 
 function! s:h.blink_orig_pos()
@@ -64,7 +64,7 @@ function! s:h.blink_orig_pos()
   let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
   for i in range(2)
     call getchar(0)
-    call self.hl("SmallsCursor", pat)
+    call self.hl("SmallsPos", pat)
     redraw!
     sleep 200m
     call self.clear()

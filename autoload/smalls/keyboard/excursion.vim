@@ -6,6 +6,7 @@ let s:plog    = smalls#util#import("plog")
 
 let s:key_table = {
       \   "\<C-c>": "do_cancel",
+      \   "\<C-e>": "do_back_cli",
       \   "\<Esc>": "do_back_cli",
       \        "n": "do_next",
       \   "\<Tab>": "do_next",
@@ -15,13 +16,17 @@ let s:key_table = {
       \        "j": "do_down",
       \        "h": "do_left",
       \        "l": "do_right",
+      \        "d": "do_delete",
+      \   "\<C-d>": "do_delete",
+      \        "y": "do_yank",
+      \   "\<C-y>": "do_yank",
+      \        "v": "do_select_v",
+      \        "V": "do_select_V",
+      \   "\<C-v>": "do_select_CTRL_V",
       \        ";": "do_set",
       \    "\<CR>": "do_set",
       \ }
-      " \        "v": "do_direct",
-      " \        "d": "do_direct",
-      " \        "y": "do_direct",
-      " \   "\<C-v>": "do_direct",
+      " \    "\<F9>": "do_debug",
 
 let s:keyboard = {}
 
@@ -101,6 +106,22 @@ function! s:keyboard.do_set() "{{{1
   let self.owner._break = 1
 endfunction
 
+function! s:keyboard.do_delete() "{{{1
+  if !self.owner._is_visual()
+    call self.do_select_v()
+  endif
+  call self.do_set()
+  normal! d
+endfunction
+
+function! s:keyboard.do_yank() "{{{1
+  if !self.owner._is_visual()
+    call self.do_select_v()
+  endif
+  call self.do_set()
+  normal! y
+endfunction
+
 function! s:keyboard.do_direct() "{{{1
   exe 'normal! ' . self.last_input
   let pos_new = smalls#pos#new(self.pos())
@@ -108,10 +129,31 @@ function! s:keyboard.do_direct() "{{{1
   " let self.owner._break = 1
 endfunction
 
+function! s:keyboard.do_select_v() "{{{1
+  call self._do_select('v')
+endfunction
+
+function! s:keyboard.do_select_V() "{{{1
+  call self._do_select('V')
+endfunction
+
+function! s:keyboard.do_select_CTRL_V() "{{{1
+  call self._do_select("\<C-v>")
+endfunction
+
+function! s:keyboard._do_select(key) "{{{1
+  " only emulate select, so set to env.mode
+  let self.owner.env.mode = a:key
+endfunction
+
 function! s:keyboard._do_normal(key) "{{{1
   let pos_new = smalls#pos#new(self.pos())
   execute 'normal! ' . a:key
   call self.owner._jump_to_pos(pos_new)
+endfunction
+
+function! s:keyboard.do_debug() "{{{1
+  " call s:plog( self.owner.env.mode )
 endfunction
 
 function! smalls#keyboard#excursion#get_table() "{{{1

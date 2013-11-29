@@ -25,7 +25,7 @@ delete, yank 等の operator と組み合わせて使用する motion。operator
 * visual, operator モードでは、作用範囲をハイライトして視覚化。例えば、d の作用範囲を見た目で確認しながら決定。
 * 着地候補間を jkhlnp 等のキーで自由に移動( excursion-mode )
 * cli-mode, excursion-mode それぞれで、どのキーがどの動作になるか、というキーバインドをフルカスタマイズ可能。
-* cli-mode から excursion-mode のアクションを直接呼び出し可能。( `_action_missing()` fook )
+* cli-mode から excursion-mode のアクションを直接呼び出し可能。( `_action_missing()` hook )
 * 一定時間キー入力がない場合に、easymotion スタイルのジャンプキーを自動表示(ただしタイマーはエミュレートなのでキー入力への反応が鈍くなる)。
 * ジャンプキーの自動表示が発動する最低文字数は変更可能(例: 最低3文字を超えてから有効にする。)
 * 色のカスタマイズ

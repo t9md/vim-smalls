@@ -160,7 +160,7 @@ By default this feature is disabled.
 	let g:smalls_jump_keys_auto_show_min_input_length = 2
 	let g:smalls_jump_keys_auto_show_timeout = 0.0
 <
-*g:smalls_operator_always_inclusive*
+*g:smalls_operator_motion_inclusive*
 	Default: 0
 
 	CAUTION: Not Recomended to change this var~
@@ -411,7 +411,7 @@ CHANGELOG						   *smalls-changelog*
 2013-11-22:
 	- introduce g:smalls_current_mode for affiliation to statusline plugin
 2013-11-20:
-	- introduce g:smalls_operator_always_inclusive variable.
+	- introduce g:smalls_operator_motion_inclusive variable.
 2013-11-20:
 	- del do_jump_wordend action.
 	- now all operator movin is visualized and inclusive behavior.

@@ -182,15 +182,11 @@ function! s:smalls.start(mode, auto_excursion)  "{{{1
 endfunction
 
 function! s:smalls.do_jump(kbd, ...) "{{{1
-  " let wordend = a:0 ? 1 : 0
   call self.hl.clear()
   call self.hl.shade()
 
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
-    " if wordend
-      " let pos_new.col += a:kbd.data_len() - 1
-    " endif
     call self._jump_to_pos(pos_new)
   endif
   let self._break = 1
@@ -206,11 +202,7 @@ function! s:smalls.do_jump_first(kbd) "{{{1
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
-  " FIXME
-  " I can't determine my mind how much adjustment is appropriate.
-  " need deep consideration
   call s:smalls._adjust_col(a:pos)
-  " call s:smalls._adjust_col_aggressive(a:pos)
   if self._is_visual()
     call a:pos.jump(self.env.mode)
   else
@@ -228,15 +220,10 @@ function! s:smalls._is_visual() "{{{1
 endfunction
 
 function! s:smalls._need_adjust_col(pos)
-  if self.env.mode == 'n'
-    return 0
-  elseif self.env.mode ==# 'o'
-    return self._is_forward(a:pos)
-  elseif self._is_visual()
-    if self.env.mode =~# 'v\|V'
-      return self._is_forward(a:pos)
-    elseif self.env.mode ==# "\<C-v>"
-      return self._is_col_forward(a:pos.col)
+  if self.env.mode == 'n'  | return 0 | endif
+  if self.env.mode ==# 'o' | return self._is_forward(a:pos) | endif
+  if self._is_visual()
+    return self.env.mode =~# 'v\|V' ? self._is_forward(a:pos) : self._is_col_forward(a:pos.col)
   endif
 endfunction
 
@@ -244,7 +231,7 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self._need_adjust_col(a:pos)
     let a:pos.col += self.keyboard_cli.data_len() - 1
   endif
-  if self.env.mode ==# 'o' && g:smalls_operator_always_inclusive
+  if self.env.mode ==# 'o' && g:smalls_operator_motion_inclusive
     if self._is_forward(a:pos)
       let a:pos.col += 1
       if a:pos.col > len(getline(a:pos.line))

@@ -14,7 +14,7 @@ let s:options = {
       \ 'g:smalls_jump_keys_auto_show': 0,
       \ 'g:smalls_jump_keys_auto_show_timeout': 0.5,
       \ 'g:smalls_jump_keys_auto_show_min_input_length': 3,
-      \ 'g:smalls_operator_always_inclusive': 0,
+      \ 'g:smalls_operator_motion_inclusive': 0,
       \ 'g:smalls_blink_on_notfound': 1,
       \ 'g:smalls_current_mode': '',
       \ 'g:smalls_auto_excursion_min_input_length': 1,

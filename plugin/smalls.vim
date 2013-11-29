@@ -17,11 +17,10 @@ let s:options = {
       \ 'g:smalls_operator_always_inclusive': 0,
       \ 'g:smalls_blink_on_notfound': 1,
       \ 'g:smalls_current_mode': '',
-      \ 'g:smalls_direct_excursion_min_input_length': 1,
+      \ 'g:smalls_auto_excursion_min_input_length': 1,
       \ }
-      " \ 'g:smalls_jump_wordend_normal': 0,
 
-      " \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#ff0000']],
+      " Color format
       " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
 let s:color = {
       \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           '#403D3D', '#66D9EF']],
@@ -41,7 +40,6 @@ function! s:set_options(options) "{{{
     unlet value
   endfor
 endfunction "}}}
-
 function! s:clear_highlight(color) "{{{1
   for color in keys(a:color)
     exe 'highlight' color 'none'

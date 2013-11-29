@@ -85,7 +85,7 @@ nmap <C-e> <Plug>(smalls-excursion)
 
 この方法のメリットは、excursion-mode に切り替える操作が発生しない点です。  
 デメリットは、着地候補絞り込みの入力文字数が固定になる点です。  
-入力文字数が `g:smalls_direct_excursion_min_input_length` の値を超えると、自動的に excursion-mode に入ります。  
+入力文字数が `g:smalls_auto_excursion_min_input_length` の値を超えると、自動的に excursion-mode に入ります。  
 デフォルトは `1` です。  
 
 # 果たしてコレは便利なのか？
@@ -192,7 +192,7 @@ TODO
 1文字ではなく、2文字入力後に excursion-mode に入るようにしたい。  
 以下の設定で可能です。  
 ```Vim
-let g:smalls_direct_excursion_min_input_length = 2
+let g:smalls_auto_excursion_min_input_length = 2
 ```
 
 ## excursion-mode で、`l`, `h` で行を超えて移動したい。

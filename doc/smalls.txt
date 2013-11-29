@@ -200,7 +200,7 @@ By default this feature is disabled.
 	  * lightline
 	  * ezline ( I'm author )
 
-*g:smalls_direct_excursion_min_input_length*
+*g:smalls_auto_excursion_min_input_length*
 	Default: 1
 	In '<Plug>(smalls-excursion)' and if input exceed this value,
 	automatically enter excursion mode.

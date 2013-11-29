@@ -24,11 +24,11 @@ function! s:smalls.init(mode) "{{{1
   let self._notfound   = 0
 
   let self.env      = {}
+  " need env.mode from here. used in serveral function.
   let self.env.mode = a:mode
 
   if self._is_visual()
     " to get precise start point in visual mode.
-    " exe 'normal! ' . "\<Esc>"
     exe 'normal! gvo' | exe "normal! " . "\<Esc>"
   endif
 
@@ -38,7 +38,7 @@ function! s:smalls.init(mode) "{{{1
     " for neatly revert original visual start/end pos
     exe 'normal! gvo' | exe "normal! " . "\<Esc>"
   endif
-  " \ 'p': smalls#pos#new([c,l]),
+
   call extend(self.env, {
         \ 'w0': w0,
         \ 'w0-1': w0-1,
@@ -53,8 +53,9 @@ function! s:smalls.init(mode) "{{{1
         \ 'c+1': c+1,
         \ 'c+2': c+2,
         \ })
-  let self.hl       = smalls#highlighter#new(self.env)
-  let self.finder   = smalls#finder#new(self.env)
+
+  let self.hl           = smalls#highlighter#new(self.env)
+  let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
   let self._break = 0
 endfunction
@@ -125,8 +126,8 @@ function! s:smalls.loop() "{{{1
     call hl.shade()
     call hl.orig_pos()
 
-    if self.direction_excursion &&
-          \ kbd.data_len() >=# g:smalls_direct_excursion_min_input_length
+    if self.auto_excursion &&
+          \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
       call self.do_excursion(kbd)
       return
     endif
@@ -140,7 +141,6 @@ function! s:smalls.loop() "{{{1
     catch /KEYBOARD_TIMEOUT/
       call self.do_jump(kbd)
     endtry
-
 
     if self._break
       break
@@ -157,9 +157,9 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(mode, direction_excursion)  "{{{1
+function! s:smalls.start(mode, auto_excursion)  "{{{1
   try
-    let self.direction_excursion = a:direction_excursion
+    let self.auto_excursion = a:auto_excursion
     call self.init(a:mode)
     call self.set_opts()
     call self.cursor_hide()
@@ -342,8 +342,8 @@ endfunction
 
 " PublicInterface:
 function! smalls#start(mode, ...) "{{{1
-  let direction_excursion = a:0 ? 1 : 0
-  call s:smalls.start(a:mode, direction_excursion)
+  let auto_excursion = a:0 ? 1 : 0
+  call s:smalls.start(a:mode, auto_excursion)
 endfunction "}}}
 
 function! smalls#debug() "{{{

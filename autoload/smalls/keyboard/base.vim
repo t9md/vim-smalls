@@ -35,7 +35,7 @@ endfunction
 function! s:keyboard.input(c) "{{{1
   let self.last_input = a:c
   if !has_key(self._table, a:c)
-    call self._set(a:c)
+    call self._set(self._setchar(a:c))
   else
     let action = self._table[a:c]
     if type(action) ==# type('')
@@ -48,6 +48,11 @@ function! s:keyboard.input(c) "{{{1
       call call(action.func, action.args, action.self)
     endif
   endif
+endfunction
+
+function! s:keyboard._setchar(c)
+  " should be overwitten
+  return a:c
 endfunction
 
 function! s:keyboard.data_len() "{{{1

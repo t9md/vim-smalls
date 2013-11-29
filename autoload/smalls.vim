@@ -73,7 +73,7 @@ function! s:smalls.finish() "{{{1
   if !empty(self.lastmsg)
     call s:msg(self.lastmsg)
   endif
-  let g:smalls_current_mode = ''
+  call self.update_mode('')
 endfunction
 
 function! s:smalls.set_opts() "{{{1
@@ -119,8 +119,8 @@ function! s:smalls.cursor_restore() "{{{1
 endfunction
 
 function! s:smalls.loop() "{{{1
+  call self.update_mode('cli')
   let kbd = self.keyboard_cli
-  let g:smalls_current_mode = 'cli'
   let hl = self.hl
   while 1
     call hl.shade()
@@ -250,15 +250,20 @@ function! s:smalls._is_col_forward(col) "{{{1
   return ( self.env.p.col < a:col )
 endfunction
 
+function! s:smalls.update_mode(mode)
+  " force to update statusline by meaningless option update ':help statusline'
+  let g:smalls_current_mode = a:mode
+  let &ro = &ro
+endfunction
 
 function! s:smalls.do_excursion(kbd, ...) "{{{1
-  " force to update statusline by meaningless option update ':help statusline'
-  let g:smalls_current_mode = 'excursion' | let &ro = &ro
-  let first_action = a:0 ? a:1 : ''
   let word = a:kbd.data
-  if  empty(word) | return [] | endif
-  let poslist  = self.finder.all(word)
-  let kbd = smalls#keyboard#excursion#new(self, word, poslist)
+  if empty(word) | return [] | endif
+
+  call self.update_mode('excursion')
+  let first_action = a:0 ? a:1 : ''
+  let poslist = self.finder.all(word)
+  let kbd     = smalls#keyboard#excursion#new(self, word, poslist)
 
   try
     while 1
@@ -268,18 +273,18 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
 
       if !empty(first_action)
         call kbd['do_' . first_action]()
+        let first_action = ''
       endif
-      call self.hl.candidate(word, kbd.pos())
 
-      call kbd.read_input()
+      call self.hl.candidate(word, kbd.pos())
       if self._break
         break
       endif
+      call kbd.read_input()
       redraw
     endwhile
   catch 'BACK_CLI'
-  " force to update statusline by meaningless option update ':help statusline'
-    let g:smalls_current_mode = 'cli' | let &ro = &ro
+    call self.update_mode('cli')
     let self._break = 0
   endtry
 endfunction

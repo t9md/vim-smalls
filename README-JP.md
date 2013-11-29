@@ -172,7 +172,7 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | `<C-v>`   | do_select_CTRL_V | 着地候補までを CTRL_V |
 | `;`       | do_set           | 着地候補に着地        |
 | `<CR>`    | do_set           | 着地候補に着地        |
-| 1-9の数字 | do_feed_count    | カウントを指定        |
+| 0-9の数字 |                  | カウントを指定        |
 
 # カスタマイズ
 
@@ -204,8 +204,8 @@ call smalls#keyboard#cli#extend_table({ "l": do_next, "h": do_prev, })
 ```
 
 ## excursion-mode で、移動数をカウント指定したい。
-一桁のカウント(1-9 まで)には対応しています。  
-例えば `3n` で 3つ先の着地点へ移動が出来ます。
+対応しています。  
+例えば `3n` で 3つ先の着地点へ, `10j` で10行下の着地点へ移動が出来ます。
 
 ## `d` の operator モードから呼び出した時、word の末尾の文字が消されずに残る。
 `g:smalls_operator_motion_inclusive = 1`する事で変更可能です。  

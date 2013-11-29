@@ -27,15 +27,11 @@ let s:key_table = {
       \    "\<CR>": "do_set",
       \ }
 
-for s:n in range(1,20)
-  let s:key_table[s:n] = "do_feed_count"
-endfor
-
 let s:keyboard = {}
 
 function! s:keyboard.init(word, poslist) "{{{1
   let self.index   = 0
-  let self.count   = 1
+  let self._count  = ''
   let self.word    = a:word
   let self.poslist = a:poslist
   let self.max     = len(a:poslist)
@@ -63,63 +59,67 @@ function! s:keyboard.pos() "{{{1
 endfunction
 
 function! s:keyboard.do_up() "{{{1
-  " for n in range(self.count)
-    call self.do_ud('prev')
-  " endfor
-  " let self.count = 1
+  call self.do_ud('prev')
 endfunction
 
 function! s:keyboard.do_down() "{{{1
-  " for n in range(self.count)
-    call self.do_ud('next')
-  " endfor
-  " let self.count = 1
+  call self.do_ud('next')
 endfunction
 
 function! s:keyboard.do_ud(dir) "{{{1
   let fn = 'do_' . a:dir
-  let [cl, cc] = self.pos()
-  call self[fn]()
-  while cl == self.line() && cc != self.col()
-    call self[fn]()
-  endwhile
+
+  for n in range(self.count())
+    let [cl, cc] = self.pos()
+    call self[fn](1)
+    while cl == self.line() && cc != self.col()
+      call self[fn](1)
+    endwhile
+  endfor
+  call self.reset_count()
 endfunction
 
 function! s:keyboard.do_right() "{{{1
-  " for n in range(self.count)
     call self.do_lr('next')
-  " endfor
-  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_left() "{{{1
-  " for n in range(self.count)
     call self.do_lr('prev')
-  " endfor
-  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_lr(dir) "{{{1
   let fn = 'do_' . a:dir
-  let cl = self.line()
-  call self[fn]()
-  while cl != self.line()
-    call self[fn]()
-  endwhile
+
+  for n in range(self.count())
+    let cl = self.line()
+    call self[fn](1)
+    while cl != self.line()
+      call self[fn](1)
+    endwhile
+  endfor
+  call self.reset_count()
 endfunction
 
-function! s:keyboard.do_next() "{{{1
-  " for n in range(self.count)
+function! s:keyboard.do_next(...) "{{{1
+  let ignore_count = a:0 ? 1 : 0
+  for n in range(self.count())
     let self.index = (self.index + 1) % self.max
-  " endfor
-  " let self.count = 1
+    if ignore_count
+      return
+    endif
+  endfor
+  call self.reset_count()
 endfunction
 
-function! s:keyboard.do_prev() "{{{1
-  " for n in range(self.count)
+function! s:keyboard.do_prev(...) "{{{1
+  let ignore_count = a:0 ? 1 : 0
+  for n in range(self.count())
     let self.index = ((self.index - 1) + self.max ) % self.max
-  " endfor
-  " let self.count = 1
+    if ignore_count
+      return
+    endif
+  endfor
+  call self.reset_count()
 endfunction
 
 function! s:keyboard.do_set() "{{{1
@@ -128,8 +128,23 @@ function! s:keyboard.do_set() "{{{1
   let self.owner._break = 1
 endfunction
 
-function! s:keyboard.do_feed_count() "{{{1
-  let self.count = str2nr(self.last_input)
+function! s:keyboard.count() "{{{1
+  return empty(self._count) ? 1 : str2nr(self._count)
+endfunction
+
+function! s:keyboard.reset_count() "{{{1
+  let self._count = ''
+  let self.data = ''
+  redraw
+endfunction
+
+function! s:keyboard._setchar(c) "{{{1
+  if a:c !~ '\d'
+    call self.reset_count()
+    return ''
+  endif
+  let self._count .= a:c
+  return a:c
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1

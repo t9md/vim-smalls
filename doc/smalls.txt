@@ -406,6 +406,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2013-11-29:
+	- count support. rename var refactoring.
 2013-11-25:
 	- Critical bug fix, eliminate unnecessary global variables.
 2013-11-22:

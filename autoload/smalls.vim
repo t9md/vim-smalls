@@ -231,44 +231,12 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self._need_adjust_col(a:pos)
     let a:pos.col += self.keyboard_cli.data_len() - 1
   endif
-  if self.env.mode ==# 'o' && g:smalls_operator_motion_inclusive
-    if self._is_forward(a:pos)
-      let a:pos.col += 1
-      if a:pos.col > len(getline(a:pos.line))
-        let a:pos.line += 1
-        let a:pos.col = 1
-      endif
-    endif
-  endif
-endfunction
-
-
-function! s:smalls._adjust_col_aggressive(pos) "{{{1
-  if self.env.mode == 'n'
-    return
-  endif
-
-  " possibly move backward, so only adjust forward direction carefully.
-  if self.env.mode ==# 'o'
-    if self._is_forward(a:pos)
-      let a:pos.col += self.keyboard_cli.data_len() - 1
-      let a:pos.col += 1
-      if a:pos.col > len(getline(a:pos.line))
-        let a:pos.line += 1
-        let a:pos.col = 1
-      endif
-    endif
-  endif
-
-  if self._is_visual()
-    if self.env.mode =~# 'v\|V'
-      if self._is_forward(a:pos)
-        let a:pos.col += self.keyboard_cli.data_len() - 1
-      endif
-    elseif self.env.mode ==# "\<C-v>"
-      if self._is_col_forward(a:pos.col)
-          let a:pos.col += self.keyboard_cli.data_len() - 1
-      endif
+  if self.env.mode ==# 'o' && g:smalls_operator_motion_inclusive && self._is_forward(a:pos)
+    let a:pos.col += 1
+    " line end
+    if a:pos.col > len(getline(a:pos.line)) 
+      let a:pos.line += 1
+      let a:pos.col = 1
     endif
   endif
 endfunction
@@ -294,22 +262,19 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
 
   try
     while 1
+      call self.hl.clear()
+      call self.hl.shade()
+      call self.hl.orig_pos()
+
       if !empty(first_action)
         call kbd['do_' . first_action]()
-        let first_action = ''
-        call self.hl.clear('SmallsCurrent', 'SmallsPos', 'SmallsCandidate')
-        call self.hl.candidate(word, kbd.pos())
-        if self._break
-          break
-        endif                           
       endif
-      call self.hl.orig_pos()
+      call self.hl.candidate(word, kbd.pos())
+
       call kbd.read_input()
       if self._break
         break
       endif
-      call self.hl.clear('SmalsRegion', 'SmallsCurrent', 'SmallsPos', 'SmallsCandidate')
-      call self.hl.candidate(word, kbd.pos())
       redraw
     endwhile
   catch 'BACK_CLI'

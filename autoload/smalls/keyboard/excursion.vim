@@ -63,17 +63,17 @@ function! s:keyboard.pos() "{{{1
 endfunction
 
 function! s:keyboard.do_up() "{{{1
-  for n in range(self.count)
+  " for n in range(self.count)
     call self.do_ud('prev')
-  endfor
-  let self.count = 1
+  " endfor
+  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_down() "{{{1
-  for n in range(self.count)
+  " for n in range(self.count)
     call self.do_ud('next')
-  endfor
-  let self.count = 1
+  " endfor
+  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_ud(dir) "{{{1
@@ -86,17 +86,17 @@ function! s:keyboard.do_ud(dir) "{{{1
 endfunction
 
 function! s:keyboard.do_right() "{{{1
-  for n in range(self.count)
+  " for n in range(self.count)
     call self.do_lr('next')
-  endfor
-  let self.count = 1
+  " endfor
+  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_left() "{{{1
-  for n in range(self.count)
+  " for n in range(self.count)
     call self.do_lr('prev')
-  endfor
-  let self.count = 1
+  " endfor
+  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_lr(dir) "{{{1
@@ -109,17 +109,17 @@ function! s:keyboard.do_lr(dir) "{{{1
 endfunction
 
 function! s:keyboard.do_next() "{{{1
-  for n in range(self.count)
+  " for n in range(self.count)
     let self.index = (self.index + 1) % self.max
-  endfor
-  let self.count = 1
+  " endfor
+  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_prev() "{{{1
-  for n in range(self.count)
+  " for n in range(self.count)
     let self.index = ((self.index - 1) + self.max ) % self.max
-  endfor
-  let self.count = 1
+  " endfor
+  " let self.count = 1
 endfunction
 
 function! s:keyboard.do_set() "{{{1

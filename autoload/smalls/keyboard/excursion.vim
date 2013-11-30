@@ -203,6 +203,10 @@ function! s:keyboard._setchar(c) "{{{1
     if has_key(self._table, last_2_char)
       call self.execute(last_2_char)
     endif
+    echo s:plog(self.owner.keyboard_cli.data)
+    if self.owner.keyboard_cli.data[-1:] == a:c
+      call self.do_next()
+    endif
     return ''
   endif
   let self._count .= a:c

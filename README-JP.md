@@ -150,45 +150,56 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | `<S-Tab>`        | do_excursion_with_prev          | excursion-mode の prev              |
 | `<C-p>`          | do_excursion_with_prev          | excursion-mode の prev              |
 | NOT_ASSIGNED     | do_auto_excursion_off           | auto_excursion を一時的にoff        |
+| NOT_ASSIGNED     | __UNMAP__                       | Key に bind されたマッピングを解除  |
 | `{jump_trigger}` | do_jump                         | ジャンプキーを表示(デフォルトは`;`) |
 
 ## excursion-mode
 
-| *Key*            | *Action*                  | *Description*                       |
-| ---------------- | ------------------------- | ----------------------------------- |
-| `<C-g>`          | do_cancel                 | キャンセル                          |
-| `<C-c>`          | do_cancel                 | キャンセル                          |
-| `<C-e>`          | do_back_cli               | cli-mode へ戻る                     |
-| `<Esc>`          | do_back_cli               | cli-mode へ戻る                     |
-| `<CR>`           | do_set                    | 着地候補に着地                      |
-| `;`              | do_set                    | 着地候補に着地                      |
-| `n`              | do_next                   | 次の着地候補へ                      |
-| `<Tab>`          | do_next                   | 次の着地候補へ                      |
-| `p`              | do_prev                   | 前の着地候補へ                      |
-| `<S-Tab>`        | do_prev                   | 前の着地候補へ                      |
-| `gg`             | do_first                  | 最初の候補へ                        |
-| `G`              | do_last                   | 最後の候補へ                        |
-| `0`              | do_line_head              | 現在行の最初の候補へ                |
-| `^`              | do_line_head              | 現在行の最初の候補へ                |
-| `$`              | do_line_tail              | 現在行の最後の候補へ                |
-| `k`              | do_up                     | 上の着地候補へ                      |
-| `j`              | do_down                   | 下の着地候補へ                      |
-| `h`              | do_left                   | 左の着地候補へ                      |
-| `l`              | do_right                  | 右の着地候補へ                      |
-| `<C-d>`          | do_delete                 | 着地候補までを delete               |
-| `d`              | do_delete                 | 着地候補までを delete               |
-| `D`              | do_delete_line            | 着地候補までを delete (line-wise)   |
-| `<C-y>`          | do_yank                   | 着地候補までを yank                 |
-| `y`              | do_yank                   | 着地候補までを yank                 |
-| `Y`              | do_yank_line              | 着地候補までを yank (line-wise)     |
-| `v`              | do_select_v               | 着地候補までを v                    |
-| `V`              | do_select_V               | 着地候補までを V                    |
-| `<C-v>`          | do_select_CTRL_V          | 着地候補までを CTRL_V               |
-| 数字             | SPECIAL                   | カウントを指定                      |
-| NOT_ASSIGNED     | do_select_v_with_set      | 着地候補までを v し、do_set         |
-| NOT_ASSIGNED     | do_select_V_with_set      | 着地候補までを V  し、do_set        |
-| NOT_ASSIGNED     | do_select_CTRL_V_with_set | 着地候補までを CTRL_V し、do_set    |
-| NOT_ASSIGNED     | do_jump                   | ジャンプキーを表示(デフォルトは`;`) |
+| *Key*                | *Action*                  | *Description*                       |
+| -------------------- | ------------------------- | ----------------------------------- |
+| `<C-g>`              | do_cancel                 | キャンセル                          |
+| `<C-c>`              | do_cancel                 | キャンセル                          |
+| `<C-e>`              | do_back_cli               | cli-mode へ戻る                     |
+| `<Esc>`              | do_back_cli               | cli-mode へ戻る                     |
+| `<CR>`               | do_set                    | 着地候補に着地                      |
+| `;`                  | do_set                    | 着地候補に着地                      |
+| `n`                  | do_next                   | 次の着地候補へ                      |
+| `<Tab>`              | do_next                   | 次の着地候補へ                      |
+| last_char in cli(*1) | do_next                   | 次の着地候補へ                      |
+| `p`                  | do_prev                   | 前の着地候補へ                      |
+| `<S-Tab>`            | do_prev                   | 前の着地候補へ                      |
+| `gg`                 | do_first                  | 最初の候補へ                        |
+| `G`                  | do_last                   | 最後の候補へ                        |
+| `0`                  | do_line_head              | 現在行の最初の候補へ                |
+| `^`                  | do_line_head              | 現在行の最初の候補へ                |
+| `$`                  | do_line_tail              | 現在行の最後の候補へ                |
+| `k`                  | do_up                     | 上の着地候補へ                      |
+| `j`                  | do_down                   | 下の着地候補へ                      |
+| `h`                  | do_left                   | 左の着地候補へ                      |
+| `l`                  | do_right                  | 右の着地候補へ                      |
+| `<C-d>`              | do_delete                 | 着地候補までを delete               |
+| `d`                  | do_delete                 | 着地候補までを delete               |
+| `D`                  | do_delete_line            | 着地候補までを delete (line-wise)   |
+| `<C-y>`              | do_yank                   | 着地候補までを yank                 |
+| `y`                  | do_yank                   | 着地候補までを yank                 |
+| `Y`                  | do_yank_line              | 着地候補までを yank (line-wise)     |
+| `v`                  | do_select_v               | 着地候補までを v                    |
+| `V`                  | do_select_V               | 着地候補までを V                    |
+| `<C-v>`              | do_select_CTRL_V          | 着地候補までを CTRL_V               |
+| 数字                 | SPECIAL                   | カウントを指定                      |
+| NOT_ASSIGNED         | do_select_v_with_set      | 着地候補までを v し、do_set         |
+| NOT_ASSIGNED         | do_select_V_with_set      | 着地候補までを V  し、do_set        |
+| NOT_ASSIGNED         | do_select_CTRL_V_with_set | 着地候補までを CTRL_V し、do_set    |
+| NOT_ASSIGNED         | __UNMAP__                 | Key に bind されたマッピングを解除  |
+| NOT_ASSIGNED         | do_jump                   | ジャンプキーを表示(デフォルトは`;`) |
+*1 cli-mode で入力された最後の文字で `do_next` が実行可能。
+例えば `<Plug>(smalls-excursion)` から呼び出し、`g:smalls_auto_excursion_min_input_length` が `1` の場合
+に以下の様な行で `,` を入力し、excursion-mode に入った場合、繰り返し`,` を入力することで、次の着地候補に移動出来る。
+```Vim
+        \ map(['guifg', 'guibg', 'gui'], 's:scan(defstr, v:val)')
+```
+`]` の場合で `<Plug>(smalls-excursion)]]...`、`)`の場合は`<Plug>(smalls-excursion)))...` という具合に、同じキーで次の着地候補に移動できる。
+
 
 # どちらのモードをメインに使用するか？
 
@@ -215,6 +226,10 @@ TODO
 ```Vim
 let g:smalls_auto_excursion_min_input_length = 2
 ```
+
+## デフォルトのキーマップを削除したい。
+
+特殊なアクション `__UNMAP__` を設定するとそのキーマップは削除される。
 
 ## excursion-mode で、`l`, `h` で行を超えて移動したい。
 excursion-mode の `do_next`, `do_prev` アクションがそれです。

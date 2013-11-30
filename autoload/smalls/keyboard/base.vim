@@ -1,3 +1,4 @@
+" Base:
 let s:getchar = smalls#util#import("getchar")
 let s:plog = smalls#util#import("plog")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
@@ -28,25 +29,37 @@ function! s:keyboard.init(owner, table, prompt_str) "{{{1
   let self._yanked = ''
   let self.data    = ''
   let self.cursor  = 0
-  let self.last_input = ''
+  let self.input_history = []
+  let self.input_history_max = 10
   return self
 endfunction
 
+function! s:keyboard.input_history_add(c) "{{{1
+  call add(self.input_history, a:c)
+  if len(self.input_history) > self.input_history_max
+    echo remove(self.input_history, 0)
+  endif
+endfunction
+
 function! s:keyboard.input(c) "{{{1
-  let self.last_input = a:c
+  call self.input_history_add(a:c)
   if !has_key(self._table, a:c)
-    call self._set(self._setchar(a:c))
+    cal self._set( self._setchar(a:c) )
   else
-    let action = self._table[a:c]
-    if type(action) ==# type('')
-      if has_key(self, action)
-        call self[action]()
-      else
-        call self._action_missing(action)
-      endif
-    elseif type(action) ==# type({})
-      call call(action.func, action.args, action.self)
+    call self.execute(a:c)
+  endif
+endfunction
+
+function! s:keyboard.execute(c) "{{{1
+  let action = self._table[a:c]
+  if type(action) ==# type('')
+    if has_key(self, action)
+      call self[action]()
+    else
+      call self._action_missing(action)
     endif
+  elseif type(action) ==# type({})
+    call call(action.func, action.args, action.self)
   endif
 endfunction
 

@@ -126,11 +126,6 @@ function! s:smalls.loop() "{{{1
     call hl.shade()
     call hl.orig_pos()
 
-    if self.auto_excursion &&
-          \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
-      call self.do_excursion(kbd)
-      return
-    endif
 
     let timeout = 
           \ ( g:smalls_jump_keys_auto_show &&
@@ -141,6 +136,11 @@ function! s:smalls.loop() "{{{1
     catch /KEYBOARD_TIMEOUT/
       call self.do_jump(kbd)
     endtry
+
+    if self.auto_excursion &&
+          \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
+      call self.do_excursion(kbd)
+    endif
 
     if self._break
       break
@@ -247,7 +247,7 @@ function! s:smalls._is_forward(dst_pos) "{{{1
 endfunction
 
 function! s:smalls._is_col_forward(col) "{{{1
-  return ( self.env.p.col < a:col )
+  return ( self.env.p.col <= a:col )
 endfunction
 
 function! s:smalls.update_mode(mode)

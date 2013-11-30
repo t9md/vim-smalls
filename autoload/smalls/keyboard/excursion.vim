@@ -1,31 +1,40 @@
+" Excurstion:
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
-" if !exists('g:loaded_smalls')
-  " runtime plugin/smalls.vim
-" endif
 
 let s:key_table = {
+      \   "\<C-g>": "do_cancel",
       \   "\<C-c>": "do_cancel",
       \   "\<C-e>": "do_back_cli",
       \   "\<Esc>": "do_back_cli",
+      \    "\<CR>": "do_set",
+      \        ";": "do_set",
       \        "n": "do_next",
       \   "\<Tab>": "do_next",
       \        "p": "do_prev",
       \ "\<S-Tab>": "do_prev",
+      \       "gg": "do_first",
+      \        "G": "do_last",
+      \        "0": "do_line_head",
+      \        "^": "do_line_head",
+      \        "$": "do_line_tail",
       \        "k": "do_up",
       \        "j": "do_down",
       \        "h": "do_left",
       \        "l": "do_right",
-      \        "d": "do_delete",
       \   "\<C-d>": "do_delete",
-      \        "y": "do_yank",
+      \        "d": "do_delete",
+      \        "D": "do_delete_line",
       \   "\<C-y>": "do_yank",
+      \        "y": "do_yank",
+      \        "Y": "do_yank_line",
       \        "v": "do_select_v",
       \        "V": "do_select_V",
       \   "\<C-v>": "do_select_CTRL_V",
-      \        ";": "do_set",
-      \    "\<CR>": "do_set",
       \ }
+      " \        "v": "do_select_v_with_set",
+      " \        "V": "do_select_V_with_set",
+      " \   "\<C-v>": "do_select_CTRL_V_with_set",
 
 let s:keyboard = {}
 
@@ -36,6 +45,11 @@ function! s:keyboard.init(word, poslist) "{{{1
   let self.poslist = a:poslist
   let self.max     = len(a:poslist)
   return self
+endfunction
+
+function! s:keyboard.do_jump() "{{{1
+  call call(self.owner.do_jump,
+        \ [self.owner.keyboard_cli], self.owner)
 endfunction
 
 function! s:keyboard.do_cancel() "{{{1
@@ -59,14 +73,60 @@ function! s:keyboard.pos() "{{{1
 endfunction
 
 function! s:keyboard.do_up() "{{{1
-  call self.do_ud('prev')
+  call self._do_ud('prev')
 endfunction
 
 function! s:keyboard.do_down() "{{{1
-  call self.do_ud('next')
+  call self._do_ud('next')
 endfunction
 
-function! s:keyboard.do_ud(dir) "{{{1
+function! s:keyboard.do_last() "{{{1
+  let dest = self.sort()[-1]
+  let self.index = index(self.poslist, dest)
+endfunction
+
+function! s:keyboard.do_first() "{{{1
+  let dest = self.sort()[0]
+  let self.index = index(self.poslist, dest)
+endfunction
+
+function! s:keyboard._sortfunc(pos1, pos2)
+  let r = a:pos1[0] - a:pos2[0]
+  return r ==# 0 ? a:pos1[1] - a:pos2[1] : r
+endfunction
+
+function! s:keyboard.sort()
+  return sort(copy(self.poslist), self._sortfunc, self)
+endfunction
+
+function! s:keyboard.do_right() "{{{1
+    call self._do_lr('next')
+endfunction
+
+function! s:keyboard.do_left() "{{{1
+    call self._do_lr('prev')
+endfunction
+
+function! s:keyboard.do_line_head() "{{{1
+  call self._do_head_tail('head')
+endfunction
+
+function! s:keyboard.do_line_tail() "{{{1
+  call self._do_head_tail('tail')
+endfunction
+
+function! s:keyboard._do_head_tail(which) "{{{1
+  let cl = self.line()
+  let [search, adjust]
+        \ = a:which ==# 'tail' ? ['next', 'prev'] : ['prev', 'next' ]
+  call self['do_' . search](1)
+  while cl == self.line()
+    call self['do_' . search](1)
+  endwhile
+  call self['do_' . adjust](1)
+endfunction
+
+function! s:keyboard._do_ud(dir) "{{{1
   let fn = 'do_' . a:dir
 
   for n in range(self.count())
@@ -79,15 +139,7 @@ function! s:keyboard.do_ud(dir) "{{{1
   call self.reset_count()
 endfunction
 
-function! s:keyboard.do_right() "{{{1
-    call self.do_lr('next')
-endfunction
-
-function! s:keyboard.do_left() "{{{1
-    call self.do_lr('prev')
-endfunction
-
-function! s:keyboard.do_lr(dir) "{{{1
+function! s:keyboard._do_lr(dir) "{{{1
   let fn = 'do_' . a:dir
 
   for n in range(self.count())
@@ -139,8 +191,18 @@ function! s:keyboard.reset_count() "{{{1
 endfunction
 
 function! s:keyboard._setchar(c) "{{{1
+  if empty(self._count) && a:c ==# '0'
+    return ''
+  endif
+
   if a:c !~ '\d'
     call self.reset_count()
+
+    " support upto 2char keymap
+    let last_2_char = join(self.input_history[-2:], '')
+    if has_key(self._table, last_2_char)
+      call self.execute(last_2_char)
+    endif
     return ''
   endif
   let self._count .= a:c
@@ -148,32 +210,9 @@ function! s:keyboard._setchar(c) "{{{1
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1
-  let pos_new = smalls#pos#new(self.pos())
-  call self.owner._jump_to_pos(pos_new)
-  let self.owner._break = 1
-endfunction
-
-function! s:keyboard.do_delete() "{{{1
-  if !self.owner._is_visual()
-    call self.do_select_v()
-  endif
-  call self.do_set()
-  normal! d
-endfunction
-
-function! s:keyboard.do_yank() "{{{1
-  if !self.owner._is_visual()
-    call self.do_select_v()
-  endif
-  call self.do_set()
-  normal! y
-endfunction
-
-function! s:keyboard.do_direct() "{{{1
-  exe 'normal! ' . self.last_input
-  let pos_new = smalls#pos#new(self.pos())
-  call self.owner._set_to_pos(pos_new)
-  " let self.owner._break = 1
+  let [first_action, next_action ] = split(a:action, '_with_')
+  call self[first_action]()
+  call self['do_' . next_action ]()
 endfunction
 
 function! s:keyboard.do_select_v() "{{{1
@@ -188,15 +227,38 @@ function! s:keyboard.do_select_CTRL_V() "{{{1
   call self._do_select("\<C-v>")
 endfunction
 
-function! s:keyboard._do_select(key) "{{{1
-  " only emulate select, so set to env.mode
-  let self.owner.env.mode = a:key
+function! s:keyboard.do_delete() "{{{1
+  call self._do_normal('d', 'v')
 endfunction
 
-function! s:keyboard._do_normal(key) "{{{1
-  let pos_new = smalls#pos#new(self.pos())
-  execute 'normal! ' . a:key
-  call self.owner._jump_to_pos(pos_new)
+function! s:keyboard.do_delete_line() "{{{1
+  call self._do_normal('d', 'V', 1)
+endfunction
+
+function! s:keyboard.do_yank() "{{{1
+  call self._do_normal('y', 'v')
+endfunction
+
+function! s:keyboard.do_yank_line() "{{{1
+  call self._do_normal('y', 'V', 1)
+endfunction
+
+function! s:keyboard._do_normal(normal_key, wise, ...)
+  let force_wise = !empty(a:000)
+  if force_wise || !self.owner._is_visual()
+    call self._do_select(a:wise)
+  endif
+
+  call self.do_set()
+  execute 'normal! ' . a:normal_key
+endfunction
+
+function! s:keyboard._do_select(key, ...) "{{{1
+  " only emulate select, so set to env.mode
+  let self.owner.env.mode = a:key
+  if !empty(a:000)
+    call self.do_set()
+  endif
 endfunction
 
 function! s:keyboard.do_debug() "{{{1
@@ -204,15 +266,22 @@ endfunction
 
 function! smalls#keyboard#excursion#get_table() "{{{1
   return s:key_table
-endfunction "}}}
+endfunction
+
 function! smalls#keyboard#excursion#extend_table(table) "{{{1
   call extend(s:key_table, a:table, 'force')
-endfunction "}}}
+endfunction
+
 function! smalls#keyboard#excursion#replace_table(table) "{{{1
   let s:key_table = a:new_table
-endfunction "}}}
+endfunction
+
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
   let help = "[Excursion]"
+  " let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+  " if ! has_key(s:key_table, jump_trigger)
+    " let s:key_table[jump_trigger] = 'do_jump'
+  " endif
   let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, help)
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)

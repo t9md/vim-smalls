@@ -126,6 +126,7 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 
 | *Key*            | *Action*                        | *Description*                       |
 | ---------------- | ------------------------------- | ----------------------------------- |
+| `<C-g>`          | do_cancel                       | キャンセル                          |
 | `<C-c>`          | do_cancel                       | キャンセル                          |
 | `<Esc>`          | do_cancel                       | キャンセル                          |
 | `<CR>`           | do_jump_first                   | デフォルト候補に着地                |
@@ -139,40 +140,60 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | `<C-r>`          | do_special                      | 実験的機能(意味なし)                |
 | `<C-e>`          | do_excursion                    | excursion-mode に入る               |
 | `<C-d>`          | do_excursion_with_delete        | excursion-mode の delete            |
+| `D`              | do_excursion_with_delete_line   | excursion-mode の delete_line       |
 | `<C-y>`          | do_excursion_with_yank          | excursion-mode の yank              |
+| `Y`              | do_excursion_with_yank_line     | excursion-mode の yank_line         |
 | `V`              | do_excursion_with_select_V      | excursion-mode の select_V          |
 | `<C-v>`          | do_excursion_with_select_CTRL_V | excursion-mode の select_CTRL_V     |
 | `<Tab>`          | do_excursion_with_next          | excursion-mode の next              |
 | `<C-n>`          | do_excursion_with_next          | excursion-mode の next              |
 | `<S-Tab>`        | do_excursion_with_prev          | excursion-mode の prev              |
 | `<C-p>`          | do_excursion_with_prev          | excursion-mode の prev              |
+| NOT_ASSIGNED     | do_auto_excursion_off           | auto_excursion を一時的にoff        |
 | `{jump_trigger}` | do_jump                         | ジャンプキーを表示(デフォルトは`;`) |
 
 ## excursion-mode
 
-| *Key*     | *Action*         | *Description*         |
-| --------- | ---------------- | --------------------- |
-| `<C-c>`   | do_cancel        | キャンセル            |
-| `<C-e>`   | do_back_cli      | cli-mode へ戻る       |
-| `<Esc>`   | do_back_cli      | cli-mode へ戻る       |
-| `n`       | do_next          | 次の着地候補へ        |
-| `<Tab>`   | do_next          | 次の着地候補へ        |
-| `p`       | do_prev          | 前の着地候補へ        |
-| `<S-Tab>` | do_prev          | 前の着地候補へ        |
-| `k`       | do_up            | 上の着地候補へ        |
-| `j`       | do_down          | 下の着地候補へ        |
-| `h`       | do_left          | 左の着地候補へ        |
-| `l`       | do_right         | 右の着地候補へ        |
-| `d`       | do_delete        | 着地候補までを delete |
-| `<C-d>`   | do_delete        | 着地候補までを delete |
-| `y`       | do_yank          | 着地候補までを yank   |
-| `<C-y>`   | do_yank          | 着地候補までを yank   |
-| `v`       | do_select_v      | 着地候補までを v      |
-| `V`       | do_select_V      | 着地候補までを V      |
-| `<C-v>`   | do_select_CTRL_V | 着地候補までを CTRL_V |
-| `;`       | do_set           | 着地候補に着地        |
-| `<CR>`    | do_set           | 着地候補に着地        |
-| 0-9の数字 |                  | カウントを指定        |
+| *Key*            | *Action*                  | *Description*                       |
+| ---------------- | ------------------------- | ----------------------------------- |
+| `<C-g>`          | do_cancel                 | キャンセル                          |
+| `<C-c>`          | do_cancel                 | キャンセル                          |
+| `<C-e>`          | do_back_cli               | cli-mode へ戻る                     |
+| `<Esc>`          | do_back_cli               | cli-mode へ戻る                     |
+| `<CR>`           | do_set                    | 着地候補に着地                      |
+| `;`              | do_set                    | 着地候補に着地                      |
+| `n`              | do_next                   | 次の着地候補へ                      |
+| `<Tab>`          | do_next                   | 次の着地候補へ                      |
+| `p`              | do_prev                   | 前の着地候補へ                      |
+| `<S-Tab>`        | do_prev                   | 前の着地候補へ                      |
+| `gg`             | do_first                  | 最初の候補へ                        |
+| `G`              | do_last                   | 最後の候補へ                        |
+| `0`              | do_line_head              | 現在行の最初の候補へ                |
+| `^`              | do_line_head              | 現在行の最初の候補へ                |
+| `$`              | do_line_tail              | 現在行の最後の候補へ                |
+| `k`              | do_up                     | 上の着地候補へ                      |
+| `j`              | do_down                   | 下の着地候補へ                      |
+| `h`              | do_left                   | 左の着地候補へ                      |
+| `l`              | do_right                  | 右の着地候補へ                      |
+| `<C-d>`          | do_delete                 | 着地候補までを delete               |
+| `d`              | do_delete                 | 着地候補までを delete               |
+| `D`              | do_delete_line            | 着地候補までを delete (line-wise)   |
+| `<C-y>`          | do_yank                   | 着地候補までを yank                 |
+| `y`              | do_yank                   | 着地候補までを yank                 |
+| `Y`              | do_yank_line              | 着地候補までを yank (line-wise)     |
+| `v`              | do_select_v               | 着地候補までを v                    |
+| `V`              | do_select_V               | 着地候補までを V                    |
+| `<C-v>`          | do_select_CTRL_V          | 着地候補までを CTRL_V               |
+| 数字             | SPECIAL                   | カウントを指定                      |
+| NOT_ASSIGNED     | do_select_v_with_set      | 着地候補までを v し、do_set         |
+| NOT_ASSIGNED     | do_select_V_with_set      | 着地候補までを V  し、do_set        |
+| NOT_ASSIGNED     | do_select_CTRL_V_with_set | 着地候補までを CTRL_V し、do_set    |
+| NOT_ASSIGNED     | do_jump                   | ジャンプキーを表示(デフォルトは`;`) |
+
+# どちらのモードをメインに使用するか？
+
+smalls.vim は開発当初、使用方法として、'検索 → easymotion style でのジャンプ'を想定していた。  
+開発が進み、excursion-mode が導入された。excursion-mode は最初の頃、あくまでも主のcli-mode から移動する submode 的な位置づけだったが、excursion-mode の機能が拡充され、excursion-mode を主として使えるレベルに達した。  
 
 # カスタマイズ
 
@@ -234,3 +255,47 @@ call smalls#keyboard#cli#extend_table(cli_table_custom)
 ```Vim
 call smalls#keyboard#excursion#replace_table({})
 ```
+
+# 開発の流れ-どのようにして今の形になったか？(自分用の思考整理メモ)
+
+## 2013-10-25
+
+clerver-f, sneak 等を試す。文字数が固定なのが慣れなく(慣れるまで使えば話は変わってくるが、、)、画面内を任意の文字数で検索して移動出来るプラグインとして smalls を実験的に作ってみる。
+
+その後しばらく放置。
+
+## 2013-11
+
+Lokaltog 氏の vim-easymotion を理解する為に fork して書き換えつつ動作を理解。  
+  
+easymotion style のジャンプを smalls に導入  
+  
+この当時 forward, backward の検索方向区別があり、shade() 効果等のハイライトの指定に苦戦。  
+String interportion を行う s:intrpl() を作ったことで matchadd() のハイライト範囲の記述が可読可能になり、大幅にメンテナンスしやすくなった。  
+excursion mode を導入, hjkl で着地候補間を移動可能に。  
+  
+forwrd, backword の検索区別を廃止。方向を廃した事で、コードの不要箇所を一気に削除。  
+例えば、excursion-mode での next は backwrd サーチでは poslit が逆になるので、最初に reverse() するとか、ハイライトの範囲を、backword, forward で半分shadeする方向を考慮する、shade 内の着地候補(candidate)のみハイライトするとか、その手の方向がある事での複雑さが一掃されて気楽になった。  
+  
+keyboard という仕組みを導入したことで、cli-mode, excursion-mode でのアクション追加が随分楽に。  
+お試しでアクションを次々追加。  
+  
+operator-mode から呼び出す使用を想定に入れ、omap を追加。  
+  
+migemo を dev branch でお試し実装してみるが、一旦却下の判断をする。  
+  
+オペレータから呼び出した際、word top を着地点にすべきか、wordend を着地点にすべきかの判断に迷う。  
+word end の方が分かりやすいと判断し、word end に決め打ち。(一時的にユーザー変数で動作制御可能にしたが削除)  
+d オペレーションから呼び出した時に、word end の文字が含まれない動作について考える。これは `d/` 等と同様の動きではあるが、直感に反する。vim の help から inclusive, exclusive という説明を知る。  
+末尾の文字を含み(inclusive)たければ、着地点を微調整(adjust_column)する必要がある。  
+しかしこれは operator の motion-wise が修飾( or 強制 or 矯正 ) された時に問題が出る。  
+motion の前に、`dv`, `dV`, `d<C-v>` 等とすることで、motion の wise を強制(矯正)できる事を知る。  
+excursion-mode では operator の作用範囲を char-wise 前提で視覚化していたが、plugin 側で、ユーザーが矯正した mosion-wise の修飾文字(`v`,`V`,`<C-v>`)が取得できない事を知り視覚化に限界を感じる。  
+kana 氏が2008年に同様の課題に直面し、`v:motion_force` なる組み込み変数を追加する提案(patch)を行っていることを知る。textobj-user では `v:motion_force` を見るロジックがある。  
+プラグイン側で motion の修飾を知る事ができないので綺麗な解決は出来ない。  
+`g:smalls_operator_motion_inclusive` を導入し、ユーザーの設定にまかせてこの件は終了にする。  
+  
+excursion-mode で移動数をカウント指定可能に。  
+  
+excursion-mode にキーマップ, アクションを大幅追加。(`G`, `gg`,`v`, `V`, `C-v`, `y`, `Y`, `d` 等)  
+excursion-mode で 2 キーのキーバインドを可能にした。`gg` で 最初の候補へ飛べるようにするため。  

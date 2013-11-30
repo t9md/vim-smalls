@@ -1,30 +1,33 @@
+" Cli:
 let s:getchar = smalls#util#import("getchar")
 let s:plog    = smalls#util#import("plog")
 
 let s:key_table = {
-      \ "\<C-c>":   "do_cancel",
-      \ "\<Esc>":   "do_cancel",
-      \ "\<CR>":    "do_jump_first",
-      \ "\<C-h>":   "do_delete",
-      \ "\<BS>":    "do_delete",
-      \ "\<C-a>":   "do_head",
-      \ "\<C-f>":   "do_char_forward",
-      \ "\<C-b>":   "do_char_backward",
-      \ "\<C-k>":   "do_kill_to_end",
-      \ "\<C-u>":   "do_kill_line",
-      \ "\<C-r>":   "do_special",
-      \ "\<C-e>":   "do_excursion",
-      \ "\<C-d>":   "do_excursion_with_delete",
-      \ "\<C-y>":   "do_excursion_with_yank",
-      \      "V":   "do_excursion_with_select_V",
-      \ "\<C-v>":   "do_excursion_with_select_CTRL_V",
-      \ "\<Tab>":   "do_excursion_with_next",
-      \ "\<C-n>":   "do_excursion_with_next",
+      \   "\<C-g>": "do_cancel",
+      \   "\<C-c>": "do_cancel",
+      \   "\<Esc>": "do_cancel",
+      \    "\<CR>": "do_jump_first",
+      \   "\<C-h>": "do_delete",
+      \    "\<BS>": "do_delete",
+      \   "\<C-a>": "do_head",
+      \   "\<C-f>": "do_char_forward",
+      \   "\<C-b>": "do_char_backward",
+      \   "\<C-k>": "do_kill_to_end",
+      \   "\<C-u>": "do_kill_line",
+      \   "\<C-r>": "do_special",
+      \   "\<C-e>": "do_excursion",
+      \   "\<C-d>": "do_excursion_with_delete",
+      \        "D": "do_excursion_with_delete_line",
+      \   "\<C-y>": "do_excursion_with_yank",
+      \        "Y": "do_excursion_with_yank_line",
+      \        "V": "do_excursion_with_select_V",
+      \   "\<C-v>": "do_excursion_with_select_CTRL_V",
+      \   "\<Tab>": "do_excursion_with_next",
+      \   "\<C-n>": "do_excursion_with_next",
       \ "\<S-Tab>": "do_excursion_with_prev",
-      \ "\<C-p>":   "do_excursion_with_prev",
+      \   "\<C-p>": "do_excursion_with_prev",
       \ }
-      " \ "\<C-y>":   "do_yank",
-      " \ "\<C-e>":   "do_end",
+      " \   "\<C-e>": "do_auto_excursion_off",
 
 let s:keyboard = {}
 function! s:keyboard.do_head() "{{{1
@@ -95,6 +98,10 @@ endfunction
 
 function! s:keyboard.do_excursion() "{{{1
   call call(self.owner.do_excursion, [self], self.owner)
+endfunction
+
+function! s:keyboard.do_auto_excursion_off() "{{{1
+  let self.owner.auto_excursion = 0
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1

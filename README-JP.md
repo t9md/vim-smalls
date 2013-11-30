@@ -150,7 +150,7 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | `<S-Tab>`        | do_excursion_with_prev          | excursion-mode の prev              |
 | `<C-p>`          | do_excursion_with_prev          | excursion-mode の prev              |
 | NOT_ASSIGNED     | do_auto_excursion_off           | auto_excursion を一時的にoff        |
-| NOT_ASSIGNED     | __UNMAP__                       | Key に bind されたマッピングを解除  |
+| NOT_ASSIGNED     | `__UNMAP__`                     | Key に bind されたマッピングを解除  |
 | `{jump_trigger}` | do_jump                         | ジャンプキーを表示(デフォルトは`;`) |
 
 ## excursion-mode
@@ -190,7 +190,7 @@ cli-mode のキーマップはデフォルトで以下の様になっている�
 | NOT_ASSIGNED         | do_select_v_with_set      | 着地候補までを v し、do_set         |
 | NOT_ASSIGNED         | do_select_V_with_set      | 着地候補までを V  し、do_set        |
 | NOT_ASSIGNED         | do_select_CTRL_V_with_set | 着地候補までを CTRL_V し、do_set    |
-| NOT_ASSIGNED         | __UNMAP__                 | Key に bind されたマッピングを解除  |
+| NOT_ASSIGNED         | `__UNMAP__`               | Key に bind されたマッピングを解除  |
 | NOT_ASSIGNED         | do_jump                   | ジャンプキーを表示(デフォルトは`;`) |
 *1 cli-mode で入力された最後の文字で `do_next` が実行可能。
 例えば `<Plug>(smalls-excursion)` から呼び出し、`g:smalls_auto_excursion_min_input_length` が `1` の場合

@@ -1,5 +1,5 @@
-let s:plog = smalls#util#import("plog")
-let s:getchar = smalls#util#import("getchar")
+let s:plog            = smalls#util#import("plog")
+let s:getchar         = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 " Util:
@@ -20,12 +20,11 @@ endfunction
 " Main:
 let s:smalls = {}
 function! s:smalls.init(mode) "{{{1
-  let self.lastmsg = ''
-  let self._notfound   = 0
-
-  let self.env      = {}
+  let self.lastmsg   = ''
+  let self._notfound = 0
+  let self.env       = {}
   " need env.mode from here. used in serveral function.
-  let self.env.mode = a:mode
+  let self.env.mode  = a:mode
 
   if self._is_visual()
     " to get precise start point in visual mode.
@@ -40,24 +39,24 @@ function! s:smalls.init(mode) "{{{1
   endif
 
   call extend(self.env, {
-        \ 'w0': w0,
+        \ 'w0':   w0,
         \ 'w0-1': w0-1,
-        \ 'w$': w_,
+        \ 'w$':   w_,
         \ 'w$+1': w_+1,
-        \ 'p': smalls#pos#new([l, c]),
-        \ 'l': l,
-        \ 'l-1': l-1,
-        \ 'l+1': l+1,
-        \ 'c': c,
-        \ 'c-1': c-1,
-        \ 'c+1': c+1,
-        \ 'c+2': c+2,
+        \ 'p':    smalls#pos#new([l, c]),
+        \ 'l':    l,
+        \ 'l-1':  l-1,
+        \ 'l+1':  l+1,
+        \ 'c':    c,
+        \ 'c-1':  c-1,
+        \ 'c+1':  c+1,
+        \ 'c+2':  c+2,
         \ })
 
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
-  let self._break = 0
+  let self._break       = 0
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -121,11 +120,10 @@ endfunction
 function! s:smalls.loop() "{{{1
   call self.update_mode('cli')
   let kbd = self.keyboard_cli
-  let hl = self.hl
+  let hl  = self.hl
   while 1
     call hl.shade()
     call hl.orig_pos()
-
 
     let timeout = 
           \ ( g:smalls_jump_keys_auto_show &&
@@ -181,7 +179,7 @@ function! s:smalls.start(mode, auto_excursion)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.do_jump(kbd, ...) "{{{1
+function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.clear()
   call self.hl.shade()
 

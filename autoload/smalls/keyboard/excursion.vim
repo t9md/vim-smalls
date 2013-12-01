@@ -39,11 +39,12 @@ let s:key_table = {
 let s:keyboard = {}
 
 function! s:keyboard.init(word, poslist) "{{{1
-  let self.index   = 0
-  let self._count  = ''
-  let self.word    = a:word
-  let self.poslist = a:poslist
-  let self.max     = len(a:poslist)
+  let self.index       = 0
+  let self._count      = ''
+  let self._sorted     = []
+  let self.word        = a:word
+  let self.poslist     = a:poslist
+  let self.poslist_max = len(a:poslist)
   return self
 endfunction
 
@@ -61,11 +62,11 @@ function! s:keyboard.do_back_cli() "{{{1
 endfunction
 
 function! s:keyboard.line() "{{{1
-  return self.poslist[self.index][0]
+  return self.pos()[0]
 endfunction
 
 function! s:keyboard.col() "{{{1
-  return self.poslist[self.index][1]
+  return self.pos()[1]
 endfunction
 
 function! s:keyboard.pos() "{{{1
@@ -81,22 +82,23 @@ function! s:keyboard.do_down() "{{{1
 endfunction
 
 function! s:keyboard.do_last() "{{{1
-  let dest = self.sort()[-1]
-  let self.index = index(self.poslist, dest)
+  let self.index = index(self.poslist, self.sorted()[-1])
 endfunction
 
 function! s:keyboard.do_first() "{{{1
-  let dest = self.sort()[0]
-  let self.index = index(self.poslist, dest)
+  let self.index = index(self.poslist, self.sorted()[0])
+endfunction
+
+function! s:keyboard.sorted()
+  if empty(self._sorted) " cache
+    let self._sorted = sort(copy(self.poslist), self._sortfunc, self)
+  endif
+  return self._sorted
 endfunction
 
 function! s:keyboard._sortfunc(pos1, pos2)
   let r = a:pos1[0] - a:pos2[0]
   return r ==# 0 ? a:pos1[1] - a:pos2[1] : r
-endfunction
-
-function! s:keyboard.sort()
-  return sort(copy(self.poslist), self._sortfunc, self)
 endfunction
 
 function! s:keyboard.do_right() "{{{1
@@ -116,11 +118,11 @@ function! s:keyboard.do_line_tail() "{{{1
 endfunction
 
 function! s:keyboard._do_head_tail(which) "{{{1
-  let cl = self.line()
+  let l = self.line()
   let [search, adjust]
         \ = a:which ==# 'tail' ? ['next', 'prev'] : ['prev', 'next' ]
   call self['do_' . search](1)
-  while cl == self.line()
+  while l == self.line()
     call self['do_' . search](1)
   endwhile
   call self['do_' . adjust](1)
@@ -130,9 +132,9 @@ function! s:keyboard._do_ud(dir) "{{{1
   let fn = 'do_' . a:dir
 
   for n in range(self.count())
-    let [cl, cc] = self.pos()
+    let [l, c] = self.pos()
     call self[fn](1)
-    while cl == self.line() && cc != self.col()
+    while l == self.line() && c != self.col()
       call self[fn](1)
     endwhile
   endfor
@@ -143,9 +145,9 @@ function! s:keyboard._do_lr(dir) "{{{1
   let fn = 'do_' . a:dir
 
   for n in range(self.count())
-    let cl = self.line()
+    let l = self.line()
     call self[fn](1)
-    while cl != self.line()
+    while l != self.line()
       call self[fn](1)
     endwhile
   endfor
@@ -155,7 +157,7 @@ endfunction
 function! s:keyboard.do_next(...) "{{{1
   let ignore_count = a:0 ? 1 : 0
   for n in range(self.count())
-    let self.index = (self.index + 1) % self.max
+    let self.index = (self.index + 1) % self.poslist_max
     if ignore_count
       return
     endif
@@ -166,7 +168,7 @@ endfunction
 function! s:keyboard.do_prev(...) "{{{1
   let ignore_count = a:0 ? 1 : 0
   for n in range(self.count())
-    let self.index = ((self.index - 1) + self.max ) % self.max
+    let self.index = ((self.index - 1) + self.poslist_max ) % self.poslist_max
     if ignore_count
       return
     endif
@@ -207,13 +209,14 @@ function! s:keyboard._setchar(c) "{{{1
       call self.do_next()
     endif
     return ''
+  else
+    let self._count .= a:c
+    return a:c
   endif
-  let self._count .= a:c
-  return a:c
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1
-  let [first_action, next_action ] = split(a:action, '_with_')
+  let [ first_action, next_action ] = split(a:action, '_with_')
   call self[first_action]()
   call self['do_' . next_action ]()
 endfunction
@@ -251,7 +254,6 @@ function! s:keyboard._do_normal(normal_key, wise, ...)
   if force_wise || !self.owner._is_visual()
     call self._do_select(a:wise)
   endif
-
   call self.do_set()
   execute 'normal! ' . a:normal_key
 endfunction
@@ -280,12 +282,7 @@ function! smalls#keyboard#excursion#replace_table(table) "{{{1
 endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
-  let help = "[Excursion]"
-  " let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
-  " if ! has_key(s:key_table, jump_trigger)
-    " let s:key_table[jump_trigger] = 'do_jump'
-  " endif
-  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, help)
+  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, '[Excursion]')
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)
 endfunction "}}}

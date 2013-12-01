@@ -4,7 +4,7 @@ unmap <SID>xx
 let s:sid = substitute(s:sid, 'xx', '', '')
 
 function! s:plog(msg) "{{{1
-  cal vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
+  call vimproc#system('echo "' . PP(a:msg) . '" >> ~/vim.log')
 endfunction
 function! s:msg(message) "{{{1
   echohl PreProc

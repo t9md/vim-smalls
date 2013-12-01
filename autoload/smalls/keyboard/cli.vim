@@ -30,10 +30,10 @@ let s:key_table = {
       " \   "\<C-e>": "do_auto_excursion_off",
 
 let s:keyboard = {}
+
 function! s:keyboard.do_head() "{{{1
   let self.cursor = 0
 endfunction
-
 
 function! s:keyboard.do_char_forward() "{{{1
   let self.cursor = min([self.cursor+1, self.data_len()])
@@ -88,10 +88,6 @@ function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self], self.owner)
 endfunction
 
-function! s:keyboard.do_jump_wordend() "{{{1
-  call call(self.owner.do_jump, [self, 1], self.owner)
-endfunction
-
 function! s:keyboard.do_jump_first() "{{{1
   call call(self.owner.do_jump_first, [self], self.owner)
 endfunction
@@ -109,16 +105,18 @@ function! s:keyboard._action_missing(action) "{{{1
   call call(self.owner.do_excursion, [self, action], self.owner)
 endfunction
 
-
 function! smalls#keyboard#cli#get_table() "{{{1
   return s:key_table
-endfunction "}}}
+endfunction
+
 function! smalls#keyboard#cli#extend_table(table) "{{{1
   call extend(s:key_table, a:table, 'force')
-endfunction "}}}
+endfunction
+
 function! smalls#keyboard#cli#replace_table(table) "{{{1
   let s:key_table = a:table
-endfunction "}}}
+endfunction
+
 function! smalls#keyboard#cli#new(owner) "{{{1
   let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
   if ! has_key(s:key_table, jump_trigger)
@@ -127,4 +125,5 @@ function! smalls#keyboard#cli#new(owner) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, "> ")
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
+
 " vim: foldmethod=marker

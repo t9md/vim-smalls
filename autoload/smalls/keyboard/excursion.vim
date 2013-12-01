@@ -32,6 +32,7 @@ let s:key_table = {
       \        "V": "do_select_V",
       \   "\<C-v>": "do_select_CTRL_V",
       \ }
+      " \        "c": "do_change",
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
       " \   "\<C-v>": "do_select_CTRL_V_with_set",
@@ -247,6 +248,12 @@ endfunction
 
 function! s:keyboard.do_yank_line() "{{{1
   call self._do_normal('y', 'V', 1)
+endfunction
+
+function! s:keyboard.do_change() "{{{1
+  " FIXME not impremented properly yet
+  normal! c
+  call self._do_normal('c', 'v', 1)
 endfunction
 
 function! s:keyboard._do_normal(normal_key, wise, ...)

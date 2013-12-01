@@ -136,7 +136,7 @@ function! s:keyboard._do_ud(dir) "{{{1
       call self[fn](1)
     endwhile
   endfor
-  call self.reset_count()
+  call self.count_reset()
 endfunction
 
 function! s:keyboard._do_lr(dir) "{{{1
@@ -149,7 +149,7 @@ function! s:keyboard._do_lr(dir) "{{{1
       call self[fn](1)
     endwhile
   endfor
-  call self.reset_count()
+  call self.count_reset()
 endfunction
 
 function! s:keyboard.do_next(...) "{{{1
@@ -160,7 +160,7 @@ function! s:keyboard.do_next(...) "{{{1
       return
     endif
   endfor
-  call self.reset_count()
+  call self.count_reset()
 endfunction
 
 function! s:keyboard.do_prev(...) "{{{1
@@ -171,7 +171,7 @@ function! s:keyboard.do_prev(...) "{{{1
       return
     endif
   endfor
-  call self.reset_count()
+  call self.count_reset()
 endfunction
 
 function! s:keyboard.do_set() "{{{1
@@ -184,7 +184,7 @@ function! s:keyboard.count() "{{{1
   return empty(self._count) ? 1 : str2nr(self._count)
 endfunction
 
-function! s:keyboard.reset_count() "{{{1
+function! s:keyboard.count_reset() "{{{1
   let self._count = ''
   let self.data = ''
   redraw
@@ -196,7 +196,7 @@ function! s:keyboard._setchar(c) "{{{1
   endif
 
   if a:c !~ '\d'
-    call self.reset_count()
+    call self.count_reset()
 
     " support upto 2char keymap
     let last_2_char = join(self.input_history[-2:], '')
@@ -276,7 +276,7 @@ function! smalls#keyboard#excursion#extend_table(table) "{{{1
 endfunction
 
 function! smalls#keyboard#excursion#replace_table(table) "{{{1
-  let s:key_table = a:new_table
+  let s:key_table = a:table
 endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1

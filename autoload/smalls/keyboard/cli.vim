@@ -117,7 +117,7 @@ function! smalls#keyboard#cli#extend_table(table) "{{{1
   call extend(s:key_table, a:table, 'force')
 endfunction "}}}
 function! smalls#keyboard#cli#replace_table(table) "{{{1
-  let s:key_table = a:new_table
+  let s:key_table = a:table
 endfunction "}}}
 function! smalls#keyboard#cli#new(owner) "{{{1
   let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])

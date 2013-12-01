@@ -29,14 +29,14 @@ function! s:smalls.init(mode) "{{{1
 
   if self._is_visual()
     " to get precise start point in visual mode.
-    exe 'normal! gvo' | exe "normal! " . "\<Esc>"
+    exe "normal! gvo\<Esc>"
   endif
 
   let [l, c, w0, w_ ] = [ line('.'), col('.'), line('w0'), line('w$') ]
 
   if self._is_visual()
     " for neatly revert original visual start/end pos
-    exe 'normal! gvo' | exe "normal! " . "\<Esc>"
+    exe "normal! gvo\<Esc>"
   endif
 
   call extend(self.env, {
@@ -65,7 +65,7 @@ function! s:smalls.finish() "{{{1
     if g:smalls_blink_on_notfound
       call self.hl.blink_orig_pos()
     endif
-    if self.env.mode !~ 'n\|o'
+    if self._is_visual()
       normal! gv
     endif
   endif
@@ -168,7 +168,7 @@ function! s:smalls.start(mode, auto_excursion)  "{{{1
     if v:exception ==# "NotFound"
       let self._notfound = 1
     elseif v:exception ==# "Canceled"
-      if self.env.mode !~ 'n\|o'
+      if self._is_visual()
         normal! gv
       endif
     endif
@@ -220,10 +220,12 @@ function! s:smalls._is_visual() "{{{1
 endfunction
 
 function! s:smalls._need_adjust_col(pos)
-  if self.env.mode == 'n'  | return 0 | endif
+  if self.env.mode ==# 'n' | return 0 | endif
   if self.env.mode ==# 'o' | return self._is_forward(a:pos) | endif
   if self._is_visual()
-    return self.env.mode =~# 'v\|V' ? self._is_forward(a:pos) : self._is_col_forward(a:pos.col)
+    return self.env.mode =~# 'v\|V'
+          \ ? self._is_forward(a:pos)
+          \ : self._is_col_forward(a:pos.col)
   endif
 endfunction
 
@@ -231,7 +233,9 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self._need_adjust_col(a:pos)
     let a:pos.col += self.keyboard_cli.data_len() - 1
   endif
-  if self.env.mode ==# 'o' && g:smalls_operator_motion_inclusive && self._is_forward(a:pos)
+  if self.env.mode ==# 'o'
+        \ && g:smalls_operator_motion_inclusive
+        \ && self._is_forward(a:pos)
     let a:pos.col += 1
     " line end
     if a:pos.col > len(getline(a:pos.line)) 

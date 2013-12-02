@@ -31,27 +31,30 @@ function! s:smalls.init(mode) "{{{1
     exe "normal! gvo\<Esc>"
   endif
 
-  let [l, c, w0, w_ ] = [ line('.'), col('.'), line('w0'), line('w$') ]
+  let [l, c ] = [ line('.'), col('.') ]
+  call extend(self.env,
+        \ { 'w0': line('w0'), 'w$': line('w$'), 'l':  l, 'c':  c, })
+  let self.env.p = smalls#pos#new([l, c])
 
   if self._is_visual()
     " for neatly revert original visual start/end pos
     exe "normal! gvo\<Esc>"
   endif
 
-  call extend(self.env, {
-        \ 'w0':   w0,
-        \ 'w0-1': w0-1,
-        \ 'w$':   w_,
-        \ 'w$+1': w_+1,
-        \ 'p':    smalls#pos#new([l, c]),
-        \ 'l':    l,
-        \ 'l-1':  l-1,
-        \ 'l+1':  l+1,
-        \ 'c':    c,
-        \ 'c-1':  c-1,
-        \ 'c+1':  c+1,
-        \ 'c+2':  c+2,
-        \ })
+  " call extend(self.env, {
+        " \ 'w0':   w0,
+        " \ 'w0-1': w0-1,
+        " \ 'w$':   w_,
+        " \ 'w$+1': w_+1,
+        " \ 'p':    smalls#pos#new([l, c]),
+        " \ 'l':    l,
+        " \ 'l-1':  l-1,
+        " \ 'l+1':  l+1,
+        " \ 'c':    c,
+        " \ 'c-1':  c-1,
+        " \ 'c+1':  c+1,
+        " \ 'c+2':  c+2,
+        " \ })
 
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)

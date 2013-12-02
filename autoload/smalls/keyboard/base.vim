@@ -37,7 +37,7 @@ endfunction
 function! s:keyboard.input_history_add(c) "{{{1
   call add(self.input_history, a:c)
   if len(self.input_history) > self.input_history_max
-    echo remove(self.input_history, 0)
+    call remove(self.input_history, 0)
   endif
 endfunction
 
@@ -78,6 +78,7 @@ function! s:keyboard._action_missing(action) "{{{1
 endfunction
 
 function! s:keyboard._set(c) "{{{1
+  " set char or chars into cursor position.
   let self.data = self._before() . a:c .  self._after()
   let self.cursor += len(a:c)
 endfunction 
@@ -97,8 +98,6 @@ function! s:keyboard.echohl(msg, color) "{{{1
 endfunction
 
 function! s:keyboard.show_prompt() "{{{1
-  " call self.echohl(self.cursor, "Number")
-  " call self.echohl("[S]", 'Statement')
   call self.echohl(self._prompt_str, 'Identifier')
   call self.echohl(self._before(),  'SmallsCli')
   let after = self._after()

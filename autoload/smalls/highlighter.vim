@@ -1,9 +1,41 @@
 let s:plog    = smalls#util#import("plog")
 
+" function! s:intrpl(string, vars) "{{{1
+  " let mark = '\v\{(.{-})\}'
+  " return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
+" endfunction "}}}
+
+" function! s:intrpl(string, vars) "{{{1
+  " let mark = '\v\{(.{-})\}'
+  " for kv in items(a:vars)
+    " exe 'let ' . join(kv, '=')
+  " endfor
+  " return substitute(a:string, mark,'\=eval(submatch(1))', '')
+" endfunction "}}}
+
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
-  return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
+  let r = []
+  for expr in s:scan(a:string, mark)
+    call add(r, substitute(expr, '\v([a-z][a-z$0]*)', '\=a:vars[submatch(1)]', 'g'))
+  endfor
+  call map(r, 'eval(v:val)')
+  return substitute(a:string, mark,'\=remove(r, 0)', 'g')
 endfunction "}}}
+
+function! s:scan(str, pattern) "{{{1
+  let ret = []
+  let nth = 1
+  while 1
+    let m = matchlist(a:str, a:pattern, 0, nth)
+    if empty(m)
+      break
+    endif
+    call add(ret, m[1])
+    let nth += 1
+  endwhile
+  return ret
+endfunction
 
 let s:h = {}
 let s:h.ids = []
@@ -55,7 +87,7 @@ endfunction
 
 function! s:h.orig_pos() "{{{1
   let pos = '%{l}l%{c}c'
-  call self.hl("SmallsPos",    s:intrpl('\v\c' . pos, self.env))
+  call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
 endfunction
 
 function! s:h.blink_orig_pos() "{{{1
@@ -78,12 +110,8 @@ function! s:h.region(pos, word) "{{{1
   call self.clear("SmallsRegion")
   let e = {
         \ 'nl': a:pos[0],
-        \ 'nl+1': a:pos[0] + 1,
-        \ 'nl-1': a:pos[0] - 1,
         \ 'nc': a:pos[1],
-        \ 'nc+1': a:pos[1] + 1,
-        \ 'nc-1': a:pos[1] - 1,
-        \ 'ke+1': a:pos[1] + wordlen,
+        \ 'ke': a:pos[1] + wordlen - 1,
         \ }
   call extend(e, self.env, 'error')
 
@@ -126,7 +154,6 @@ function! s:h._is_col_forward(col) "{{{1
   return ( self.env.p.col <= a:col )
 endfunction
 
-
 function! s:h.jump_target(poslist) "{{{1
   let hl_expr = join(
         \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
@@ -136,20 +163,14 @@ endfunction
 function! s:h.candidate(word, pos) "{{{1
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
-  let wordlen = len(a:word)
   let e = {
-        \ 'k':  '\V'. escape(a:word, '\'). '\v',
-        \ 'cl':   a:pos[0],
-        \ 'ke+1': a:pos[1] + wordlen,
-        \ 'ke':   a:pos[1] + wordlen - 1,
+        \ 'cl': a:pos[0],
+        \ 'ke': a:pos[1] + len(a:word) - 1,
         \ }
-
-  let candidate   = '{k}'
+  let word = '\V'. escape(a:word, '\') . '\v'
   call extend(e, self.env, 'error')
-
-  call self.hl("SmallsCandidate", s:intrpl('\v\c'. candidate, e))
-  call self.hl("SmallsCurrent",   s:intrpl('\v\c{k}%{cl}l%{ke+1}c', e))
-  " call self.hl("SmallsCursor",    s:intrpl('\v\c%{cl}l%{ke}c', e))
+  call self.hl("SmallsCandidate", s:intrpl('\v\c' . word , e))
+  call self.hl("SmallsCurrent",   s:intrpl('\v\c' . word . '%{cl}l%{ke+1}c', e))
   if self.env.mode != 'n'
     call self.region(a:pos, a:word)
   endif
@@ -158,10 +179,14 @@ endfunction
 function! smalls#highlighter#new(env) "{{{1
   return s:h.new(a:env)
 endfunction
+
 function! smalls#highlighter#extend_priority(table) "{{{1
   call extend(s:priorities, a:table, 'force')
 endfunction
+
 function! smalls#highlighter#get_table() "{{{1
   return s:priorities
 endfunction
+"}}}
+
 " vim: foldmethod=marker

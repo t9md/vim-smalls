@@ -1,13 +1,13 @@
 " Base:
-let s:getchar = smalls#util#import("getchar")
-let s:plog = smalls#util#import("plog")
+let s:getchar         = smalls#util#import("getchar")
+let s:plog            = smalls#util#import("plog")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 let s:keyboard = {}
 
 " Usage of bind()
 " call s:keyboard.bind(jump_trigger,
-" \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
+"       \ { 'func': self.do_jump, 'args': [keyboard], 'self': self })
 function! s:keyboard.bind(key, action) "{{{1
   let self._table[a:key] = a:action
 endfunction
@@ -15,10 +15,10 @@ endfunction
 function! s:keyboard.read_input(...) "{{{1
   call self.show_prompt()
   " optional arg is timeout, empty or -1 mean 'no timeout'.
-  if (a:0 && a:1 != -1)
-    call self.input(s:getchar_timeout(a:1))
-  else
+  if empty(a:000) || a:1 ==# -1
     call self.input(s:getchar())
+  else
+    call self.input(s:getchar_timeout(a:1))
   end
 endfunction
 

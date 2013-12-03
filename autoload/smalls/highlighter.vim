@@ -58,7 +58,6 @@ function! s:h.new(env) "{{{1
 endfunction
 
 function! s:h.dump() "{{{1
-  echo PP(self)
 endfunction
 
 function! s:h.hl(color, pattern) "{{{1
@@ -137,13 +136,6 @@ function! s:h.region(pos, word) "{{{1
   endif
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction
-
-" function! s:h.select(pos) "{{{1
-  " exe 'normal! \<Esc>'
-  " call self.env.p.set()
-  " exe 'normal! ' . self.env.mode
-  " call cursor(a:pos)
-" endfunction
 
 function! s:h._is_forward(dst_pos) "{{{1
   return ( self.env.p.line < a:dst_pos[0] ) ||

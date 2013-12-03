@@ -33,6 +33,8 @@ function! s:jump.gen_jump_lines(lines_org, pos2jumpk) "{{{1
     let col  = str2nr(col_s)
 
     let dest_char = matchstr(r[lnum], '\%'. col .'c.')
+    " FIXME padding for multibyte char is possibly not appropriate for
+    " UTF8(2col displaywidth but 3byte)
     let padding = repeat(' ', 
           \ strdisplaywidth(dest_char) - strdisplaywidth(jump_key))
 

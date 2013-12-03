@@ -1,100 +1,85 @@
 let s:plog = smalls#util#import("plog")
 
-let s:f = {}
-function! s:f.new(env) "{{{1
+let s:finder = {}
+
+function! s:finder.new(env) "{{{1
   let self.env = a:env
   return self
 endfunction
 
-function! s:f.one(word) "{{{1
+function! s:finder.one(word) "{{{1
   return self.all(a:word, 1)
 endfunction
 
-function! s:f.all(word, ...) "{{{1
-  let one = a:0
+function! s:finder.all(word, ...) "{{{1
+  let one = !empty(a:000)
   let self.found = []
-  if empty(a:word)
-    return found
-  endif
+  if empty(a:word) | return found | endif
   let word = '\V\c' . escape(a:word, '\')
+
   try
-    call self.move_next_col()
-    call self.search(word, 'c', self.env['w$'], one)
-    if one && !empty(self.found)
-      return self.found[0]
-    endif
-    " retry from line('w0')
-    call self.move_begin_of_window()
-    call self.search(word, 'c', self.env['w$'], one)
-    if one && !empty(self.found)
-      return self.found[0]
-    endif
+    for start in [ 'cursor_NEXT_COL', 'cursor_TOW' ]
+      call self[start]()
+      call self.search(word, 'c', self.env['w$'], one)
+      if one && !empty(self.found) | return self.found[0] | endif
+    endfor
   finally
     call self.env.p.set()
   endtry
   return self.found
 endfunction
 
-function! s:f.search(word, opt, stopline, one) "{{{1
+function! s:finder.search(word, opt, stopline, one) "{{{1
+  let line_org = self.env.p.line "cache
   while 1
     let pos = searchpos(a:word, a:opt, a:stopline)
-    if pos == [0, 0]
-      break
-    endif
-    " skip fold
-    let linum = foldclosedend(pos[0])
+    if pos == [0, 0] | break | endif
+
+    let linum = foldclosedend(pos[0]) " skip fold
     if linum != -1
-      if linum == self.env['w$']
-        break
-      endif
+      if linum == self.env['w$'] | break | endif
       call cursor(linum + 1 , 1)
       continue
     endif
 
-    if index(self.found, pos) != -1 | break | endif
+    if line_org == pos[0] && index(self.found, pos) != -1
+      break
+    endif
     call add(self.found, pos)
     if a:one | break | endif
 
-    if self.is_EOL()
-      call self.move_next_head_of_line()
+    if self.cursor_is_EOL()
+      call self.cursor_HONL()
     else
-      call self.move_next_col()
+      call self.cursor_NEXT_COL()
     endif
   endwhile
 endfunction
 
-
-function! s:f.retry() "{{{1
-  if self.firsttime
-    call self.move_begin_of_window()
-    let self.firsttime = !self.firsttime
-    return 1
-  else
-    return 0
-  endif
-endfunction
-function! s:f.is_EOL() "{{{1
+function! s:finder.cursor_is_EOL() "{{{1
   return (col('.') >= col('$') - 1)
 endfunction
 
-function! s:f.is_end_of_window() "{{{1
+function! s:finder.cursor_is_EOW() "{{{1
   return line('.') == self.env['w$']
 endfunction
 
-function! s:f.move_begin_of_window() "{{{1
+function! s:finder.cursor_TOW() "{{{1
+  " top of window
   call cursor(self.env['w0'], 1)
 endfunction
 
-function! s:f.move_next_head_of_line() "{{{1
+function! s:finder.cursor_HONL() "{{{1
+  " head of next line
   call cursor(line('.') + 1, 1)
 endfunction
 
-function! s:f.move_next_col() "{{{1
+function! s:finder.cursor_NEXT_COL() "{{{1
   call cursor(0, col('.') + 1)
 endfunction
 
-
 function! smalls#finder#new(env) "{{{1
-  return s:f.new(a:env)
+  return s:finder.new(a:env)
 endfunction
+"}}}
 " vim: foldmethod=marker

@@ -99,7 +99,7 @@ endfunction
 
 function! s:keyboard._sortfunc(pos1, pos2)
   let r = a:pos1[0] - a:pos2[0]
-  return r ==# 0 ? a:pos1[1] - a:pos2[1] : r
+  return ( r ==# 0 ) ? a:pos1[1] - a:pos2[1] : r
 endfunction
 
 function! s:keyboard.do_right() "{{{1
@@ -206,8 +206,12 @@ function! s:keyboard._setchar(c) "{{{1
     if has_key(self._table, last_2_char)
       call self.execute(last_2_char)
     endif
-    if self.owner.keyboard_cli.data[-1:] == a:c
+
+    let lastchar_cli = self.owner.keyboard_cli.data[-1:]
+    if lastchar_cli ==# a:c "same char entered to excursion mode
       call self.do_next()
+    elseif lastchar_cli ==# tolower(a:c) " upper char for backward movement
+      call self.do_prev()
     endif
     return ''
   else

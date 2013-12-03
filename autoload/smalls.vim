@@ -9,7 +9,6 @@ function! s:msg(msg) "{{{1
   call s:echohl(a:msg, 'Normal')
 endfunction
 
-
 function! s:echohl(msg, color) "{{{1
   silent execute 'echohl ' . a:color
   echon a:msg
@@ -26,35 +25,14 @@ function! s:smalls.init(mode) "{{{1
   " need env.mode from here. used in serveral function.
   let self.env.mode  = a:mode
 
-  if self._is_visual()
-    " to get precise start point in visual mode.
-    exe "normal! gvo\<Esc>"
-  endif
-
-  let [l, c ] = [ line('.'), col('.') ]
-  call extend(self.env,
-        \ { 'w0': line('w0'), 'w$': line('w$'), 'l':  l, 'c':  c, })
+  " to get precise start point in visual mode.
+  if self._is_visual() | exe "normal! gvo\<Esc>" | endif
+  let [ l, c ] = [ line('.'), col('.') ]
+  call extend(self.env, { 'w0': line('w0'), 'w$': line('w$'), 'l': l, 'c': c })
   let self.env.p = smalls#pos#new([l, c])
 
-  if self._is_visual()
-    " for neatly revert original visual start/end pos
-    exe "normal! gvo\<Esc>"
-  endif
-
-  " call extend(self.env, {
-        " \ 'w0':   w0,
-        " \ 'w0-1': w0-1,
-        " \ 'w$':   w_,
-        " \ 'w$+1': w_+1,
-        " \ 'p':    smalls#pos#new([l, c]),
-        " \ 'l':    l,
-        " \ 'l-1':  l-1,
-        " \ 'l+1':  l+1,
-        " \ 'c':    c,
-        " \ 'c-1':  c-1,
-        " \ 'c+1':  c+1,
-        " \ 'c+2':  c+2,
-        " \ })
+  " for neatly revert original visual start/end pos
+  if self._is_visual() | exe "normal! gvo\<Esc>" | endif
 
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
@@ -64,9 +42,7 @@ endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
-    if g:smalls_blink_on_notfound
-      call self.hl.blink_orig_pos()
-    endif
+    if g:smalls_blink_on_notfound | call self.hl.blink_orig_pos() | endif
     if self._is_visual()
       normal! gv
     endif
@@ -158,9 +134,9 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(mode, auto_excursion)  "{{{1
+function! s:smalls.start(mode, ...)  "{{{1
   try
-    let self.auto_excursion = a:auto_excursion
+    let self.auto_excursion = a:0 ? 1 : 0
     call self.init(a:mode)
     call self.set_opts()
     call self.cursor_hide()
@@ -238,8 +214,7 @@ function! s:smalls._adjust_col(pos) "{{{1
         \ && g:smalls_operator_motion_inclusive
         \ && self._is_forward(a:pos)
     let a:pos.col += 1
-    " line end
-    if a:pos.col > len(getline(a:pos.line)) 
+    if a:pos.col > len(getline(a:pos.line)) " line end
       let a:pos.line += 1
       let a:pos.col = 1
     endif
@@ -303,13 +278,11 @@ endfunction
 "}}}
 
 " PublicInterface:
-function! smalls#start(mode, ...) "{{{1
-  let auto_excursion = a:0 ? 1 : 0
-  call s:smalls.start(a:mode, auto_excursion)
+function! smalls#start(...) "{{{1
+  call call( s:smalls.start, a:000, s:smalls)
 endfunction "}}}
 
 function! smalls#debug() "{{{
-  " let g:V = s:smalls.hl
-  " echo PP(s:smalls)
 endfunction
+"}}}
 " vim: foldmethod=marker

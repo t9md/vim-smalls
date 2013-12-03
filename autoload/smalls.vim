@@ -254,6 +254,7 @@ function! s:smalls.loop2() "{{{1
       catch
         let err += 1
         call remove(self.wins, win)
+        " call smalls.hl.shade()
         if err >= err_max
           throw "NotFound"
         endif

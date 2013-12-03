@@ -49,12 +49,13 @@ let s:priorities = {
       \ }
 
 function! s:h.new(env) "{{{1
-  let self.env = a:env
-  let self.ids = {}
+  let o = deepcopy(self)
+  let o.env = a:env
+  let o.ids = {}
   for color in keys(s:priorities)
-    let self.ids[color] = []
+    let o.ids[color] = []
   endfor
-  return self
+  return o
 endfunction
 
 function! s:h.dump() "{{{1

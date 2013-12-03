@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_smalls')
-  finish
+  " finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo
@@ -84,6 +84,7 @@ onoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('o', 1)<CR>
 
 " Command:
 command! Smalls call smalls#start('n')
+command! SmallsWin call smalls#win_start('n')
 
 " Finish:
 let &cpo = s:old_cpo

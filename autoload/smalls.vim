@@ -158,6 +158,116 @@ function! s:smalls.start(mode, ...)  "{{{1
   endtry
 endfunction
 
+function! s:smalls.fork()
+  if self.is_parent()
+  else
+  endif
+endfunction
+
+function! s:smalls.win_start(mode, ...)  "{{{1
+  try
+    let self.auto_excursion = a:0 ? 1 : 0
+
+    let wins = {}
+    let winnr_main = winnr()
+
+    for w in range(1, winnr('$'))
+      if w ==# winnr_main
+        let wins[w] = self
+      else
+        let wins[w] = deepcopy(self)
+      endif
+      let wins[w]._winnr_main = winnr_main
+      execute w  . 'wincmd w'
+      call wins[w].init(a:mode)
+    endfor
+    call self.win_back()
+    call self.loop2(wins)
+  finally
+    windo call clearmatches()
+    call self.win_back()
+  endtry
+endfunction
+
+function! s:smalls.is_main() "{{{1
+  return self._winnr_main == winnr()
+endfunction
+
+function! s:smalls.win_back() "{{{1
+  execute self._winnr_main . 'wincmd w'
+endfunction
+
+function! s:smalls.loop2(wins) "{{{1
+  let kbd = self.keyboard_cli
+  let hl  = self.hl
+  let wins = a:wins
+  while 1
+    for [win, smalls] in items(wins)
+      execute win . 'wincmd w'
+      call smalls.hl.shade()
+    endfor
+    call self.win_back()
+
+    call hl.orig_pos()
+
+    try
+      call kbd.read_input()
+    catch /KEYBOARD_TIMEOUT/
+      call self.do_jump(kbd)
+    endtry
+
+    if self._break
+      break
+    endif
+
+    for [win, smalls] in items(wins)
+      execute win . 'wincmd w'
+      call smalls.hl.clear()
+    endfor
+    call self.win_back()
+
+    if kbd.data_len() ==# 0
+      continue
+    endif
+
+    let err_max = len(wins)
+    let err = 0
+
+    for [win, smalls] in items(wins)
+      try
+        call smalls.update_candidate(win, kbd.data)
+      catch
+        let err += 1
+        call remove(wins, win)
+        if err >= err_max
+          throw "NotFound"
+        endif
+      endtry
+    endfor
+    call self.win_back()
+  endwhile
+endfunction
+
+function! s:smalls.update_candidate(win, data)
+  execute a:win . 'wincmd w'
+  call self.hl.clear()
+  let found =  self.finder.one(a:data)
+  if empty(found)
+    " call self.hl.clear()
+    throw "NotFound"
+  endif
+  call self.hl.candidate(a:data, found)
+endfunction
+
+function!  s:wincall(func, args, self) "{{{
+  let winnum = winnr()
+  let pwinnum = winnr('#')
+  noautocmd windo call call(a:func, a:args, a:self)
+  execute pwinnum . "wincmd w"
+  execute winnum . "wincmd w"
+  redraw
+endfunction
+
 function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.clear()
   call self.hl.shade()
@@ -280,6 +390,10 @@ endfunction
 " PublicInterface:
 function! smalls#start(...) "{{{1
   call call( s:smalls.start, a:000, s:smalls)
+endfunction "}}}
+
+function! smalls#win_start(...) "{{{1
+  call call( s:smalls.win_start, a:000, s:smalls)
 endfunction "}}}
 
 function! smalls#debug() "{{{

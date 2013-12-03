@@ -1,10 +1,10 @@
 let s:plog = smalls#util#import("plog")
 
 let s:finder = {}
-
 function! s:finder.new(env) "{{{1
-  let self.env = a:env
-  return self
+  let f     = deepcopy(self)
+  let f.env = a:env
+  return f
 endfunction
 
 function! s:finder.one(word) "{{{1

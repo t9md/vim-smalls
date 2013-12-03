@@ -26,6 +26,7 @@ let s:key_table = {
       \   "\<C-n>": "do_excursion_with_next",
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
+      \   "\<C-j>": "do_shade()",
       \ }
       " \   "\<C-e>": "do_auto_excursion_off",
 
@@ -86,6 +87,11 @@ endfunction
 
 function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self], self.owner)
+endfunction
+
+function! s:keyboard.do_shade() "{{{1
+  " debugging purposer
+  call call(self.owner.hl.do_shade(), [self], self.owner)
 endfunction
 
 function! s:keyboard.do_jump_first() "{{{1

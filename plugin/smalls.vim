@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_smalls')
-  " finish
+  finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo

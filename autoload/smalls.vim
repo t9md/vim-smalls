@@ -165,29 +165,53 @@ function! s:smalls.fork()
 endfunction
 
 function! s:smalls.win_start(mode, ...)  "{{{1
+  let err = 0
   try
     let self.auto_excursion = a:0 ? 1 : 0
 
-    let wins = {}
+    let self.wins = {}
     let winnr_main = winnr()
 
     for w in range(1, winnr('$'))
       if w ==# winnr_main
-        let wins[w] = self
+        let self.wins[w] = self
       else
-        let wins[w] = deepcopy(self)
+        let self.wins[w] = deepcopy(self)
       endif
-      let wins[w]._winnr_main = winnr_main
+      let self.wins[w]._winnr_main = winnr_main
       execute w  . 'wincmd w'
-      call wins[w].init(a:mode)
+      call self.wins[w].init(a:mode)
     endfor
     call self.win_back()
-    call self.loop2(wins)
+    try
+      call self.loop2()
+    catch
+      " call s:plog(v:exception)
+      let err = 1
+    endtry
   finally
-    windo call clearmatches()
-    call self.win_back()
+    let winnum = winnr()
+    let pwinnum = winnr('#')
+    noautocmd windo call clearmatches()
+    execute pwinnum . "wincmd w"
+    execute winnum . "wincmd w"
+    " call s:plog(' err = ' . err)
+    if err
+      call self.win_back()
+    endif
   endtry
 endfunction
+
+function! s:windo(func, obj) "{{{
+  let winnum = winnr()
+  let pwinnum = winnr('#')
+  " echo [pwinnum, winnum]
+  " echo PP(a:func)
+  " echo PP(a:obj)
+  noautocmd windo call call(a:func, [], a:obj)
+  execute pwinnum . "wincmd w"
+  execute winnum . "wincmd w"
+endfunction "}}}
 
 function! s:smalls.is_main() "{{{1
   return self._winnr_main == winnr()
@@ -197,30 +221,21 @@ function! s:smalls.win_back() "{{{1
   execute self._winnr_main . 'wincmd w'
 endfunction
 
-function! s:smalls.loop2(wins) "{{{1
+function! s:smalls.loop2() "{{{1
   let kbd = self.keyboard_cli
   let hl  = self.hl
-  let wins = a:wins
   while 1
-    for [win, smalls] in items(wins)
+    for [win, smalls] in items(self.wins)
       execute win . 'wincmd w'
       call smalls.hl.shade()
     endfor
     call self.win_back()
 
     call hl.orig_pos()
+    call kbd.read_input()
+    if self._break | break | endif
 
-    try
-      call kbd.read_input()
-    catch /KEYBOARD_TIMEOUT/
-      call self.do_jump(kbd)
-    endtry
-
-    if self._break
-      break
-    endif
-
-    for [win, smalls] in items(wins)
+    for [win, smalls] in items(self.wins)
       execute win . 'wincmd w'
       call smalls.hl.clear()
     endfor
@@ -230,15 +245,15 @@ function! s:smalls.loop2(wins) "{{{1
       continue
     endif
 
-    let err_max = len(wins)
+    let err_max = len(self.wins)
     let err = 0
 
-    for [win, smalls] in items(wins)
+    for [win, smalls] in items(self.wins)
       try
         call smalls.update_candidate(win, kbd.data)
       catch
         let err += 1
-        call remove(wins, win)
+        call remove(self.wins, win)
         if err >= err_max
           throw "NotFound"
         endif
@@ -268,10 +283,19 @@ function!  s:wincall(func, args, self) "{{{
   redraw
 endfunction
 
-function! s:smalls.do_jump(kbd) "{{{1
+function! s:smalls.do_jump(kbd, ...) "{{{1
+
+  if has_key(self, 'wins') && empty(a:000)
+    for [win, smalls] in items(self.wins)
+      execute win . 'wincmd w'
+      call call(self.do_jump, [a:kbd, 1], smalls)
+    endfor
+    let self._break =  1
+    return
+  endif
+
   call self.hl.clear()
   call self.hl.shade()
-
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
     call self._jump_to_pos(pos_new)

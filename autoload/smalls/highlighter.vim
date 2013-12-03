@@ -80,6 +80,7 @@ function! s:h.clear(...) "{{{1
 endfunction
 
 function! s:h.shade() "{{{1
+  " call s:plog('shdde!')
   if ! g:smalls_shade | return | endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )

@@ -205,6 +205,32 @@ By default this feature is disabled.
 	In '<Plug>(smalls-excursion)' and if input exceed this value,
 	automatically enter excursion mode.
 
+*g:smalls_auto_set*
+	Default: 0
+	
+	enable automatically set cursor when jump candidate is only one.
+
+*g:smalls_auto_set_min_input_lenght*
+	Default: 3
+	
+	The minimum char to trigger auto_set.
+	[NOTE]
+	Since when you enable |g:smalls_auto_set|, smalls need to check number of candiadate
+	every time you typed any char.
+	This introduce performance overhead, without auto_set, smalls only need to search
+	one candidate(for highlight) and not need to know number of candidate.
+
+*g:smalls_auto_set_blink*
+	Default: 1
+
+	Blink after automatically land to target when auto_set.
+
+*g:smalls_auto_set_exceed_char* [NOT IMPLEMENTED JUST IDEA]
+	Default: 0
+	
+	if |g:smalls_auto_set| is set, while you type as much cars as
+	specified this variable, cursor automatically set.
+
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
 
@@ -370,6 +396,10 @@ is specified or not.
 ============================================================================
 TODO								*smalls-todo*
 
+* [ ] introduce smalls throughout multiwindow(multiwin-mode?)
+* [ ] improve to support 'c' operator
+* [ ] add auto_set or landing variable which finish and set cursor when 
+      specified char exceed while single landing candidate.
 * [x] rewrite region selection
  - add select()  action to pos.vim and select actually then use '`<', '`>' to
    get area of highlight. so need rewriten highlighter.region() action.

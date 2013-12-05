@@ -18,7 +18,7 @@ function! s:finder.all(word, ...) "{{{1
   let word = '\V\c' . escape(a:word, '\')
 
   try
-    for start in [ 'cursor_NEXT_COL', 'cursor_TOW' ]
+    for start in ['cursor_NEXT_COL', 'cursor_TOW' ]
       call self[start]()
       call self.search(word, 'c', self.env['w$'], one)
       if one && !empty(self.found) | return self.found[0] | endif
@@ -42,7 +42,7 @@ function! s:finder.search(word, opt, stopline, one) "{{{1
       continue
     endif
 
-    if line_org == pos[0] && index(self.found, pos) != -1
+    if line_org <= pos[0] && index(self.found, pos) != -1
       break
     endif
     call add(self.found, pos)

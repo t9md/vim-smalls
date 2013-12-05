@@ -92,11 +92,8 @@ function! s:h.orig_pos() "{{{1
 endfunction
 
 function! s:h.blink_orig_pos() "{{{1
-  " used to notify user's mistake and spot cursor.
-  " to avoid user's input mess buffer, we consume keyinput while blinking.
   let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
   for i in range(2)
-    call getchar(0)
     call self.hl("SmallsPos", pat)
     redraw!
     sleep 200m
@@ -104,6 +101,22 @@ function! s:h.blink_orig_pos() "{{{1
     redraw!
     sleep 100m
   endfor
+  while getchar(1) | call getchar() | endwhile
+endfunction
+
+function! s:h.blink_cursor() "{{{1
+  " used to notify curor position to user when exit smalls
+  let pat = '\v%' . line('.') . 'l%' . col('.') . 'c'
+  for i in range(2)
+    call self.hl("SmallsPos", pat)
+    redraw!
+    sleep 100m
+    call self.clear()
+    redraw!
+    sleep 100m
+  endfor
+  " to avoid user's input mess buffer, we consume keyinput in this function.
+  while getchar(1) | call getchar() | endwhile
 endfunction
 
 function! s:h.region(pos, word) "{{{1

@@ -21,6 +21,7 @@ let s:smalls = {}
 function! s:smalls.init(mode) "{{{1
   let self.lastmsg   = ''
   let self._notfound = 0
+  let self._auto_set = 0
   let self.env       = {}
   " need env.mode from here. used in serveral function.
   let self.env.mode  = a:mode
@@ -42,10 +43,13 @@ endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
-    if g:smalls_blink_on_notfound | call self.hl.blink_orig_pos() | endif
+    if g:smalls_blink_on_notfound | call self.hl.blink_cursor() | endif
     if self._is_visual()
       normal! gv
     endif
+  endif
+  if g:smalls_auto_set_blink && !empty(self._auto_set)
+    call self.hl.blink_cursor()
   endif
   redraw!
   if !empty(self.lastmsg)
@@ -119,14 +123,33 @@ function! s:smalls.loop() "{{{1
       call self.do_excursion(kbd)
     endif
 
-    if self._break
-      break
-    endif
     call hl.clear()
+
     if kbd.data_len() ==# 0
       continue
     endif
-    let found = self.finder.one(kbd.data)
+
+    if self._break
+      break
+    endif
+
+    if g:smalls_auto_set &&
+          \ kbd.data_len() >=# g:smalls_auto_set_min_input_lenght
+      let founds = self.finder.all(kbd.data)
+      if len(founds) ==# 1
+        let self._auto_set = 1
+        call kbd.do_jump_first()
+        break
+      else
+        if empty(founds)
+          throw "NotFound"
+        else
+          let found = founds[0]
+        endif
+      endif
+    else
+      let found = self.finder.one(kbd.data)
+    endif
     if empty(found)
       throw "NotFound"
     endif

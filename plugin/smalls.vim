@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_smalls')
-  finish
+  " finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo
@@ -18,7 +18,11 @@ let s:options = {
       \ 'g:smalls_blink_on_notfound': 1,
       \ 'g:smalls_current_mode': '',
       \ 'g:smalls_auto_excursion_min_input_length': 1,
+      \ 'g:smalls_auto_set': 0,
+      \ 'g:smalls_auto_set_min_input_lenght': 3,
+      \ 'g:smalls_auto_set_blink': 1,
       \ }
+      " \ 'g:smalls_auto_set_exceed_chars': 0,
 
       " Color format
       " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }

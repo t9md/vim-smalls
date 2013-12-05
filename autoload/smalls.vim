@@ -59,28 +59,22 @@ function! s:smalls.finish() "{{{1
 endfunction
 
 function! s:smalls.set_opts() "{{{1
-  let self._opts = {}
-  let opts = {
-          \ '&scrolloff':  0,
-          \ '&modified':   0,
-          \ '&cursorline': 0,
-          \ '&modifiable': 1,
-          \ '&readonly':   0,
-          \ '&spell':      0,
-          \ }
-  let curbuf = bufname('')
-  for [var, val] in items(opts)
-    let self._opts[var] = getbufvar(curbuf, var)
-    call setbufvar(curbuf, var, val)
-    unlet var val
-  endfor
-endfunction
+  " if self.multi_wins
+  " endif
+  let global =  {
+        \ '&scrolloff':  0 }
+  let buffer    = {
+        \ '&modified':   0,
+        \ '&modifiable': 1,
+        \ '&readonly':   0, }
+  let window    = {
+        \ '&cursorline': 0,
+        \ '&spell':      0, }
 
-function! s:smalls.restore_opts() "{{{1
-  for [var, val] in items(self._opts)
-    call setbufvar(bufname(''), var, val)
-    unlet var val
-  endfor
+  let wins = [winnr()]
+  let self.opts = smalls#opts#new()
+  call self.opts.prepare({'global': global, 'buffer': buffer, 'window': window }, wins)
+  call self.opts.change()
 endfunction
 
 function! s:smalls.cursor_hide() "{{{1
@@ -122,13 +116,10 @@ function! s:smalls.loop() "{{{1
           \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
       call self.do_excursion(kbd)
     endif
-
     call hl.clear()
-
     if kbd.data_len() ==# 0
       continue
     endif
-
     if self._break
       break
     endif
@@ -157,9 +148,11 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(mode, ...)  "{{{1
+function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
   try
-    let self.auto_excursion = a:0 ? 1 : 0
+    let self.auto_excursion = a:auto_excursion
+    let self.multi_wins = a:0 ? 1 : 0
+    let self._wins = range(1, winnr('$')) 
     call self.init(a:mode)
     call self.set_opts()
     call self.cursor_hide()
@@ -175,7 +168,7 @@ function! s:smalls.start(mode, ...)  "{{{1
     let self.lastmsg = v:exception
   finally
     call self.hl.clear()
-    call self.restore_opts()
+    call self.opts.restore()
     call self.cursor_restore()
     call self.finish()
   endtry
@@ -188,6 +181,7 @@ function! s:smalls.fork()
 endfunction
 
 function! s:smalls.win_start(mode, ...)  "{{{1
+  let self._wins = range(1, winnr('$')) 
   let err = 0
   try
     let self.auto_excursion = a:0 ? 1 : 0
@@ -195,7 +189,7 @@ function! s:smalls.win_start(mode, ...)  "{{{1
     let self.wins = {}
     let winnr_main = winnr()
 
-    for w in range(1, winnr('$'))
+    for w in self._wins
       if w ==# winnr_main
         let self.wins[w] = self
       else
@@ -209,7 +203,6 @@ function! s:smalls.win_start(mode, ...)  "{{{1
     try
       call self.loop2()
     catch
-      " call s:plog(v:exception)
       let err = 1
     endtry
   finally

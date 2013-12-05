@@ -76,9 +76,9 @@ augroup Smalls
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('n')<CR>
-xnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start(visualmode())<CR>
-onoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('o')<CR>
+nnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('n', 0)<CR>
+xnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start(visualmode(), 0)<CR>
+onoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('o', 0)<CR>
 
 nnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('n', 1)<CR>
 xnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start(visualmode(), 1)<CR>

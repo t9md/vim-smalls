@@ -91,19 +91,6 @@ function! s:h.orig_pos() "{{{1
   call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
 endfunction
 
-function! s:h.blink_orig_pos() "{{{1
-  let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
-  for i in range(2)
-    call self.hl("SmallsPos", pat)
-    redraw!
-    sleep 200m
-    call self.clear()
-    redraw!
-    sleep 100m
-  endfor
-  while getchar(1) | call getchar() | endwhile
-endfunction
-
 function! s:h.blink_cursor() "{{{1
   " used to notify curor position to user when exit smalls
   let pat = '\v%' . line('.') . 'l%' . col('.') . 'c'
@@ -115,7 +102,8 @@ function! s:h.blink_cursor() "{{{1
     redraw!
     sleep 100m
   endfor
-  " to avoid user's input mess buffer, we consume keyinput in this function.
+  " to avoid user's input mess buffer, we consume 
+  " keyinput feeded while blinking.
   while getchar(1) | call getchar() | endwhile
 endfunction
 

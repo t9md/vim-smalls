@@ -43,7 +43,9 @@ endfunction
 
 function! s:smalls.finish() "{{{1
   if self._notfound
-    if g:smalls_blink_on_notfound | call self.hl.blink_cursor() | endif
+    if g:smalls_blink_on_notfound
+      call self.hl.blink_cursor()
+    endif
     if self._is_visual()
       normal! gv
     endif
@@ -58,23 +60,19 @@ function! s:smalls.finish() "{{{1
   call self.update_mode('')
 endfunction
 
-function! s:smalls.set_opts() "{{{1
-  " if self.multi_wins
-  " endif
-  let global =  {
-        \ '&scrolloff':  0 }
-  let buffer    = {
-        \ '&modified':   0,
-        \ '&modifiable': 1,
-        \ '&readonly':   0, }
-  let window    = {
-        \ '&cursorline': 0,
-        \ '&spell':      0, }
+let s:smalls_vim_options = {}
+let s:smalls_vim_options.global = { '&scrolloff':  0 }
+let s:smalls_vim_options.buffer = {
+      \ '&modified':   0,
+      \ '&modifiable': 1,
+      \ '&readonly':   0, }
+let s:smalls_vim_options.window = {
+      \ '&cursorline': 0,
+      \ '&spell':      0, }
 
-  let wins = [winnr()]
+function! s:smalls.set_opts() "{{{1
   let self.opts = smalls#opts#new()
-  call self.opts.prepare({'global': global, 'buffer': buffer, 'window': window }, wins)
-  call self.opts.change()
+  call self.opts.prepare(s:smalls_vim_options, self._wins).save().change()
 endfunction
 
 function! s:smalls.cursor_hide() "{{{1
@@ -151,9 +149,10 @@ endfunction
 function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
   try
     let self.auto_excursion = a:auto_excursion
-    let self.multi_wins = a:0 ? 1 : 0
-    let self._wins = range(1, winnr('$')) 
+    let self.multi_win = a:0 ? 1 : 0
+    let self._wins = self.multi_win ? range(1, winnr('$')) : [ winnr() ]
     call self.init(a:mode)
+
     call self.set_opts()
     call self.cursor_hide()
     call self.loop()

@@ -88,7 +88,8 @@ onoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('o', 1)<CR>
 
 " Command:
 command! Smalls call smalls#start('n')
-command! SmallsWin call smalls#win_start('n')
+command! SmallsWin call smalls#start('n', 0, 1)
+command! SmallsWin2 call smalls#win_start('n')
 
 " Finish:
 let &cpo = s:old_cpo

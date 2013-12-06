@@ -26,7 +26,8 @@ let s:key_table = {
       \   "\<C-n>": "do_excursion_with_next",
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
-      \   "\<C-j>": "do_shade()",
+      \   "\<C-j>": "do_shade",
+      \   "\<F9>": "do_debug",
       \ }
       " \   "\<C-e>": "do_auto_excursion_off",
 
@@ -109,6 +110,10 @@ endfunction
 function! s:keyboard._action_missing(action) "{{{1
   let action = matchstr(a:action, '^do_excursion_with_\zs.*$')
   call call(self.owner.do_excursion, [self, action], self.owner)
+endfunction
+
+function! s:keyboard.do_debug() "{{{1
+  call s:plog( self.owner.opts._opts )
 endfunction
 
 function! smalls#keyboard#cli#get_table() "{{{1

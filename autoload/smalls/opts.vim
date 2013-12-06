@@ -7,84 +7,89 @@ endfunction
 
 function! s:opts.prepare(opts, wins) "{{{1
   let self._request_opts = a:opts
-  let self._request_wins = a:wins
 
   for winnr in a:wins
     let self._opts.window[winnr] = {}
-    let bufnr = bufname(winbufnr(winnr))
-    " let bufnr = winbufnr(winnr)
-    if !has_key(self._opts.buffer, bufnr) | let self._opts.buffer[bufnr] = {} | endif
+    " let bufnr = bufname(winbufnr(winnr))
+    let bufnr = winbufnr(winnr)
+    if !has_key(self._opts.buffer, bufnr)
+      let self._opts.buffer[bufnr] = {}
+    endif
   endfor
+  return self
 endfunction
 
 function! s:opts.save() "{{{1
   let req = self._request_opts
 
-  let self._opts.global = self._save('global', req.global, bufname(''))
+  let self._opts.global = self._get('global', req.global, bufnr(''))
 
-  for bufname in keys(self._opts.buffer)
-    let self._opts.buffer[bufname] = self._save('buffer', req.buffer, bufname)
+  for bufnr in keys(self._opts.buffer)
+    let bufnr = str2nr(bufnr)
+    let self._opts.buffer[bufnr] = self._get('buffer', req.buffer, bufnr)
   endfor
 
   for winnr in keys(self._opts.window)
-    let self._opts.window[winnr] = self._save('window', req.window, winnr)
+    let self._opts.window[winnr] = self._get('window', req.window, winnr)
   endfor
+  return self
 endfunction
 
 function! s:opts.change() "{{{1
   call self._change_or_restore('change')
+  return self
 endfunction
 
 function! s:opts.restore() "{{{1
   call self._change_or_restore('restore')
+  return self
 endfunction
 
 function! s:opts._change_or_restore(req) "{{{1
   let req =
         \ a:req == 'change' ? self._request_opts : self._opts
 
-  call self._change('global', req.global, bufname(''))
+  call self._set('global', req.global, bufname(''))
 
   for bufnr in keys(self._opts.buffer)
+    let bufnr = str2nr(bufnr)
     let bufopts = a:req == 'change' ? req.buffer : req.buffer[bufnr]
-    call self._change('buffer', bufopts, bufnr)
+    call self._set('buffer', bufopts, bufnr)
   endfor
 
   for winnr in keys(self._opts.window)
     let winopts = a:req == 'change' ? req.window : req.window[winnr]
-    call self._change('window', winopts, winnr)
+    call self._set('window', winopts, winnr)
   endfor
 endfunction
 
-function! s:opts._save(scope, vars, where) "{{{1
+function! s:opts._get(scope, vars, where) "{{{1
+  return self._get_or_set('get', a:scope, a:vars, a:where)
+endfunction
+
+function! s:opts._set(scope, vars, where) "{{{1
+  call self._get_or_set('set', a:scope, a:vars, a:where)
+endfunction
+
+function! s:opts._get_or_set(ope, scope, vars, where) "{{{1
+  " ope must be 'get' or 'set'
+  let func = a:ope . (a:scope ==# 'window' ? 'winvar' : 'bufvar')
   let v = {}
   for [var, val] in items(a:vars)
-    if a:scope !=# 'window'
-      let v[var] = getbufvar(a:where, var)
-    else
-      let v[var] = getwinvar(a:where, var)
-    endif
+    let args = a:ope ==# 'get' ? [ a:where, var ] : [ a:where, var, val ] 
+    let v[var] = call(func, args)
     unlet var val
   endfor
   return v
 endfunction
 
-function! s:opts._change(scope, vars, where) "{{{1
-  for [var, val] in items(a:vars)
-    if a:scope !=# 'window'
-      call setbufvar(a:where, var, val)
-    else
-      call setwinvar(a:where, var, val)
-    endif
-    unlet var val
-  endfor
-endfunction
-
 function! smalls#opts#new() "{{{1
   return s:opts.new()
 endfunction
+"}}}
 
 finish
+" Sample {{{1
 let opts = smalls#opts#new()
 let global =  {
       \ '&scrolloff':  0 }

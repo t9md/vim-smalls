@@ -1,6 +1,9 @@
 " GUARD:
+if expand("%:p") ==# expand("<sfile>:p")
+  unlet! g:loaded_smalls
+endif
 if exists('g:loaded_smalls')
-  " finish
+  finish
 endif
 let g:loaded_smalls = 1
 let s:old_cpo = &cpo
@@ -43,7 +46,8 @@ function! s:set_options(options) "{{{
     endif
     unlet value
   endfor
-endfunction "}}}
+endfunction
+
 function! s:clear_highlight(color) "{{{1
   for color in keys(a:color)
     exe 'highlight' color 'none'
@@ -63,14 +67,15 @@ function! s:set_highlight() "{{{1
   call s:clear_highlight(s:color)
   call s:set_color(s:color)
   highlight link SmallsRegion Visual
-endfunction "}}}
+endfunction
+"}}}
 
 call s:set_options(s:options)
 call extend(s:color, g:smalls_highlight)
 call s:set_highlight()
 
 " AutoCmd:
-augroup Smalls
+augroup plugin-smalls
   autocmd!
   autocmd ColorScheme * call s:set_highlight()
 augroup END
@@ -87,9 +92,9 @@ onoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('o', 1)<CR>
 " nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
 
 " Command:
-command! Smalls call smalls#start('n')
-command! SmallsWin call smalls#start('n', 0, 1)
-command! SmallsWin2 call smalls#win_start('n')
+command! Smalls      call smalls#start('n')
+command! SmallsWin   call smalls#start('n', 0, 1)
+command! SmallsWin2  call smalls#win_start('n')
 
 " Finish:
 let &cpo = s:old_cpo

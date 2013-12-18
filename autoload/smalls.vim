@@ -38,7 +38,7 @@ function! s:smalls.init(mode) "{{{1
     let self.wins[win].finder = smalls#finder#new(env)
   endfunction
 
-  call self.each_win(self.block, [a:mode], self)
+  call self.each_win('all', self.block, [a:mode], self)
 
   let self.env     = self.wins[winnr()].env
   let self.hl      = self.wins[winnr()].hl
@@ -46,18 +46,12 @@ function! s:smalls.init(mode) "{{{1
   let self.kbd_cli = smalls#keyboard#cli#new(self)
 endfunction
 
-function! s:smalls.each_win(block, args, self)
-  let win_orig = winnr()
-  for win in self._wins
-    execute win . 'wincmd w'
-    call call(a:block, a:args, a:self)
-  endfor
-  execute win_orig . 'wincmd w'
-endfunction
+function! s:smalls.each_win(target_win, block, args, self) "{{{1
+  " all or alive
+  let winnums = a:target_win ==# 'all' ? self._wins : keys(self.wins)
 
-function! s:smalls.each_win_living(block, args, self)
   let win_orig = winnr()
-  for win in keys(self.wins)
+  for win in winnums
     execute win . 'wincmd w'
     call call(a:block, a:args, a:self)
   endfor
@@ -66,10 +60,12 @@ endfunction
 
 function! s:smalls.preserve_env(mode) "{{{1
   " to get precise start point in visual mode.
-  if (a:mode != 'n' && a:mode != 'o') | exe "normal! gvo\<Esc>" | endif
+
+  " if (a:mode != 'n' && a:mode != 'o') | exe "normal! gvo\<Esc>" | endif
+  if (a:mode  =~# "v\\|V\\|\<C-v>" ) | exe "normal! gvo\<Esc>" | endif
   let [ l, c ] = [ line('.'), col('.') ]
   " for neatly revert original visual start/end pos
-  if (a:mode != 'n' && a:mode != 'o') | exe "normal! gvo\<Esc>" | endif
+  if (a:mode  =~# "v\\|V\\|\<C-v>" ) | exe "normal! gvo\<Esc>" | endif
   return {
         \ 'mode': a:mode, 'w0': line('w0'), 'w$': line('w$'), 'l': l, 'c': c,
         \ 'p': smalls#pos#new([ l, c ]),
@@ -85,6 +81,7 @@ function! s:smalls.finish() "{{{1
       normal! gv
     endif
   endif
+
   if g:smalls_auto_set_blink && !empty(self._auto_set)
     call self.hl.blink_cursor()
   endif
@@ -95,19 +92,21 @@ function! s:smalls.finish() "{{{1
   call self.update_mode('')
 endfunction
 
-let s:smalls_vim_options = {}
-let s:smalls_vim_options.global = { '&scrolloff':  0 }
-let s:smalls_vim_options.buffer = {
+let s:vim_options = {}
+let s:vim_options.global = {
+      \ '&scrolloff':  0
+      \ }
+let s:vim_options.buffer = {
       \ '&modified':   0,
       \ '&modifiable': 1,
       \ '&readonly':   0, }
-let s:smalls_vim_options.window = {
+let s:vim_options.window = {
       \ '&cursorline': 0,
       \ '&spell':      0, }
 
 function! s:smalls.set_opts() "{{{1
   let self.opts = smalls#opts#new()
-  call self.opts.prepare(s:smalls_vim_options, self._wins).save().change()
+  call self.opts.prepare(s:vim_options, self._wins).save().change()
 endfunction
 
 function! s:smalls.cursor_hide() "{{{1
@@ -154,8 +153,9 @@ function! s:smalls.loop() "{{{1
   call self.update_mode('cli')
   let kbd = self.kbd_cli
   let hl  = self.hl
+
   while 1
-    call self.each_win(self.hl_shade, [], self)
+    call self.each_win('all', self.hl_shade, [], self)
     call self.hl.orig_pos()
 
     let timeout = 
@@ -172,7 +172,8 @@ function! s:smalls.loop() "{{{1
           \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
       call self.do_excursion(kbd)
     endif
-    " call self.each_win(self.hl_clear, [], self)
+    call self.each_win('all', self.hl_clear, [], self)
+
     " call hl.clear()
     if kbd.data_len() ==# 0
       continue
@@ -196,7 +197,7 @@ function! s:smalls.loop() "{{{1
         " endif
       " endif
     " else
-    call self.each_win(self.find_one, [kbd.data], self)
+    call self.each_win('all', self.find_one, [kbd.data], self)
     " let found = self.finder.one(kbd.data)
     " endif
     " if empty(found)
@@ -208,7 +209,6 @@ endfunction
 
 function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
   try
-    let &undolevels = &undolevels
     let self.auto_excursion = a:auto_excursion
     let self.multi_win      = a:0 ? 1 : 0
     call self.init(a:mode)
@@ -226,17 +226,11 @@ function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
     endif
     let self.lastmsg = v:exception
   finally
-    call self.each_win_living(self.hl_clear, [], self)
+    call self.each_win('alive', self.hl_clear, [], self)
     call self.opts.restore()
     " call self.cursor_restore()
     call self.finish()
   endtry
-endfunction
-
-function! s:smalls.fork()
-  if self.is_parent()
-  else
-  endif
 endfunction
 
 function! s:smalls.win_start(mode, ...)  "{{{1
@@ -276,17 +270,6 @@ function! s:smalls.win_start(mode, ...)  "{{{1
     endif
   endtry
 endfunction
-
-function! s:windo(func, obj) "{{{
-  let winnum = winnr()
-  let pwinnum = winnr('#')
-  " echo [pwinnum, winnum]
-  " echo PP(a:func)
-  " echo PP(a:obj)
-  noautocmd windo call call(a:func, [], a:obj)
-  execute pwinnum . "wincmd w"
-  execute winnum . "wincmd w"
-endfunction "}}}
 
 function! s:smalls.is_main() "{{{1
   return self._winnr_main == winnr()
@@ -350,17 +333,7 @@ function! s:smalls.update_candidate(win, data)
   call self.hl.candidate(a:data, found)
 endfunction
 
-function!  s:wincall(func, args, self) "{{{
-  let winnum = winnr()
-  let pwinnum = winnr('#')
-  noautocmd windo call call(a:func, a:args, a:self)
-  execute pwinnum . "wincmd w"
-  execute winnum . "wincmd w"
-  redraw
-endfunction
-
 function! s:smalls.do_jump(kbd, ...) "{{{1
-
   " if has_key(self, 'wins') && empty(a:000)
     " for [win, smalls] in items(self.wins)
       " execute win . 'wincmd w'
@@ -419,6 +392,7 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self._need_adjust_col(a:pos)
     let a:pos.col += self.kbd_cli.data_len() - 1
   endif
+
   if self.env.mode ==# 'o'
         \ && g:smalls_operator_motion_inclusive
         \ && self._is_forward(a:pos)
@@ -498,25 +472,17 @@ endfunction "}}}
 function! smalls#debug() "{{{
 endfunction
 "}}}
-"
-"
-function! s:wincall(func, args, self) "{{{
-  let winnum = winnr()
-  let pwinnum = winnr('#')
-  noautocmd windo call call(a:func, a:args, a:self)
-  execute pwinnum . "wincmd w"
-  execute winnum . "wincmd w"
-endfunction "}}}
 
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
+echo 'OK'
 
-" finish
-let g:Test = {}
-function! Main()
-  " echo winnr()
-  let g:Test[winnr()] = s:smalls.preserve_env('n')
-endfunction
-call s:wincall('Main', [], {} )
+" let g:Test = {}
+" function! Main()
+  " " echo winnr()
+  " let g:Test[winnr()] = s:smalls.preserve_env('n')
+" endfunction
+" call s:wincall('Main', [], {} )
+
 " vim: foldmethod=marker

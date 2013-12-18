@@ -4,10 +4,7 @@ let s:plog    = smalls#util#import("plog")
 
 let s:jump = {}
 function! s:jump.setlines(lines) "{{{1
-  try
-    undojoin
-  catch
-  endtry
+  silent! undojoin
   for [lnum, content] in items(a:lines)
     call setline(lnum, content)
   endfor

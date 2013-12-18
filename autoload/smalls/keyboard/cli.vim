@@ -113,7 +113,7 @@ function! s:keyboard._action_missing(action) "{{{1
 endfunction
 
 function! s:keyboard.do_debug() "{{{1
-  call s:plog( self.owner.opts._opts )
+  call s:plog( self.owner.wins )
 endfunction
 
 function! smalls#keyboard#cli#get_table() "{{{1

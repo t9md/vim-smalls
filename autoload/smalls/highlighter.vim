@@ -156,6 +156,7 @@ function! s:h.jump_target(poslist) "{{{1
 endfunction
 
 function! s:h.candidate(word, pos) "{{{1
+  call self.clear("Smallscandidate", "SmallsCurrent")
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
   let e = {

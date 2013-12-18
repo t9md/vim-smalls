@@ -121,44 +121,44 @@ VARIABLES						   *smalls-variables*
 	you typed is consumed by smalls plugin, this is for avoiding extra
 	char you typed mess buffer's content.
 
-AutoShowJumpKeys~
+AutoJump~
 Smalls provide feature to automatically show jump keys.
-Let's say, you want to auto-show jump key after 1.0sec but only at least two
+Let's say, you want to auto-jump after 1.0sec but only at least two
 sarach characters are already inputed.
 Following variables controll these behavior.
 By default this feature is disabled.
 
-*g:smalls_jump_keys_auto_show*
+*g:smalls_auto_jump*
 	Default: 0
 	
-	Set 1, to eanble auto-show-jump-keys fature.
+	Set 1, to eanble auto-jump feature
 
-*g:smalls_jump_keys_auto_show_timeout*
+*g:smalls_auto_jump_timeout*
 	Default: 0.5
 
 	Specify second as |Float|. 
 	If user didn't type any key for this time, automatically shown jump
 	keys as long as user's imput exceed
-	|g:smalls_jump_keys_auto_show_min_input_length| characters.
+	|g:smalls_auto_jump_min_input_length| characters.
 
-*g:smalls_jump_keys_auto_show_min_input_length*
+*g:smalls_auto_jump_input_length*
 	Default: 3
 
-	Specify length which trigger auto-show-jump-keys timeout.
+	Specify length which trigger auto-jump timeout.
 	For user input didn't exceed this length, timeout is not fired.
 	See following example.
 
 	Example-1 >
 	" After user's input reach 3 chars, with 0.5sec timeout.
-	let g:smalls_jump_keys_auto_show = 1
-	let g:smalls_jump_keys_auto_show_min_input_length = 3
-	let g:smalls_jump_keys_auto_show_timeout = 0.5
+	let g:smalls_auto_jump = 1
+	let g:smalls_auto_jump_min_input_length = 3
+	let g:smalls_auto_jump_timeout = 0.5
 <
 	Example-2 >
-	" always auto-show-jump-keys after user input 2 chars.
-	let g:smalls_jump_keys_auto_show = 1
-	let g:smalls_jump_keys_auto_show_min_input_length = 2
-	let g:smalls_jump_keys_auto_show_timeout = 0.0
+	" always auto-jump after user input 2 chars.
+	let g:smalls_auto_jump = 1
+	let g:smalls_auto_jump_min_input_length = 2
+	let g:smalls_auto_jump_timeout = 0.0
 <
 *g:smalls_operator_motion_inclusive*
 	Default: 0
@@ -168,7 +168,7 @@ By default this feature is disabled.
 
 	for example, assume you have following line.
 >
-	let a:pos.col += self.keyboard_cli.data_len() - 1
+	let a:pos.col += self.kbd_cli.data_len() - 1
 	          ^ cursor
 <
 	If excute 'd, o_<Plug>(smalls), )'.

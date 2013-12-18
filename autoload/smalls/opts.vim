@@ -88,7 +88,9 @@ function! smalls#opts#new() "{{{1
 endfunction
 "}}}
 
-finish
+if expand("%:p") !=# expand("<sfile>:p")
+  finish
+endif
 " Sample {{{1
 let opts = smalls#opts#new()
 let global =  {

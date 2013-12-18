@@ -51,7 +51,7 @@ endfunction
 
 function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump,
-        \ [self.owner.keyboard_cli], self.owner)
+        \ [self.owner.kbd_cli], self.owner)
 endfunction
 
 function! s:keyboard.do_cancel() "{{{1
@@ -207,7 +207,7 @@ function! s:keyboard._setchar(c) "{{{1
       call self.execute(last_2_char)
     endif
 
-    let lastchar_cli = self.owner.keyboard_cli.data[-1:]
+    let lastchar_cli = self.owner.kbd_cli.data[-1:]
     if lastchar_cli ==# a:c "same char entered to excursion mode
       call self.do_next()
     elseif lastchar_cli ==# tolower(a:c) " upper char for backward movement

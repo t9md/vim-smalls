@@ -80,27 +80,20 @@ function! s:h.clear(...) "{{{1
 endfunction
 
 function! s:h.shade() "{{{1
-  " call s:plog('shdde!')
   if ! g:smalls_shade | return | endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
 endfunction
 
 function! s:h.orig_pos() "{{{1
-  let pos = '%{l}l%{c}c'
-  call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
+  call self.hl('SmallsPos', '\%#')
 endfunction
 
 function! s:h.blink_cursor() "{{{1
   " used to notify curor position to user when exit smalls
-  let pat = '\v%' . line('.') . 'l%' . col('.') . 'c'
   for i in range(2)
-    call self.hl("SmallsPos", pat)
-    redraw!
-    sleep 100m
-    call self.clear()
-    redraw!
-    sleep 100m
+    call self.orig_pos() | redraw! | sleep 100m
+    call self.clear()    | redraw! | sleep 100m
   endfor
   " to avoid user's input mess buffer, we consume 
   " keyinput feeded while blinking.

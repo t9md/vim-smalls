@@ -9,8 +9,8 @@ function! s:opts.prepare(opts, wins) "{{{1
   let self._request_opts = a:opts
 
   for winnr in a:wins
-    let self._opts.window[winnr] = {}
     " let bufnr = bufname(winbufnr(winnr))
+    let self._opts.window[winnr] = {}
     let bufnr = winbufnr(winnr)
     if !has_key(self._opts.buffer, bufnr)
       let self._opts.buffer[bufnr] = {}

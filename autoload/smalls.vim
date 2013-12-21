@@ -2,6 +2,18 @@ let s:plog            = smalls#util#import("plog")
 let s:getchar         = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
+let s:vim_options = {}
+let s:vim_options.global = {
+      \ '&scrolloff':  0
+      \ }
+let s:vim_options.buffer = {
+      \ '&modified':   0,
+      \ '&modifiable': 1,
+      \ '&readonly':   0, }
+let s:vim_options.window = {
+      \ '&cursorline': 0,
+      \ '&spell':      0, }
+
 " Util:
 function! s:msg(msg) "{{{1
   redraw
@@ -59,33 +71,34 @@ function! s:smalls.init(mode) "{{{1
 
   let self.wins = {}
 
-  function! self.block(wn, mode)
-    let env = s:preserve_env(a:mode)
-    let self.wins[a:wn] = { 
-          \ 'env': env,
-          \ 'hl': smalls#highlighter#new(env),
-          \ 'finder': smalls#finder#new(env),
-          \ }
-  endfunction
+  call self.wincall(self._wins, self.win_setup, [a:mode], self)
 
-  call self.each_win('all', self.block, [a:mode], self)
-
-  let main_wn = winnr()
-  let self.env     = self.wins[main_wn].env
-  let self.hl      = self.wins[main_wn].hl
-  let self.finder  = self.wins[main_wn].finder
+  let wn_main      = winnr()
+  let self.env     = self.wins[wn_main].env
+  let self.hl      = self.wins[wn_main].hl
+  let self.finder  = self.wins[wn_main].finder
   let self.kbd_cli = smalls#keyboard#cli#new(self)
 endfunction
 
-function! s:smalls.each_win(target_win, block, args, self) "{{{1
-  let win_orig = winnr()
-  for wn in (a:target_win ==# 'all' ? self._wins : keys(self.wins))
-    execute wn . 'wincmd w'
-    call call(a:block, [wn] + a:args, a:self)
-  endfor
-  execute win_orig . 'wincmd w'
+function! s:smalls.win_setup(wn, mode) "{{{1
+  let env = s:preserve_env(a:mode)
+  let self.wins[a:wn] = { 
+        \ 'env': env,
+        \ 'hl': smalls#highlighter#new(env),
+        \ 'finder': smalls#finder#new(env),
+        \ }
 endfunction
 
+function! s:smalls.wincall(wins, block, args, self) "{{{1
+  try
+    for wn in a:wins
+      execute wn . 'wincmd w'
+      call call(a:block, [wn] + a:args, a:self)
+    endfor
+  finally
+    execute self._winnr_main . 'wincmd w'
+  endtry
+endfunction
 
 function! s:smalls.set_opts() "{{{1
   let self.opts = smalls#opts#new()
@@ -105,11 +118,12 @@ function! s:smalls.find_one(win, word) "{{{1
   if empty(found)
     call self.wins[a:win].hl.clear()
     call remove(self.wins, a:win)
+    if len(self.wins) == 0
+      throw "NotFound"
+    endif
+  else
+    call self.wins[a:win].hl.candidate(a:word, found)
   endif
-  if len(self.wins) == 0
-    throw "NotFound"
-  endif
-  call self.wins[a:win].hl.candidate(a:word, found)
 endfunction
 
 function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
@@ -131,7 +145,7 @@ function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
     endif
     let self.lastmsg = v:exception
   finally
-    call self.each_win('alive', self.hl_clear, [], self)
+    call self.wincall(keys(self.wins), self.hl_clear, [], self)
     call self.opts.restore()
     " call self.cursor_restore()
     call self.finish()
@@ -141,11 +155,12 @@ endfunction
 function! s:smalls.loop() "{{{1
   call self.update_mode('cli')
   let kbd = self.kbd_cli
-  let hl  = self.hl
 
   while 1
-    call self.each_win('all', self.hl_shade, [], self)
-    call self.hl.orig_pos()
+    call self.wincall(keys(self.wins), self.hl_shade, [], self)
+    if has_key(self.wins, self._winnr_main)
+      call self.hl.orig_pos()
+    endif
 
     let timeout = 
           \ ( g:smalls_auto_jump &&
@@ -161,7 +176,7 @@ function! s:smalls.loop() "{{{1
           \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
       call self.do_excursion(kbd)
     endif
-    call self.each_win('all', self.hl_clear, [], self)
+    call self.wincall(keys(self.wins), self.hl_clear, [], self)
 
     if kbd.data_len() ==# 0
       continue
@@ -185,13 +200,7 @@ function! s:smalls.loop() "{{{1
         " endif
       " endif
     " else
-    call self.each_win('all', self.find_one, [kbd.data], self)
-    " let found = self.finder.one(kbd.data)
-    " endif
-    " if empty(found)
-      " throw "NotFound"
-    " endif
-    " call hl.candidate(kbd.data, found)
+    call self.wincall(keys(self.wins), self.find_one, [kbd.data], self)
   endwhile
 endfunction
 
@@ -215,19 +224,6 @@ function! s:smalls.finish() "{{{1
   endif
   call self.update_mode('')
 endfunction
-
-let s:vim_options = {}
-let s:vim_options.global = {
-      \ '&scrolloff':  0
-      \ }
-let s:vim_options.buffer = {
-      \ '&modified':   0,
-      \ '&modifiable': 1,
-      \ '&readonly':   0, }
-let s:vim_options.window = {
-      \ '&cursorline': 0,
-      \ '&spell':      0, }
-
 
 function! s:smalls.do_jump(kbd, ...) "{{{1
   call self.hl.clear()

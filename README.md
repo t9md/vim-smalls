@@ -16,7 +16,7 @@ Search and jump with easymotion style.
 * move around candidate with hkjl(excursion-mode)
 * full customizable keybinding in excursion-mode and cli-mode
 * auto-show-up easymotion style jump key at specified timeout.
-* auto-show-up timeout would't be triggerd until it exceed specified type length.
+* auto-show-up timeout wouldn't be triggered until it exceed specified type length.
 * color customizable.
 * always ignore case for jump key(easy to type).
 

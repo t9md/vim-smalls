@@ -66,15 +66,62 @@ function! s:jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
   return pos2jumpk
 endfunction
 
-function! s:jump.get_pos(poslist)
+function! s:jump.get_pos(poslist) "{{{1
   let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(g:smalls_jump_keys, '\zs'))
   return self._get_pos(jumpk2pos)
+endfunction
+
+function! s:jump.get_pos2(poslist) "{{{1
+  let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(g:smalls_jump_keys, '\zs'))
+  return self.main(jumpk2pos)
+endfunction
+
+function! s:jump.main(jumpk2pos) "{{{1
+  try
+    call self.show_jumpkey(a:jumpk2pos)
+    let char =  self.read_input()
+    call s:ensure(has_key(a:jumpk2pos, char), 'Invalid target' )
+  finally
+    call self.setlines(self.lines_org)
+    call self.hl.clear('SmallsJumpTarget')
+  endtry
+  return self.decide_pos(char, a:jumpk2pos)
+endfunction
+
+function! s:jump.show_jumpkey(jumpk2pos) "{{{1
+  let pos = values(a:jumpk2pos)
+  if len(pos) ==# 1
+    return pos[0]
+  endif
+
+  let pos2jumpk = self.gen_pos2jumpk(a:jumpk2pos)
+  let poslist   = map(sort(keys(pos2jumpk)), 'split(v:val, ",")')
+  let self.lines_org = self.preserve_lines(pos2jumpk)
+  let lines_jmp = self.gen_jump_lines(self.lines_org, pos2jumpk)
+  call self.hl.jump_target(poslist)
+  call self.setlines(lines_jmp)
+  redraw
+endfunction
+
+function! s:jump.read_input() "{{{1
+  let char = s:getchar()
+  if char ==# "\<Esc>"
+    throw 'Jump Canceled'
+  endif
+  return toupper(char)
+endfunction
+
+function! s:jump.decide_pos(char, jumpk2pos) "{{{1
+  let dest = a:jumpk2pos[a:char]
+  return type(dest) == type([])
+        \ ? dest
+        \ : self.main(dest)
 endfunction
 
 function! s:jump._get_pos(jumpk2pos) "{{{1
   let pos = values(a:jumpk2pos)
   if len(pos) ==# 1
-    return smalls#pos#new(pos[0])
+    return pos[0]
   endif
 
   let pos2jumpk = self.gen_pos2jumpk(a:jumpk2pos)
@@ -99,14 +146,15 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
 
   let dest = a:jumpk2pos[jumpk]
   return type(dest) == type([])
-        \ ? smalls#pos#new(dest)
+        \ ? dest
         \ : self._get_pos(dest)
 endfunction
 
-function! s:jump.new(env, hl)
-  let self.env = a:env
-  let self.hl = a:hl
-  return self
+function! s:jump.new(env, hl) "{{{1
+  let obj = deepcopy(self)
+  let obj.env = a:env
+  let obj.hl = a:hl
+  return obj
 endfunction
 
 function! smalls#jump#new(env, hl) "{{{1

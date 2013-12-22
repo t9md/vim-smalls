@@ -143,9 +143,9 @@ function! s:h._is_col_forward(col) "{{{1
 endfunction
 
 function! s:h.jump_target(poslist) "{{{1
-  let hl_expr = join(
+  let pattern = join(
         \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
-  call self.hl('SmallsJumpTarget', '\v'. hl_expr)
+  call self.hl('SmallsJumpTarget', '\v'. pattern)
 endfunction
 
 function! s:h.candidate(word, pos) "{{{1

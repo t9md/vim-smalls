@@ -116,7 +116,7 @@ endfunction
 function! s:smalls.find_one(win, word) "{{{1
   let found = self.wins[a:win].finder.one(a:word)
   if empty(found)
-    call self.wins[a:win].hl.clear()
+    " call self.wins[a:win].hl.clear()
     call remove(self.wins, a:win)
     if len(self.wins) == 0
       throw "NotFound"
@@ -124,6 +124,10 @@ function! s:smalls.find_one(win, word) "{{{1
   else
     call self.wins[a:win].hl.candidate(a:word, found)
   endif
+endfunction
+
+function! s:smalls.find_all(win, word) "{{{1
+  let self.wins[a:win]._poslist = self.wins[a:win].finder.all(a:word)
 endfunction
 
 function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
@@ -218,6 +222,8 @@ function! s:smalls.finish() "{{{1
   if g:smalls_auto_set_blink && !empty(self._auto_set)
     call self.hl.blink_cursor()
   endif
+    " call self.wincall(keys(self.wins), self.hl_clear, [], self)
+  " call self.wincall(self._wins, self.win_setup, [a:mode], self)
   redraw!
   if !empty(self.lastmsg)
     call s:msg(self.lastmsg)
@@ -225,7 +231,20 @@ function! s:smalls.finish() "{{{1
   call self.update_mode('')
 endfunction
 
-function! s:smalls.do_jump(kbd, ...) "{{{1
+function! s:smalls.do_choosewin()
+  let win = smalls#jump#new(self.env, self.hl).get_win(self.wins)
+  " let s:winnrs = range(1, winnr('$'))
+  echo smalls#grouping#SCTree(s:winnrs, split(g:smalls_jump_keys, '\zs'))
+  " let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(g:smalls_jump_keys, '\zs'))
+  " let pos_new = smalls#jump#new(self.env, self.hl).get_pos(poslist)
+endfunction
+" let pos_new = smalls#jump#new(self.env, self.hl).get_pos(s:winrs)
+
+function! s:smalls.do_jump(kbd) "{{{1
+  " call self.wincall(keys(self.wins), self.find_all, [a:kbd.data], self)
+  " if len(self.wins) > 1
+    " call s:smalls.do_choosewin()
+  " endif
   call self.hl.clear()
   call self.hl.shade()
   let pos_new = self.get_jump_target(a:kbd.data)
@@ -331,11 +350,67 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   endtry
 endfunction
 
+function! s:smalls.jump_init(win) "{{{1
+  " let me = self.win
+  let env = self.wins[a:win].env
+  let hl  = self.wins[a:win].hl
+  let self.wins[a:win].jump = smalls#jump#new(env, hl)
+endfunction
+
+function! s:smalls.jump_get_pos(win) "{{{1
+  let poslist = self.wins[a:win]._poslist
+  let pos = self.wins[a:win].jump.get_pos(poslist)
+  return pos
+endfunction
+
 function! s:smalls.get_jump_target(word) "{{{1
-  if empty(a:word) | return [] | endif
-  let poslist = self.finder.all(a:word)
-  let pos_new = smalls#jump#new(self.env, self.hl).get_pos(poslist)
-  return pos_new
+  if empty(a:word)
+    return []
+  endif
+  call self.wincall(keys(self.wins), self.find_all, [a:word], self)
+  call self.wincall(keys(self.wins), self.jump_init, [], self)
+
+  while 1
+    try
+      for [wn, win] in items(self.wins)
+        execute wn . 'wincmd w'
+        let poslist = win._poslist
+        let win.jumpk2pos = smalls#grouping#SCTree(poslist, split(g:smalls_jump_keys, '\zs'))
+        call win.jump.show_jumpkey(win.jumpk2pos)
+      endfor
+      execute self._winnr_main . 'wincmd w'
+
+      let char = s:getchar()
+      if char ==# "\<Esc>"
+        throw 'Jump Canceled'
+      endif
+      let char = toupper(char)
+
+    finally
+      for [wn, win] in items(self.wins)
+        execute wn . 'wincmd w'
+        call win.jump.setlines(win.jump.lines_org)
+        call win.hl.clear('SmallsJumpTarget')
+      endfor
+      execute self._winnr_main . 'wincmd w'
+    endtry
+    break
+
+    for [wn, win] in items(self.wins)
+      if !has_key(win.jumpk2pos, char)
+        call win.hl.clear()
+        call remove(self.wins, wn)
+        continue
+      endif
+      let win.dest = win.jumpk2pos[char]
+      return type(win.dest) == type([])
+            \ ? dest
+            \ : self.main(dest)
+  endwhile
+
+  let poslist = self.wins[self._winnr_main]._poslist
+  let pos = smalls#jump#new(self.env, self.hl).get_pos2(poslist)
+  return smalls#pos#new(pos)
 endfunction
 "}}}
 

@@ -236,7 +236,7 @@ excursion-mode の `do_next`, `do_prev` アクションがそれです。
 以下の設定で可能です。
 
 ```Vim
-call smalls#keyboard#excursion#extend_table({ "l": do_next, "h": do_prev, })
+call smalls#keyboard#excursion#extend_table({ "l": 'do_next', "h": 'do_prev', })
 ```
 
 ## excursion-mode で、移動数をカウント指定したい。

@@ -86,7 +86,9 @@ function! s:h.shade() "{{{1
 endfunction
 
 function! s:h.orig_pos() "{{{1
-  call self.hl('SmallsPos', '\%#')
+  " call self.hl('SmallsPos', '\%#')
+  let pos = '%{l}l%{c}c'
+  call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
 endfunction
 
 function! s:h.blink_cursor() "{{{1

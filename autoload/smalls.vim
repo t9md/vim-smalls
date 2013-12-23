@@ -67,20 +67,27 @@ function! s:smalls.init(mode) "{{{1
   let self._auto_set = 0
   let self._break    = 0
   let self._wins     = self.multi_win ? range(1, winnr('$')) : [ winnr() ]
-  let self._winnr_main = winnr()
+  let wn_main      = winnr()
+  let self._winnr_main = wn_main
 
   let self.wins = {}
 
-  call self.wincall(self._wins, self.win_setup, [a:mode], self)
+  " call self.wincall(self._wins, self.win_setup, [a:mode], self)
+  call map(copy(self._wins),'self.win_setup(v:val, "n")')
+  call self.win_main()
 
-  let wn_main      = winnr()
   let self.env     = self.wins[wn_main].env
   let self.hl      = self.wins[wn_main].hl
   let self.finder  = self.wins[wn_main].finder
   let self.kbd_cli = smalls#keyboard#cli#new(self)
 endfunction
 
+function! s:smalls.win_main()
+  execute self._winnr_main . 'wincmd w'
+endfunction
+
 function! s:smalls.win_setup(wn, mode) "{{{1
+  execute a:wn . 'wincmd w'
   let env = s:preserve_env(a:mode)
   let self.wins[a:wn] = { 
         \ 'env': env,
@@ -149,6 +156,7 @@ function! s:smalls.start(mode, auto_excursion, ...)  "{{{1
     endif
     let self.lastmsg = v:exception
   finally
+    " call map(keys(self.wins), 's:exe(v:val."wincmd w") && self.wins[v:val].hl.clear()')
     call self.wincall(keys(self.wins), self.hl_clear, [], self)
     call self.opts.restore()
     " call self.cursor_restore()
@@ -162,6 +170,14 @@ function! s:smalls.loop() "{{{1
 
   while 1
     call self.wincall(keys(self.wins), self.hl_shade, [], self)
+
+    " noautocmd windo call self.wins[winnr()].hl.shade()
+    " call map(keys(self.wins), '
+          " \ s:exe(v:val."wincmd w")
+          " \ && self.wins[v:val].hl.shade()
+          " \ ')
+    " call map(keys(self.wins), 'self.wins[v:val].hl.orig_pos()')
+    " call self.wins[a:win].hl.shade()
     if has_key(self.wins, self._winnr_main)
       call self.hl.orig_pos()
     endif
@@ -180,7 +196,8 @@ function! s:smalls.loop() "{{{1
           \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
       call self.do_excursion(kbd)
     endif
-    call self.wincall(keys(self.wins), self.hl_clear, [], self)
+    " call self.wincall(keys(self.wins), self.hl_clear, [], self)
+    call map(keys(self.wins), 's:exe(v:val."wincmd w") && self.wins[v:val].hl.clear()')
 
     if kbd.data_len() ==# 0
       continue
@@ -206,6 +223,22 @@ function! s:smalls.loop() "{{{1
     " else
     call self.wincall(keys(self.wins), self.find_one, [kbd.data], self)
   endwhile
+endfunction
+
+function! s:exe(cmd)
+  execute a:cmd
+  return 1
+endfunction
+
+function! s:wincall(win, func, ...) "{{{1
+  let args = a:0 ? a:1 : []
+  execute a:win . 'wincmd w'
+
+  if a:0 == 2
+    return call(a:func, args, a:2)
+  else
+    return call(a:func, args,)
+  endif
 endfunction
 
 
@@ -430,6 +463,12 @@ endfunction
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
+  " let env = s:preserve_env(a:mode)
+" let wins = range(1, winnr('$'))
+" echo wins
+" echo s:preserve_env('n')
+" let v = map(wins, 's:wincall(v:val, function("s:preserve_env"), ["n"])')
+" PP v
 echo 'OK'
 
 " let g:Test = {}

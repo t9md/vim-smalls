@@ -84,24 +84,21 @@ function! s:h.shade() "{{{1
   call self.hl("SmallsShade", '\v'. pat )
 endfunction
 
-function! s:h.orig_pos() "{{{1
-  let pos = '%{l}l%{c}c'
-  call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
+function! s:h.cursor() "{{{1
+  call self.hl('SmallsPos', '\%#')
+  " let pos = '%{l}l%{c}c'
+  " call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
 endfunction
 
-function! s:h.blink_orig_pos() "{{{1
-  " used to notify user's mistake and spot cursor.
-  " to avoid user's input mess buffer, we consume keyinput while blinking.
-  let pat = s:intrpl('\v\c%{l}l%{c}c', self.env)
+function! s:h.blink_cursor() "{{{1
+  " used to notify curor position to user when exit smalls
   for i in range(2)
-    call getchar(0)
-    call self.hl("SmallsPos", pat)
-    redraw!
-    sleep 200m
-    call self.clear()
-    redraw!
-    sleep 100m
+    call self.cursor() | redraw! | sleep 100m
+    call self.clear()    | redraw! | sleep 100m
   endfor
+  " to avoid user's input mess buffer, we consume 
+  " keyinput feeded while blinking.
+  while getchar(1) | call getchar() | endwhile
 endfunction
 
 function! s:h.region(pos, word) "{{{1
@@ -147,12 +144,13 @@ function! s:h._is_col_forward(col) "{{{1
 endfunction
 
 function! s:h.jump_target(poslist) "{{{1
-  let hl_expr = join(
+  let pattern = join(
         \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
-  call self.hl('SmallsJumpTarget', '\v'. hl_expr)
+  call self.hl('SmallsJumpTarget', '\v'. pattern)
 endfunction
 
 function! s:h.candidate(word, pos) "{{{1
+  " call self.clear("Smallscandidate", "SmallsCurrent")
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
   let e = {

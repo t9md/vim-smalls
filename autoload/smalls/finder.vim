@@ -42,7 +42,7 @@ function! s:finder.search(word, opt, stopline, one) "{{{1
       continue
     endif
 
-    if line_org == pos[0] && index(self.found, pos) != -1
+    if line_org <= pos[0] && index(self.found, pos) != -1
       break
     endif
     call add(self.found, pos)

@@ -24,7 +24,7 @@ CONTENTS						    *smalls-contents*
 INTRODUCTION						*smalls-introduction*
 
 Yet another cursor movement helper, simple but effective at least for me ;).
-To exmplain simply, this is the plugin to spot cursor by
+To explain simply, this is the plugin to spot cursor by
 - Seach candidate and Jump with easymotion.
 
 If you don't like this plugin?
@@ -52,7 +52,7 @@ o_<Plug>(smalls)
 n_<Plug>(smalls-excursion)
 x_<Plug>(smalls-excursion)
 o_<Plug>(smalls-excursion)
-	directly switch to excursion-mode after 
+	directly switch to excursion-mode after
 
 ==============================================================================
 COMMANDS						    *smalls-commands*
@@ -76,7 +76,7 @@ VARIABLES						   *smalls-variables*
 	target you want to jump.
 	[NOTE] By default, first char is semicolon.
 	This is useful to speedy choice of first target, but as side effect,
-	you can't use ';' as search caracter.
+	you can't use ';' as search character.
 
 *g:smalls_jump_trigger*
 	Default: first character of |g:smalls_jump_keys|.
@@ -95,8 +95,8 @@ VARIABLES						   *smalls-variables*
 	Format~
 	{ "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
 
-	{Key} is the highlight name, shoud be one of the following.
-      	 SmallsCandidate    used to current sewarching keyword
+	{Key} is the highlight name, should be one of the following.
+      	 SmallsCandidate    used to current search keyword
       	 SmallsJumpTarget   used to standout jump target
       	 SmallsCurrent      current searching keyword
       	 SmallsPos          used to standout original pos
@@ -124,24 +124,24 @@ VARIABLES						   *smalls-variables*
 AutoJump~
 Smalls provide feature to automatically show jump keys.
 Let's say, you want to auto-jump after 1.0sec but only at least two
-sarach characters are already inputed.
-Following variables controll these behavior.
+search characters are already inputed.
+Following variables control these behavior.
 By default this feature is disabled.
 
 *g:smalls_auto_jump*
 	Default: 0
 	
-	Set 1, to eanble auto-jump feature
+	Set 1, to enable auto_jump feature
 
 *g:smalls_auto_jump_timeout*
 	Default: 0.5
 
-	Specify second as |Float|. 
+	Specify second as |Float| 
 	If user didn't type any key for this time, automatically shown jump
-	keys as long as user's imput exceed
+	keys as long as user's input exceed
 	|g:smalls_auto_jump_min_input_length| characters.
 
-*g:smalls_auto_jump_input_length*
+*g:smalls_auto_jump_min_input_length*
 	Default: 3
 
 	Specify length which trigger auto-jump timeout.
@@ -163,7 +163,7 @@ By default this feature is disabled.
 *g:smalls_operator_motion_inclusive*
 	Default: 0
 
-	CAUTION: Not Recomended to change this var~
+	CAUTION: Not Recommended to change this var~
 	If you set to 1, o_<Plug>(smalls) eat end of char(|inclusive|).
 
 	for example, assume you have following line.
@@ -179,10 +179,10 @@ By default this feature is disabled.
 	But this setting lead unexpected result for |o_CTRL-V|.
 	See also |smalls-bug|.
 
-	RECOMMENDED: use vim's native opeartor modifier~
+	RECOMMENDED: use vim's native operator modifier~
 	In my opinion, its' better to use motion-modifier rather than
 	setting this variable to 1.
-	For example, you can delete last ')' in above example, by 
+	For example, you can delete last ')' in above example, by
 	'd, v, o_<Plug>(smalls), )'. the 'v' is operator modifier that force
 	motion behave charwise, means operator affect same area as
 	charwise-visual. See |o_v|, |o_V|, |o_CTRL-V|.
@@ -190,7 +190,7 @@ By default this feature is disabled.
 *g:smalls_current_mode*
 	Default: ''
 	automatically updated while using smalls
-	value shoud be one of [ '', 'cli', 'excursion' ]
+	value should be one of [ '', 'cli', 'excursion' ]
 
 	Don't set this variable manually, its meaningless since its'
 	dynamically updated by plugin.
@@ -210,7 +210,7 @@ By default this feature is disabled.
 	
 	enable automatically set cursor when jump candidate is only one.
 
-*g:smalls_auto_set_min_input_lenght*
+*g:smalls_auto_set_min_input_length*
 	Default: 3
 	
 	The minimum char to trigger auto_set.
@@ -240,7 +240,7 @@ FUNCTIONS						   *smalls-functions*
 *smalls#highlighter#extend_priority(table)*
 	{table} is |Dictionary| which have following format.
 	{ 'ColorName': Number...}
-	Use this func to modify highlight color priority
+	Use this function to modify highlight color priority
 	Here is  default color priority, higher value overwrite lower color.
 >
 	let s:priorities = {
@@ -252,7 +252,7 @@ FUNCTIONS						   *smalls-functions*
 	      \ 'SmallsJumpTarget': 111,
 	      \ }
 <
-	if you don't want 'SmallsCandidate' is ovewritten by SmallsRegion,
+	if you don't want 'SmallsCandidate' is overwritten by SmallsRegion,
 	|smalls-example|.
 
 
@@ -273,7 +273,7 @@ see |smalls-example|
 	For available action, see |smalls-keyboard| section.
 
 	To unbind action from key, use '__UNMAP__' special action.
-	The key have '__UNMAP__' action is deleted at initalization.
+	The key have '__UNMAP__' action is deleted at initialization.
 
 *smalls#keyboard#cli#replace_table(table)*
 	{table} is |Dictionary| is replaced from default key table.
@@ -321,7 +321,7 @@ key map is following.
 	
 						    *smalls-excursion-keybind*
 EXCURSION MODE KEYBIND~
-EXCURSION mode enable you to jumb between candidate with 'hjkl'.
+EXCURSION mode enable you to jump between candidate with 'hjkl'.
 You can jump switch excursion mode from normal CLI mode
 
         | Key      | Action       |
@@ -381,15 +381,15 @@ Jump-marker is accompalished by temporarily replace buffer with marker.
 To avoid this temporal edit affect undo history, smalls use 'undojoin'.
 
 To minimize this buffer editing effect to aff so 'undo' after
-showing jump marker don't put cursor to original pos. This caused as the 
+showing jump marker don't put cursor to original pos. This caused as the
 side-effect of 'undojoin' to minimize effect
 
 Operator visualization ara is not completetely precise~
-As VIm's provided feature, you can change operator's default behavior by 
+As VIm's provided feature, you can change operator's default behavior by
 forcing wise of motion such as |o_v|, |o_V|, |o_CTRL-V|.
-These 'motion-modifier' enables you to forces some operator explicitly behave 
+These 'motion-modifier' enables you to forces some operator explicitly behave
 as charwise, linewise, blockwise.
-But smalls visualization for operator always assume motion is charwise, 
+But smalls visualization for operator always assume motion is charwise,
 because smalls plugin side have no way to know whether these motion-modifier
 is specified or not.
 
@@ -403,10 +403,10 @@ TODO								*smalls-todo*
 * [x] rewrite region selection
  - add select()  action to pos.vim and select actually then use '`<', '`>' to
    get area of highlight. so need rewriten highlighter.region() action.
-* [x] further flexible keybord table setting
- - directly call excurtion mode keybind from cli mode with introducing
+* [x] further flexible keyboard table setting
+ - directly call excursion mode keybind from cli mode with introducing
    Ruby's method_missing like convention. => _actin_missing() implemented.
-* [x] option to determine to jump destination wether word's first or end
+* [x] option to determine to jump destination wheter word's first or end
  - not option, implemented as action.
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
   and customizable
@@ -416,7 +416,7 @@ TODO								*smalls-todo*
  - [decline] right-col s-h
  - [decline] left-col  s-l
 * [x] support operator , visual mode
- - [x] highlight selected reagion to easily undestand affected area.
+ - [x] highlight selected region to easily understand affected area.
 * [x] abstract keyboard object
  - [x] customizable keybind with user's |Dictionary|.
 * [x] highlight original cursor pos when shade()ed.
@@ -446,7 +446,7 @@ CHANGELOG						   *smalls-changelog*
 	- introduce g:smalls_operator_motion_inclusive variable.
 2013-11-20:
 	- del do_jump_wordend action.
-	- now all operator movin is visualized and inclusive behavior.
+	- now all operator moving is visualized and inclusive behavior.
 2013-11-18:
 	- fix keyboard customization issue for cli kbd.
 2013-11-17:

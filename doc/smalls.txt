@@ -96,7 +96,7 @@ VARIABLES						   *smalls-variables*
 	{ "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
 
 	{Key} is the highlight name, should be one of the following.
-      	 SmallsCandidate    used to current search keyword
+      	 SmallsCandidate    used to current searching keyword
       	 SmallsJumpTarget   used to standout jump target
       	 SmallsCurrent      current searching keyword
       	 SmallsPos          used to standout original pos
@@ -123,7 +123,11 @@ VARIABLES						   *smalls-variables*
 
 AutoJump~
 Smalls provide feature to automatically show jump keys.
+<<<<<<< HEAD
 Let's say, you want to auto-jump after 1.0sec but only at least two
+=======
+Let's say, you want to auto-show jump key after 1.0sec but only at least two
+>>>>>>> d89805ff2279e9534e8662c1e14f0e3534ed4a85
 search characters are already inputed.
 Following variables control these behavior.
 By default this feature is disabled.
@@ -171,7 +175,7 @@ By default this feature is disabled.
 	let a:pos.col += self.kbd_cli.data_len() - 1
 	          ^ cursor
 <
-	If excute 'd, o_<Plug>(smalls), )'.
+	If execute 'd, o_<Plug>(smalls), )'.
 
 	Default 0: deletion exclude end of match ')'.
 	Default 1: deletion include end of match ')'.
@@ -385,7 +389,7 @@ showing jump marker don't put cursor to original pos. This caused as the
 side-effect of 'undojoin' to minimize effect
 
 Operator visualization ara is not completetely precise~
-As VIm's provided feature, you can change operator's default behavior by
+As Vim's provided feature, you can change operator's default behavior by
 forcing wise of motion such as |o_v|, |o_V|, |o_CTRL-V|.
 These 'motion-modifier' enables you to forces some operator explicitly behave
 as charwise, linewise, blockwise.
@@ -406,7 +410,7 @@ TODO								*smalls-todo*
 * [x] further flexible keyboard table setting
  - directly call excursion mode keybind from cli mode with introducing
    Ruby's method_missing like convention. => _actin_missing() implemented.
-* [x] option to determine to jump destination wheter word's first or end
+* [x] option to determine to jump destination whether word's first or end
  - not option, implemented as action.
 * [x] jump between candidate with C-hjkl and C-n, C-p or <Tab> 
   and customizable

@@ -1,6 +1,7 @@
 let s:plog            = smalls#util#import("plog")
 let s:getchar         = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
+let s:vmode_pattern   = "v\\|V\\|\<C-v>"
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -10,12 +11,16 @@ function! s:msg(msg) "{{{1
   echon a:msg
 endfunction
 
+function! s:is_visual(mode)
+  return a:mode =~# s:vmode_pattern
+endfunction
+
 function! s:env_preserve(mode) "{{{1
   " to get precise start point in visual mode.
-  if (a:mode  =~# "v\\|V\\|\<C-v>" ) | exe "normal! gvo\<Esc>" | endif
+  if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
   let [ l, c ] = [ line('.'), col('.') ]
   " for neatly revert original visual start/end pos
-  if (a:mode  =~# "v\\|V\\|\<C-v>" ) | exe "normal! gvo\<Esc>" | endif
+  if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
   return {
         \ 'mode': a:mode,
         \ 'w0': line('w0'),
@@ -201,8 +206,7 @@ function! s:smalls._set_to_pos(pos) "{{{1
 endfunction
 
 function! s:smalls._is_visual() "{{{1
-  return self.env.mode =~# "v\\|V\\|\<C-v>"
-  " return (self.env.mode != 'n' && self.env.mode != 'o')
+  return s:is_visual(self.env.mode)
 endfunction
 
 function! s:smalls._need_adjust_col(pos)

@@ -37,6 +37,10 @@ function! s:getchar() "{{{1
   return type(c) == type(0) ? nr2char(c) : c
 endfunction
 
+" function! s:col_cmp(col1, col2) "{{{1
+  " return a:col1 - a:col2
+" endfunction
+
 function! s:getchar_timeout(timeout) "{{{1
   let limit = a:timeout
   let start = reltime()

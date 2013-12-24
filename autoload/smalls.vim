@@ -80,7 +80,7 @@ function! s:smalls.init(mode) "{{{1
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
-  let self._break       = 0
+  " let self._break       = 0
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -115,8 +115,7 @@ function! s:smalls.loop() "{{{1
   let kbd = self.keyboard_cli
 
   while 1
-    call self.hl.shade()
-    call self.hl.cursor()
+    call self.hl.shade().cursor()
 
     let timeout = 
           \ ( g:smalls_auto_jump &&
@@ -136,9 +135,6 @@ function! s:smalls.loop() "{{{1
 
     if kbd.data_len() ==# 0
       continue
-    endif
-    if self._break
-      break
     endif
 
     let auto_set_need = g:smalls_auto_set &&
@@ -168,6 +164,7 @@ function! s:smalls.start(mode, adjust, ...)  "{{{1
     call s:hide_cursor()
     call self.loop()
 
+  catch 'BREAK'
   catch
     let self.exception = v:exception
 
@@ -180,14 +177,13 @@ function! s:smalls.start(mode, adjust, ...)  "{{{1
 endfunction
 
 function! s:smalls.do_jump(kbd) "{{{1
-  call self.hl.clear()
-  call self.hl.shade()
+  call self.hl.clear().shade()
 
   let pos_new = self.get_jump_target(a:kbd.data)
   if !empty(pos_new)
     call self._jump_to_pos(pos_new)
   endif
-  let self._break = 1
+  throw 'BREAK'
 endfunction
 
 function! s:smalls.do_jump_first(kbd) "{{{1
@@ -196,7 +192,7 @@ function! s:smalls.do_jump_first(kbd) "{{{1
     let pos_new = smalls#pos#new(found[0])
     call self._jump_to_pos(pos_new)
   endif
-  let self._break = 1
+  throw 'BREAK'
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
@@ -278,9 +274,7 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
 
   try
     while 1
-      call self.hl.clear()
-      call self.hl.shade()
-      call self.hl.cursor()
+      call self.hl.clear().shade().cursor()
 
       if !empty(first_action)
         call kbd['do_' . first_action]()
@@ -288,15 +282,11 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
       endif
 
       call self.hl.candidate(word, kbd.pos())
-      if self._break
-        break
-      endif
       call kbd.read_input()
       redraw
     endwhile
   catch 'BACK_CLI'
     call self.statusline_update('cli')
-    let self._break = 0
   endtry
 endfunction
 

@@ -44,7 +44,7 @@ let s:priorities = {
       \ 'SmallsCandidate':  103,
       \ 'SmallsRegion':     102,
       \ 'SmallsCurrent':    107,
-      \ 'SmallsPos':        109,
+      \ 'SmallsPos':        106,
       \ 'SmallsJumpTarget': 111,
       \ }
 
@@ -76,18 +76,21 @@ function! s:h.clear(...) "{{{1
     endfor
     let self.ids[color] = []
   endfor
+  return self
 endfunction
 
 function! s:h.shade() "{{{1
   if ! g:smalls_shade | return | endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
+  return self
 endfunction
 
 function! s:h.cursor() "{{{1
   call self.hl('SmallsPos', '\%#')
   " let pos = '%{l}l%{c}c'
   " call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
+  return self
 endfunction
 
 function! s:h.blink_cursor() "{{{1
@@ -164,6 +167,7 @@ function! s:h.candidate(word, pos) "{{{1
   if self.env.mode != 'n'
     call self.region(a:pos, a:word)
   endif
+  return self
 endfunction
 
 function! smalls#highlighter#new(env) "{{{1

@@ -7,7 +7,7 @@ let s:key_table = {
       \   "\<C-c>": "do_cancel",
       \   "\<C-e>": "do_back_cli",
       \   "\<Esc>": "do_back_cli",
-      \    "\<CR>": "do_set",
+      \    "\<CR>": "do_jump",
       \        ";": "do_set",
       \        "n": "do_next",
       \   "\<Tab>": "do_next",
@@ -24,6 +24,7 @@ let s:key_table = {
       \        "l": "do_right",
       \   "\<C-d>": "do_delete",
       \   "\<C-t>": "do_delete_till",
+      \        "t": "do_delete_till",
       \        "d": "do_delete",
       \        "D": "do_delete_line",
       \   "\<C-y>": "do_yank",
@@ -56,7 +57,7 @@ function! s:keyboard.do_jump() "{{{1
 endfunction
 
 function! s:keyboard.do_cancel() "{{{1
-  let self.owner._break = 1
+  throw 'CANCELED'
 endfunction
 
 function! s:keyboard.do_back_cli() "{{{1
@@ -181,7 +182,7 @@ endfunction
 function! s:keyboard.do_set() "{{{1
   let pos_new = smalls#pos#new(self.pos())
   call self.owner._jump_to_pos(pos_new)
-  let self.owner._break = 1
+  throw 'BREAK'
 endfunction
 
 function! s:keyboard.count() "{{{1
@@ -272,8 +273,8 @@ function! s:keyboard._do_normal(normal_key, wise, ...)
   if force_wise || !self.owner._is_visual()
     call self._do_select(a:wise)
   endif
-  call self.do_set()
   let self.owner.operation = 'normal! ' . a:normal_key
+  call self.do_set()
 endfunction
 
 function! s:keyboard._do_select(key, ...) "{{{1

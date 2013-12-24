@@ -75,6 +75,7 @@ let s:smalls = {}
 
 function! s:smalls.init(mode) "{{{1
   let self.exception    = ''
+  let self.operation    = ''
   let self.env          = s:env_preserve(a:mode)
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
@@ -101,6 +102,9 @@ function! s:smalls.finish() "{{{1
     call s:msg(self.exception)
   endif
   call self.statusline_update('')
+  if !empty(self.operation)
+    execute self.operation
+  endif
 endfunction
 
 function! s:smalls.loop() "{{{1
@@ -168,7 +172,7 @@ function! s:smalls.start(mode, adjust, ...)  "{{{1
     call self.hl.clear()
     execute hl_cursor_cmd
     call s:options_restore(options_saved)
-    call self.finish()
+    return self.finish()
   endtry
 endfunction
 

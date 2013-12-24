@@ -33,7 +33,7 @@ let s:key_table = {
       \        "V": "do_select_V",
       \   "\<C-v>": "do_select_CTRL_V",
       \ }
-      " \        "c": "do_change",
+      " \        "C": "do_change",
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
       " \   "\<C-v>": "do_select_CTRL_V_with_set",
@@ -261,8 +261,9 @@ function! s:keyboard.do_yank_line() "{{{1
 endfunction
 
 function! s:keyboard.do_change() "{{{1
-  " FIXME not impremented properly yet
-  normal! c
+  " FIXME need robust change to support 'c' precisely
+  " need <expr> map, but <expr> don't allow buffer change within expression
+  " ,means need to give-up easy motion style jump.
   call self._do_normal('c', 'v', 1)
 endfunction
 
@@ -272,7 +273,7 @@ function! s:keyboard._do_normal(normal_key, wise, ...)
     call self._do_select(a:wise)
   endif
   call self.do_set()
-  execute 'normal! ' . a:normal_key
+  let self.owner.operation = 'normal! ' . a:normal_key
 endfunction
 
 function! s:keyboard._do_select(key, ...) "{{{1

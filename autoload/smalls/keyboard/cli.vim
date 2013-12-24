@@ -28,6 +28,7 @@ let s:key_table = {
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
       \ }
+      " \        "C": "do_excursion_with_change",
       " \   "\<C-e>": "do_auto_excursion_off",
 
 let s:keyboard = {}

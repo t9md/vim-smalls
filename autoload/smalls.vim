@@ -4,7 +4,6 @@ let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 " Util:
 function! s:msg(msg) "{{{1
-  " redraw
   echohl Type
   echon 'smalls: '
   echohl Normal
@@ -143,7 +142,6 @@ function! s:smalls.loop() "{{{1
       throw 'NOT_FOUND'
     endif
     call self.hl.candidate(kbd.data, found[0])
-    " call self.hl.candidate(kbd.data, ( auto_set_need ? found[0] : found ))
   endwhile
 endfunction
 

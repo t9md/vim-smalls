@@ -150,8 +150,9 @@ function! s:smalls.loop() "{{{1
   endwhile
 endfunction
 
-function! s:smalls.start(mode, ...)  "{{{1
+function! s:smalls.start(mode, adjust, ...)  "{{{1
   try
+    let self.adjust = a:adjust
     let self.auto_excursion = a:0 ? 1 : 0
     let options_saved = s:options_set(s:vim_options)
     let hl_cursor_cmd = s:highlight_preserve('Cursor')
@@ -200,11 +201,6 @@ function! s:smalls._jump_to_pos(pos) "{{{1
   endif
 endfunction
 
-function! s:smalls._set_to_pos(pos) "{{{1
-  call s:smalls._adjust_col(a:pos)
-  call a:pos.jump()
-endfunction
-
 function! s:smalls._is_visual() "{{{1
   return s:is_visual(self.env.mode)
 endfunction
@@ -215,13 +211,14 @@ function! s:smalls._need_adjust_col(pos)
   if self._is_visual()
     return self.env.mode =~# 'v\|V'
           \ ? self._is_forward(a:pos)
-          \ : self._is_col_forward(a:pos.col)
+          \ : self._is_col_forward(a:pos)
   endif
 endfunction
 
 function! s:smalls._adjust_col(pos) "{{{1
+  let wordlen = self.keyboard_cli.data_len()
   if self._need_adjust_col(a:pos)
-    let a:pos.col += self.keyboard_cli.data_len() - 1
+    let a:pos.col += (wordlen - 1)
   endif
   if self.env.mode ==# 'o'
         \ && g:smalls_operator_motion_inclusive
@@ -232,6 +229,19 @@ function! s:smalls._adjust_col(pos) "{{{1
       let a:pos.col = 1
     endif
   endif
+
+  if self.adjust !=# 'till'
+    return
+  endif
+  if self.env.mode ==# 'v'
+    let a:pos.col = self._is_forward(a:pos)
+          \ ? a:pos.col - wordlen
+          \ : a:pos.col + wordlen
+  elseif self.env.mode ==# "\<C-v>"
+    let a:pos.col = self._is_col_forward(a:pos)
+          \ ? a:pos.col - wordlen
+          \ : a:pos.col + wordlen
+  endif
 endfunction
 
 function! s:smalls._is_forward(dst_pos) "{{{1
@@ -239,8 +249,8 @@ function! s:smalls._is_forward(dst_pos) "{{{1
         \ (( self.env.p.line == a:dst_pos.line ) && ( self.env.p.col < a:dst_pos.col ))
 endfunction
 
-function! s:smalls._is_col_forward(col) "{{{1
-  return ( self.env.p.col <= a:col )
+function! s:smalls._is_col_forward(pos) "{{{1
+  return ( self.env.p.col <= a:pos.col )
 endfunction
 
 function! s:smalls.statusline_update(mode)

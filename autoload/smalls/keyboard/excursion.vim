@@ -23,6 +23,7 @@ let s:key_table = {
       \        "h": "do_left",
       \        "l": "do_right",
       \   "\<C-d>": "do_delete",
+      \   "\<C-t>": "do_delete_till",
       \        "d": "do_delete",
       \        "D": "do_delete_line",
       \   "\<C-y>": "do_yank",
@@ -240,6 +241,11 @@ endfunction
 
 function! s:keyboard.do_delete() "{{{1
   call self._do_normal('d', 'v')
+endfunction
+
+function! s:keyboard.do_delete_till() "{{{1
+  let self.owner.adjust = 'till'
+  call self.do_delete()
 endfunction
 
 function! s:keyboard.do_delete_line() "{{{1

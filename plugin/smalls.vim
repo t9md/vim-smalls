@@ -78,13 +78,17 @@ augroup plugin-smalls
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('n')<CR>
-xnoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start(visualmode())<CR>
-onoremap <silent> <Plug>(smalls)           :<C-u>call smalls#start('o')<CR>
+nnoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('n', '')<CR>
+xnoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start(visualmode(), '')<CR>
+onoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('o', '')<CR>
 
-nnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('n', 1)<CR>
+" nnoremap <silent> <Plug>(smalls-t) :<C-u>call smalls#start('n', 't')<CR>
+" xnoremap <silent> <Plug>(smalls-t) :<C-u>call smalls#start(visualmode(), 't')<CR>
+" onoremap <silent> <Plug>(smalls-t) :<C-u>call smalls#start('o', 't')<CR>
+
+nnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('n', '', 1)<CR>
 xnoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start(visualmode(), 1)<CR>
-onoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('o', 1)<CR>
+onoremap <silent> <Plug>(smalls-excursion) :<C-u>call smalls#start('o', '', 1)<CR>
 
 " nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
 

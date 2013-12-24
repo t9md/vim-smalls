@@ -17,6 +17,7 @@ let s:key_table = {
       \   "\<C-r>": "do_special",
       \   "\<C-e>": "do_excursion",
       \   "\<C-d>": "do_excursion_with_delete",
+      \   "\<C-t>": "do_excursion_with_delete_till",
       \        "D": "do_excursion_with_delete_line",
       \   "\<C-y>": "do_excursion_with_yank",
       \        "Y": "do_excursion_with_yank_line",

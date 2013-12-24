@@ -91,7 +91,7 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
     redraw
     let jumpk = s:getchar()
     if jumpk ==# "\<Esc>"
-      throw 'Jump Canceled'
+      throw 'JUMP_CANCELED'
     endif
     let jumpk = toupper(jumpk)
     call s:ensure(has_key(a:jumpk2pos, jumpk), 'Invalid target' )

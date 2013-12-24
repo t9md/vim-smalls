@@ -120,7 +120,7 @@ function! s:h.region(pos, word) "{{{1
           \   ( self._is_col_forward(a:pos[1])
           \   ? '\v\c%>{l-1}l%>{c-1}c.*%<{nl+1}l%<{ke+1}c'
           \   : '\v\c%>{l-1}l%>{nc-1}c.*%<{nl+1}l%<{c+1}c' )
-          \ : throw
+          \ : throw 'FATAL'
   else
     let pat =
           \ self.env.mode =~# 'v\|o' ? '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c' :
@@ -129,7 +129,7 @@ function! s:h.region(pos, word) "{{{1
           \   ( self._is_col_forward(a:pos[1])
           \   ? '\v\c%>{nl-1}l%>{c-1}c.*%<{l+1}l%<{ke+1}c'
           \   : '\v\c%>{nl-1}l%>{nc-1}c.*%<{l+1}l%<{c+1}c' )
-          \ : throw
+          \ : throw 'FATAL'
   endif
   call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
 endfunction

@@ -81,7 +81,7 @@ function! s:keyboard.do_set_cword() "{{{1
 endfunction
 
 function! s:keyboard.do_cancel() "{{{1
-  throw 'Canceled'
+  throw 'CANCELED'
 endfunction
 
 function! s:keyboard.do_jump() "{{{1

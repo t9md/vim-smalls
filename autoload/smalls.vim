@@ -4,18 +4,14 @@ let s:getchar_timeout = smalls#util#import("getchar_timeout")
 
 " Util:
 function! s:msg(msg) "{{{1
-  redraw
-  call s:echohl('Smalls ', 'Type')
-  call s:echohl(a:msg, 'Normal')
-endfunction
-
-function! s:echohl(msg, color) "{{{1
-  silent execute 'echohl ' . a:color
-  echon a:msg
+  " redraw
+  echohl Type
+  echon 'smalls: '
   echohl Normal
+  echon a:msg
 endfunction
 
-function! s:preserve_env(mode) "{{{1
+function! s:env_preserve(mode) "{{{1
   " to get precise start point in visual mode.
   if (a:mode  =~# "v\\|V\\|\<C-v>" ) | exe "normal! gvo\<Esc>" | endif
   let [ l, c ] = [ line('.'), col('.') ]
@@ -30,7 +26,6 @@ function! s:preserve_env(mode) "{{{1
         \ 'p': smalls#pos#new([ l, c ]),
         \ }
 endfunction
-
 
 function! s:options_set(options) "{{{1
   let R = {}
@@ -50,7 +45,7 @@ function! s:options_restore(options) "{{{1
   endfor
 endfunction
 
-function! s:hl_restorecmd(hlname) "{{{1
+function! s:highlight_preserve(hlname) "{{{1
   redir => HL_SAVE
   execute 'silent! highlight ' . a:hlname
   redir END
@@ -58,7 +53,7 @@ function! s:hl_restorecmd(hlname) "{{{1
         \  substitute(matchstr(HL_SAVE, 'xxx \zs.*'), "\n", ' ', 'g')
 endfunction
 
-function! s:hide_cursor()
+function! s:hide_cursor() "{{{1
   highlight Cursor ctermfg=NONE ctermbg=NONE guifg=NONE guibg=NONE
 endfunction
 "}}}
@@ -75,10 +70,8 @@ let s:vim_options = {
 let s:smalls = {}
 
 function! s:smalls.init(mode) "{{{1
-  let self.lastmsg      = ''
-  let self._notfound    = 0
-  let self._auto_set    = 0
-  let self.env          = s:preserve_env(a:mode)
+  let self.exception    = ''
+  let self.env          = s:env_preserve(a:mode)
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
@@ -86,26 +79,28 @@ function! s:smalls.init(mode) "{{{1
 endfunction
 
 function! s:smalls.finish() "{{{1
+  let NOT_FOUND = self.exception ==# 'NOT_FOUND'
+  let AUTO_SET  = self.exception ==# 'AUTO_SET'
+  let CANCELED  = self.exception ==# 'CANCELED'
 
-  if ( self._notfound && g:smalls_blink_on_notfound ) ||
-        \ ( self._auto_set && g:smalls_auto_set_blink )
+  if ( NOT_FOUND && g:smalls_blink_on_notfound ) ||
+        \ ( AUTO_SET && g:smalls_auto_set_blink )
     call self.hl.blink_cursor()
   endif
 
-  if self._notfound && self._is_visual()
+  if self._is_visual() && ( NOT_FOUND || CANCELED )
     normal! gv
   endif
   redraw
 
-  if !empty(self.lastmsg)
-    call s:msg(self.lastmsg)
+  if !empty(self.exception)
+    call s:msg(self.exception)
   endif
-
-  call self.update_status('')
+  call self.statusline_update('')
 endfunction
 
 function! s:smalls.loop() "{{{1
-  call self.update_status('cli')
+  call self.statusline_update('cli')
   let kbd = self.keyboard_cli
 
   while 1
@@ -141,14 +136,14 @@ function! s:smalls.loop() "{{{1
           \ ? self.finder.all(kbd.data) : self.finder.one(kbd.data)
 
     if len(found) ==# 1 && auto_set_need
-      let self._auto_set = 1
       call kbd.do_jump_first()
-      break
+      throw 'AUTO_SET'
     endif
     if empty(found)
-      throw 'NotFound'
+      throw 'NOT_FOUND'
     endif
-    call self.hl.candidate(kbd.data, ( auto_set_need ? found[0] : found ))
+    call self.hl.candidate(kbd.data, found[0])
+    " call self.hl.candidate(kbd.data, ( auto_set_need ? found[0] : found ))
   endwhile
 endfunction
 
@@ -156,24 +151,19 @@ function! s:smalls.start(mode, ...)  "{{{1
   try
     let self.auto_excursion = a:0 ? 1 : 0
     let options_saved = s:options_set(s:vim_options)
-    let hl_cursor_cmd = s:hl_restorecmd('Cursor')
+    let hl_cursor_cmd = s:highlight_preserve('Cursor')
 
     call self.init(a:mode)
     call s:hide_cursor()
     call self.loop()
+
   catch
-    if v:exception ==# "NotFound"
-      let self._notfound = 1
-    elseif v:exception ==# "Canceled"
-      if self._is_visual()
-        normal! gv
-      endif
-    endif
-    let self.lastmsg = v:exception
+    let self.exception = v:exception
+
   finally
     call self.hl.clear()
-    call s:options_restore(options_saved)
     execute hl_cursor_cmd
+    call s:options_restore(options_saved)
     call self.finish()
   endtry
 endfunction
@@ -192,7 +182,7 @@ endfunction
 function! s:smalls.do_jump_first(kbd) "{{{1
   let found = self.finder.one(a:kbd.data)
   if !empty(found)
-    let pos_new = smalls#pos#new(found)
+    let pos_new = smalls#pos#new(found[0])
     call self._jump_to_pos(pos_new)
   endif
   let self._break = 1
@@ -251,7 +241,7 @@ function! s:smalls._is_col_forward(col) "{{{1
   return ( self.env.p.col <= a:col )
 endfunction
 
-function! s:smalls.update_status(mode)
+function! s:smalls.statusline_update(mode)
   " force to update statusline by meaningless option update ':help statusline'
   let g:smalls_current_mode = a:mode
   let &ro = &ro
@@ -262,7 +252,7 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   let word = a:kbd.data
   if empty(word) | return [] | endif
 
-  call self.update_status('excursion')
+  call self.statusline_update('excursion')
   let first_action = a:0 ? a:1 : ''
   let poslist = self.finder.all(word)
   let kbd     = smalls#keyboard#excursion#new(self, word, poslist)
@@ -286,7 +276,7 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
       redraw
     endwhile
   catch 'BACK_CLI'
-    call self.update_status('cli')
+    call self.statusline_update('cli')
     let self._break = 0
   endtry
 endfunction

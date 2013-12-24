@@ -21,7 +21,7 @@ function! s:finder.all(word, ...) "{{{1
     for start in [ 'cursor_NEXT_COL', 'cursor_TOW' ]
       call self[start]()
       call self.search(word, 'c', self.env['w$'], one)
-      if one && !empty(self.found) | return self.found[0] | endif
+      if one && !empty(self.found) | return self.found[0:0] | endif
     endfor
   finally
     call self.env.p.set()

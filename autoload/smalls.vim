@@ -100,6 +100,9 @@ function! s:smalls.finish() "{{{1
 
   if !empty(self.exception)
     call s:msg(self.exception)
+  else
+    echo ''
+    redraw
   endif
   call self.statusline_update('')
   if !empty(self.operation)

@@ -102,7 +102,7 @@ function! s:h.blink_cword(NOT_FOUND) "{{{1
   let color = a:NOT_FOUND ? 'SmallsPos' : 'SmallsCurrent'
   for i in range(2)
     call self.cword(color) | redraw | sleep 100m
-    call self.clear() | redraw | sleep 100m
+    call self.clear()      | redraw | sleep 100m
   endfor
   " to avoid user's input mess buffer, we consume 
   " keyinput feeded while blinking.

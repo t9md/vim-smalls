@@ -92,7 +92,6 @@ function! s:smalls.finish() "{{{1
     call s:msg(self.exception)
   else
     echo ''
-    redraw
   endif
 
   if ( NOT_FOUND && g:smalls_blink_on_notfound ) ||
@@ -106,6 +105,7 @@ function! s:smalls.finish() "{{{1
   if !empty(self.operation)
     execute self.operation
   endif
+  " while getchar(1) | call getchar() | endwhile
 endfunction
 
 function! s:smalls.loop() "{{{1

@@ -51,6 +51,10 @@ function! s:keyboard.init(word, poslist) "{{{1
   return self
 endfunction
 
+function! s:keyboard._is_normal_key(c)
+  return !has_key(self._table, a:c) || a:c == '0' && !empty(self._count)
+endfunction
+
 function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump,
         \ [self.owner.keyboard_cli], self.owner)

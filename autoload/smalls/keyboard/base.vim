@@ -43,11 +43,15 @@ endfunction
 
 function! s:keyboard.input(c) "{{{1
   call self.input_history_add(a:c)
-  if !has_key(self._table, a:c)
+  if self._is_normal_key(a:c)
     cal self._set( self._setchar(a:c) )
   else
     call self.execute(a:c)
   endif
+endfunction
+
+function! s:keyboard._is_normal_key(c) "{{{1
+  return !has_key(self._table, a:c)
 endfunction
 
 function! s:keyboard.execute(c) "{{{1

@@ -182,7 +182,7 @@ endfunction
 function! s:keyboard.do_set() "{{{1
   let pos_new = smalls#pos#new(self.pos())
   call self.owner._jump_to_pos(pos_new)
-  throw 'BREAK'
+  throw 'SUCCESS'
 endfunction
 
 function! s:keyboard.count() "{{{1

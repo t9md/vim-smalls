@@ -19,8 +19,8 @@ function! s:env_preserve(mode) "{{{1
   " to get precise start point in visual mode.
   if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
   let [ l, c ] = [ line('.'), col('.') ]
-  " for neatly revert original visual start/end pos
   if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
+
   return {
         \ 'mode': a:mode,
         \ 'w0': line('w0'),
@@ -80,10 +80,11 @@ function! s:smalls.init(mode) "{{{1
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
-  " let self._break       = 0
 endfunction
 
 function! s:smalls.finish() "{{{1
+  call self.statusline_update('')
+
   let NOT_FOUND = self.exception ==# 'NOT_FOUND'
   let AUTO_SET  = self.exception ==# 'AUTO_SET'
   let CANCELED  = self.exception ==# 'CANCELED'
@@ -104,7 +105,6 @@ function! s:smalls.finish() "{{{1
     echo ''
     redraw
   endif
-  call self.statusline_update('')
   if !empty(self.operation)
     execute self.operation
   endif
@@ -137,17 +137,16 @@ function! s:smalls.loop() "{{{1
       continue
     endif
 
-    let auto_set_need = g:smalls_auto_set &&
+    let need_auto_set = g:smalls_auto_set &&
           \ kbd.data_len() >=# g:smalls_auto_set_min_input_length
-    let found = auto_set_need
+    let found = need_auto_set
           \ ? self.finder.all(kbd.data) : self.finder.one(kbd.data)
 
-    if len(found) ==# 1 && auto_set_need
-      call kbd.do_jump_first()
-      throw 'AUTO_SET'
-    endif
     if empty(found)
       throw 'NOT_FOUND'
+    elseif len(found) ==# 1 && need_auto_set
+      call kbd.do_jump_first()
+      throw 'AUTO_SET'
     endif
     call self.hl.candidate(kbd.data, found[0])
   endwhile
@@ -164,7 +163,7 @@ function! s:smalls.start(mode, adjust, ...)  "{{{1
     call s:hide_cursor()
     call self.loop()
 
-  catch 'BREAK'
+  catch 'SUCCESS'
   catch
     let self.exception = v:exception
 
@@ -183,7 +182,7 @@ function! s:smalls.do_jump(kbd) "{{{1
   if !empty(pos_new)
     call self._jump_to_pos(pos_new)
   endif
-  throw 'BREAK'
+  throw 'SUCCESS'
 endfunction
 
 function! s:smalls.do_jump_first(kbd) "{{{1
@@ -192,7 +191,7 @@ function! s:smalls.do_jump_first(kbd) "{{{1
     let pos_new = smalls#pos#new(found[0])
     call self._jump_to_pos(pos_new)
   endif
-  throw 'BREAK'
+  throw 'SUCCESS'
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1

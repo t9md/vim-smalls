@@ -74,6 +74,7 @@ let s:vim_options = {
 let s:smalls = {}
 
 function! s:smalls.init(mode) "{{{1
+  let self._auto_set    = 0
   let self.exception    = ''
   let self.operation    = ''
   let self.env          = s:env_preserve(a:mode)
@@ -84,26 +85,23 @@ endfunction
 
 function! s:smalls.finish() "{{{1
   call self.statusline_update('')
-
   let NOT_FOUND = self.exception ==# 'NOT_FOUND'
-  let AUTO_SET  = self.exception ==# 'AUTO_SET'
   let CANCELED  = self.exception ==# 'CANCELED'
-
-  if ( NOT_FOUND && g:smalls_blink_on_notfound ) ||
-        \ ( AUTO_SET && g:smalls_auto_set_blink )
-    call self.hl.blink_cursor()
-  endif
-
-  if self._is_visual() && ( NOT_FOUND || CANCELED )
-    normal! gv
-  endif
-  redraw
 
   if !empty(self.exception)
     call s:msg(self.exception)
   else
     echo ''
     redraw
+  endif
+
+  if ( NOT_FOUND && g:smalls_blink_on_notfound ) ||
+        \ ( self._auto_set && g:smalls_auto_set_blink )
+    call self.hl.blink_cword(NOT_FOUND)
+  endif
+
+  if self._is_visual() && ( NOT_FOUND || CANCELED )
+    normal! gv
   endif
   if !empty(self.operation)
     execute self.operation
@@ -127,14 +125,14 @@ function! s:smalls.loop() "{{{1
       call self.do_jump(kbd)
     endtry
 
+    if kbd.data_len() ==# 0
+      call self.hl.clear("SmallsCandidate", "SmallsCurrent")
+      continue
+    endif
+
     if self.auto_excursion &&
           \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
       call self.do_excursion(kbd)
-    endif
-    call self.hl.clear()
-
-    if kbd.data_len() ==# 0
-      continue
     endif
 
     let need_auto_set = g:smalls_auto_set &&
@@ -145,11 +143,38 @@ function! s:smalls.loop() "{{{1
     if empty(found)
       throw 'NOT_FOUND'
     elseif len(found) ==# 1 && need_auto_set
+      let self._auto_set = 1
       call kbd.do_jump_first()
-      throw 'AUTO_SET'
     endif
     call self.hl.candidate(kbd.data, found[0])
   endwhile
+endfunction
+
+function! s:smalls.do_excursion(kbd, ...) "{{{1
+  let word = a:kbd.data
+  if empty(word) | return [] | endif
+
+  call self.statusline_update('excursion')
+  let first_action = a:0 ? a:1 : ''
+  let poslist = self.finder.all(word)
+  let kbd     = smalls#keyboard#excursion#new(self, word, poslist)
+
+  try
+    while 1
+      call self.hl.shade().cursor()
+
+      if !empty(first_action)
+        call kbd['do_' . first_action]()
+        let first_action = ''
+      endif
+
+      call self.hl.candidate(word, kbd.pos())
+      call kbd.read_input()
+      " redraw
+    endwhile
+  catch 'BACK_CLI'
+    call self.statusline_update('cli')
+  endtry
 endfunction
 
 function! s:smalls.start(mode, adjust, ...)  "{{{1
@@ -262,32 +287,6 @@ function! s:smalls.statusline_update(mode)
   redraw
 endfunction
 
-function! s:smalls.do_excursion(kbd, ...) "{{{1
-  let word = a:kbd.data
-  if empty(word) | return [] | endif
-
-  call self.statusline_update('excursion')
-  let first_action = a:0 ? a:1 : ''
-  let poslist = self.finder.all(word)
-  let kbd     = smalls#keyboard#excursion#new(self, word, poslist)
-
-  try
-    while 1
-      call self.hl.clear().shade().cursor()
-
-      if !empty(first_action)
-        call kbd['do_' . first_action]()
-        let first_action = ''
-      endif
-
-      call self.hl.candidate(word, kbd.pos())
-      call kbd.read_input()
-      redraw
-    endwhile
-  catch 'BACK_CLI'
-    call self.statusline_update('cli')
-  endtry
-endfunction
 
 function! s:smalls.get_jump_target(word) "{{{1
   if empty(a:word) | return [] | endif

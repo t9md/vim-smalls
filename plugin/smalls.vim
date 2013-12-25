@@ -21,7 +21,7 @@ let s:options = {
       \ 'g:smalls_auto_jump_timeout': 0.5,
       \ 'g:smalls_auto_jump_min_input_length': 3,
       \ 'g:smalls_auto_excursion_min_input_length': 1,
-      \ 'g:smalls_auto_set': 0,
+      \ 'g:smalls_auto_set': 1,
       \ 'g:smalls_auto_set_min_input_length': 3,
       \ 'g:smalls_auto_set_blink': 1,
       \ }

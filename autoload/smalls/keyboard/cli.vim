@@ -124,7 +124,7 @@ function! smalls#keyboard#cli#new(owner) "{{{1
   if ! has_key(s:key_table, jump_trigger)
     let s:key_table[jump_trigger] = 'do_jump'
   endif
-  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, "> ")
+  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, 'cli', "> ")
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
 

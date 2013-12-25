@@ -210,7 +210,7 @@ By default this feature is disabled.
 	automatically enter excursion mode.
 
 *g:smalls_auto_set*
-	Default: 0
+	Default: 1
 	
 	enable automatically set cursor when jump candidate is only one.
 

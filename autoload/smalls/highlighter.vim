@@ -93,20 +93,25 @@ function! s:h.cursor() "{{{1
   return self
 endfunction
 
-function! s:h.blink_cursor() "{{{1
+function! s:h.cword(color) "{{{1
+  call self.hl(a:color, '\k*\%#\k*')
+endfunction
+
+function! s:h.blink_cword(NOT_FOUND) "{{{1
   " used to notify curor position to user when exit smalls
+  let color = a:NOT_FOUND ? 'SmallsPos' : 'SmallsCurrent'
   for i in range(2)
-    call self.cursor() | redraw! | sleep 100m
-    call self.clear()    | redraw! | sleep 100m
+    call self.cword(color) | redraw | sleep 100m
+    call self.clear() | redraw | sleep 100m
   endfor
   " to avoid user's input mess buffer, we consume 
   " keyinput feeded while blinking.
   while getchar(1) | call getchar() | endwhile
 endfunction
 
-function! s:h.region(pos, word) "{{{1
-  let wordlen = len(a:word)
+function! s:h.region(word, pos) "{{{1
   call self.clear("SmallsRegion")
+  let wordlen = len(a:word)
   let e = {
         \ 'nl': a:pos[0],
         \ 'nc': a:pos[1],
@@ -153,7 +158,17 @@ function! s:h.jump_target(poslist) "{{{1
 endfunction
 
 function! s:h.candidate(word, pos) "{{{1
-  " call self.clear("Smallscandidate", "SmallsCurrent")
+  call self.clear("SmallsCandidate")
+  if empty(a:word) | return | endif
+  if empty(a:pos)  | return | endif
+  let word = '\V'. escape(a:word, '\') . '\v'
+  call self.hl("SmallsCandidate", '\v\c' . word)
+  call self.current(a:word, a:pos)
+  return self
+endfunction
+
+function! s:h.current(word, pos) "{{{1
+  call self.clear("SmallsCurrent")
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
   let e = {
@@ -162,10 +177,9 @@ function! s:h.candidate(word, pos) "{{{1
         \ }
   let word = '\V'. escape(a:word, '\') . '\v'
   call extend(e, self.env, 'error')
-  call self.hl("SmallsCandidate", s:intrpl('\v\c' . word , e))
-  call self.hl("SmallsCurrent",   s:intrpl('\v\c' . word . '%{cl}l%{ke+1}c', e))
+  call self.hl("SmallsCurrent", '\v\c' . word . s:intrpl('%{cl}l%{ke+1}c', e))
   if self.env.mode != 'n'
-    call self.region(a:pos, a:word)
+    call self.region(a:word, a:pos)
   endif
   return self
 endfunction

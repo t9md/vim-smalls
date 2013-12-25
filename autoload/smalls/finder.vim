@@ -13,26 +13,26 @@ endfunction
 
 function! s:finder.all(word, ...) "{{{1
   let one = !empty(a:000)
-  let self.found = []
-  if empty(a:word) | return found | endif
+  let RESULT = []
+  if empty(a:word) | return RESULT | endif
   let word = '\V\c' . escape(a:word, '\')
 
   try
     for start in [ 'cursor_NEXT_COL', 'cursor_TOW' ]
       call self[start]()
-      call self.search(word, 'c', self.env['w$'], one)
-      if one && !empty(self.found) | return self.found[0:0] | endif
+      call self.search(word, RESULT, self.env['w$'], one)
+      if one && !empty(RESULT) | return RESULT | endif
     endfor
   finally
     call self.env.p.set()
   endtry
-  return self.found
+  return RESULT
 endfunction
 
-function! s:finder.search(word, opt, stopline, one) "{{{1
+function! s:finder.search(word, RESULT, stopline, one) "{{{1
   let line_org = self.env.p.line "cache
   while 1
-    let pos = searchpos(a:word, a:opt, a:stopline)
+    let pos = searchpos(a:word, 'c', a:stopline)
     if pos == [0, 0] | break | endif
 
     let linum = foldclosedend(pos[0]) " skip fold
@@ -42,10 +42,10 @@ function! s:finder.search(word, opt, stopline, one) "{{{1
       continue
     endif
 
-    if line_org <= pos[0] && index(self.found, pos) != -1
+    if line_org <= pos[0] && index(a:RESULT, pos) != -1
       break
     endif
-    call add(self.found, pos)
+    call add(a:RESULT, pos)
     if a:one | break | endif
 
     if self.cursor_is_EOL()

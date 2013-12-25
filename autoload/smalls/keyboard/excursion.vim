@@ -305,7 +305,7 @@ function! smalls#keyboard#excursion#replace_table(table) "{{{1
 endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
-  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, '[Excursion]')
+  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, 'excursion', '[Excursion]')
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)
 endfunction "}}}

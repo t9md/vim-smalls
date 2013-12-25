@@ -22,11 +22,12 @@ function! s:keyboard.read_input(...) "{{{1
   end
 endfunction
 
-function! s:keyboard.init(owner, table, prompt_str) "{{{1
+function! s:keyboard.init(owner, table, name, prompt_str) "{{{1
   let self._table  = a:table
   let self._prompt_str = a:prompt_str
   let self.owner   = a:owner
   let self._yanked = ''
+  let self.name  = a:name
   let self.data    = ''
   let self.cursor  = 0
   let self.input_history = []
@@ -111,10 +112,10 @@ function! s:keyboard.show_prompt() "{{{1
   redraw
 endfunction
 
-function! smalls#keyboard#base#new(owner, table, prompt_str) "{{{1
+function! smalls#keyboard#base#new(owner, table, name, prompt_str) "{{{1
   call filter(a:table, 'v:val != "__UNMAP__"')
   let kbd = deepcopy(s:keyboard)
-  return kbd.init(a:owner, a:table, a:prompt_str)
+  return kbd.init(a:owner, a:table, a:name, a:prompt_str)
 endfunction "}}}
 
 " vim: foldmethod=marker

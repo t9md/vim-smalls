@@ -95,7 +95,7 @@ function! s:smalls.finish() "{{{1
   endif
 
   if ( NOT_FOUND && g:smalls_blink_on_notfound ) ||
-        \ ( self._auto_set && g:smalls_auto_set_blink )
+        \ ( self._auto_set && g:smalls_blink_on_auto_set )
     call self.hl.blink_cword(NOT_FOUND)
   endif
 
@@ -105,7 +105,8 @@ function! s:smalls.finish() "{{{1
   if !empty(self.operation)
     execute self.operation
   endif
-  " while getchar(1) | call getchar() | endwhile
+  " to avoid user's input mess buffer, we consume keyinput before exit.
+  while getchar(1) | call getchar() | endwhile
 endfunction
 
 function! s:smalls.loop() "{{{1

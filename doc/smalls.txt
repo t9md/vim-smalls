@@ -224,7 +224,7 @@ By default this feature is disabled.
 	This introduce performance overhead, without auto_set, smalls only need to search
 	one candidate(for highlight) and not need to know number of candidate.
 
-*g:smalls_auto_set_blink*
+*g:smalls_blink_on_auto_set*
 	Default: 1
 
 	Blink after automatically land to target when auto_set.

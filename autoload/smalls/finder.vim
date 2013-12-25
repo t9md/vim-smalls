@@ -1,4 +1,5 @@
-let s:plog = smalls#util#import("plog")
+let s:plog        = smalls#util#import("plog")
+let s:pattern_for = smalls#util#import("pattern_for")
 
 let s:finder = {}
 
@@ -15,12 +16,11 @@ function! s:finder.all(word, ...) "{{{1
   let one = !empty(a:000)
   let RESULT = []
   if empty(a:word) | return RESULT | endif
-  let word = '\V\c' . escape(a:word, '\')
 
   try
     for start in [ 'cursor_NEXT_COL', 'cursor_TOW' ]
       call self[start]()
-      call self.search(word, RESULT, self.env['w$'], one)
+      call self.search(s:pattern_for(a:word), RESULT, self.env['w$'], one)
       if one && !empty(RESULT) | return RESULT | endif
     endfor
   finally

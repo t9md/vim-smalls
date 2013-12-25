@@ -56,6 +56,12 @@ function! s:getchar_timeout(timeout) "{{{1
   endwhile
 endfunction
 
+function! s:pattern_for(word) "{{{1
+  return substitute(
+        \ '\V\c' . escape(a:word, '\') . '\v' ,
+        \ '\.', '\\v.\\V', 'g')
+endfunction
+
 function! smalls#util#use(list) "{{{1
   let u = {}
   for fname in a:list

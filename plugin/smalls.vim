@@ -16,6 +16,7 @@ let s:options = {
       \ 'g:smalls_highlight': {},
       \ 'g:smalls_operator_motion_inclusive': 0,
       \ 'g:smalls_blink_on_notfound': 1,
+      \ 'g:smalls_blink_on_auto_set': 1,
       \ 'g:smalls_current_mode': '',
       \ 'g:smalls_auto_jump': 0,
       \ 'g:smalls_auto_jump_timeout': 0.5,
@@ -23,7 +24,6 @@ let s:options = {
       \ 'g:smalls_auto_excursion_min_input_length': 1,
       \ 'g:smalls_auto_set': 1,
       \ 'g:smalls_auto_set_min_input_length': 3,
-      \ 'g:smalls_auto_set_blink': 1,
       \ }
 
       " Color format

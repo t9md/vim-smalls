@@ -1,4 +1,5 @@
-let s:plog    = smalls#util#import("plog")
+let s:plog        = smalls#util#import("plog")
+let s:pattern_for = smalls#util#import("pattern_for")
 
 " function! s:intrpl(string, vars) "{{{1
   " let mark = '\v\{(.{-})\}'
@@ -80,7 +81,9 @@ function! s:h.clear(...) "{{{1
 endfunction
 
 function! s:h.shade() "{{{1
-  if ! g:smalls_shade | return | endif
+  if ! g:smalls_shade
+    return self
+  endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
   call self.hl("SmallsShade", '\v'. pat )
   return self
@@ -104,9 +107,6 @@ function! s:h.blink_cword(NOT_FOUND) "{{{1
     call self.cword(color) | redraw | sleep 100m
     call self.clear()      | redraw | sleep 100m
   endfor
-  " to avoid user's input mess buffer, we consume 
-  " keyinput feeded while blinking.
-  while getchar(1) | call getchar() | endwhile
 endfunction
 
 function! s:h.region(word, pos) "{{{1
@@ -161,8 +161,8 @@ function! s:h.candidate(word, pos) "{{{1
   call self.clear("SmallsCandidate")
   if empty(a:word) | return | endif
   if empty(a:pos)  | return | endif
-  let word = '\V'. escape(a:word, '\') . '\v'
-  call self.hl("SmallsCandidate", '\v\c' . word)
+
+  call self.hl("SmallsCandidate", s:pattern_for(a:word))
   call self.current(a:word, a:pos)
   return self
 endfunction
@@ -175,9 +175,9 @@ function! s:h.current(word, pos) "{{{1
         \ 'cl': a:pos[0],
         \ 'ke': a:pos[1] + len(a:word) - 1,
         \ }
-  let word = '\V'. escape(a:word, '\') . '\v'
+  let pattern =  s:pattern_for(a:word) . s:intrpl('%{cl}l%{ke+1}c', e)
   call extend(e, self.env, 'error')
-  call self.hl("SmallsCurrent", '\v\c' . word . s:intrpl('%{cl}l%{ke+1}c', e))
+  call self.hl("SmallsCurrent", pattern)
   if self.env.mode != 'n'
     call self.region(a:word, a:pos)
   endif

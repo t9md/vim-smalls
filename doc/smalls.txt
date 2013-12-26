@@ -202,7 +202,7 @@ By default this feature is disabled.
 	  * powerline
 	  * airline
 	  * lightline
-	  * ezline ( I'm author )
+	  * ezbar ( I'm author )
 
 *g:smalls_auto_excursion_min_input_length*
 	Default: 1

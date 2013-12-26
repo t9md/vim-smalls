@@ -75,8 +75,8 @@ let s:smalls = {}
 
 function! s:smalls.init(mode) "{{{1
   let self._auto_set    = 0
+  let self.operation    = {}
   let self.exception    = ''
-  let self.operation    = ''
   let self.env          = s:env_preserve(a:mode)
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
@@ -103,7 +103,11 @@ function! s:smalls.finish() "{{{1
     normal! gv
   endif
   if !empty(self.operation)
-    execute self.operation
+    execute 'normal!' self.operation.normal
+
+    if self.operation.startinsert
+      startinsert
+    endif
   endif
   " to avoid user's input mess buffer, we consume keyinput before exit.
   while getchar(1) | call getchar() | endwhile
@@ -233,13 +237,17 @@ function! s:smalls._is_visual() "{{{1
   return s:is_visual(self.env.mode)
 endfunction
 
+function! s:smalls.pos() "{{{1
+  return self.env.p
+endfunction
+
 function! s:smalls._need_adjust_col(pos)
   if self.env.mode ==# 'n' | return 0 | endif
-  if self.env.mode ==# 'o' | return self._is_forward(a:pos) | endif
+  if self.env.mode ==# 'o' | return a:pos.is_gt(self.pos()) | endif
   if self._is_visual()
     return self.env.mode =~# 'v\|V'
-          \ ? self._is_forward(a:pos)
-          \ : self._is_col_forward(a:pos)
+          \ ? a:pos.is_gt(self.pos())
+          \ : a:pos.is_ge_col(self.pos())
   endif
 endfunction
 
@@ -250,7 +258,7 @@ function! s:smalls._adjust_col(pos) "{{{1
   endif
   if self.env.mode ==# 'o'
         \ && g:smalls_operator_motion_inclusive
-        \ && self._is_forward(a:pos)
+        \ && a:pos.is_gt(self.pos())
     let a:pos.col += 1
     if a:pos.col > len(getline(a:pos.line)) " line end
       let a:pos.line += 1
@@ -262,23 +270,14 @@ function! s:smalls._adjust_col(pos) "{{{1
     return
   endif
   if self.env.mode ==# 'v'
-    let a:pos.col = self._is_forward(a:pos)
+    let a:pos.col = a:pos.is_gt(self.pos())
           \ ? a:pos.col - wordlen
           \ : a:pos.col + wordlen
   elseif self.env.mode ==# "\<C-v>"
-    let a:pos.col = self._is_col_forward(a:pos)
+    let a:pos.col = a:pos.is_ge_col(self.pos())
           \ ? a:pos.col - wordlen
           \ : a:pos.col + wordlen
   endif
-endfunction
-
-function! s:smalls._is_forward(dst_pos) "{{{1
-  return ( self.env.p.line < a:dst_pos.line ) ||
-        \ (( self.env.p.line == a:dst_pos.line ) && ( self.env.p.col < a:dst_pos.col ))
-endfunction
-
-function! s:smalls._is_col_forward(pos) "{{{1
-  return ( self.env.p.col <= a:pos.col )
 endfunction
 
 function! s:smalls.statusline_update(mode)

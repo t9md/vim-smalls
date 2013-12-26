@@ -4,7 +4,6 @@ let s:plog    = smalls#util#import("plog")
 
 let s:key_table = {
       \   "\<C-g>": "do_cancel",
-      \   "\<C-c>": "do_cancel",
       \   "\<C-e>": "do_back_cli",
       \   "\<Esc>": "do_back_cli",
       \    "\<CR>": "do_jump",
@@ -23,10 +22,12 @@ let s:key_table = {
       \        "h": "do_left",
       \        "l": "do_right",
       \   "\<C-d>": "do_delete",
+      \        "d": "do_delete",
       \   "\<C-t>": "do_delete_till",
       \        "t": "do_delete_till",
-      \        "d": "do_delete",
       \        "D": "do_delete_line",
+      \        "c": "do_change",
+      \   "\<C-c>": "do_change",
       \   "\<C-y>": "do_yank",
       \        "y": "do_yank",
       \        "Y": "do_yank_line",
@@ -34,7 +35,6 @@ let s:key_table = {
       \        "V": "do_select_V",
       \   "\<C-v>": "do_select_CTRL_V",
       \ }
-      " \        "C": "do_change",
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
       " \   "\<C-v>": "do_select_CTRL_V_with_set",
@@ -269,15 +269,18 @@ function! s:keyboard.do_change() "{{{1
   " FIXME need robust change to support 'c' precisely
   " need <expr> map, but <expr> don't allow buffer change within expression
   " ,means need to give-up easy motion style jump.
-  call self._do_normal('c', 'v', 1)
+  call self._do_normal('c', 'v')
 endfunction
 
-function! s:keyboard._do_normal(normal_key, wise, ...)
+function! s:keyboard._do_normal(key, wise, ...)
   let force_wise = !empty(a:000)
   if force_wise || !self.owner._is_visual()
     call self._do_select(a:wise)
   endif
-  let self.owner.operation = 'normal! ' . a:normal_key
+  let self.owner.operation = {
+        \ 'normal':      a:key ==# 'c' ? 'd' : a:key,
+        \ 'startinsert': a:key ==# 'c',
+        \ }
   call self.do_set()
 endfunction
 

@@ -4,14 +4,15 @@ let s:plog    = smalls#util#import("plog")
 
 let s:key_table = {
       \   "\<C-g>": "do_cancel",
-      \   "\<C-c>": "do_cancel",
       \   "\<Esc>": "do_cancel",
       \    "\<CR>": "do_jump_first",
       \   "\<C-h>": "do_delete",
       \    "\<BS>": "do_delete",
       \   "\<C-a>": "do_head",
       \   "\<C-f>": "do_char_forward",
+      \ "\<Right>": "do_char_forward",
       \   "\<C-b>": "do_char_backward",
+      \  "\<Left>": "do_char_backward",
       \   "\<C-k>": "do_kill_to_end",
       \   "\<C-u>": "do_kill_line",
       \   "\<C-r>": "do_special",
@@ -27,9 +28,10 @@ let s:key_table = {
       \   "\<C-n>": "do_excursion_with_next",
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
+      \   "\<C-c>": "do_excursion_with_change",
       \ }
-      " \        "C": "do_excursion_with_change",
       " \   "\<C-e>": "do_auto_excursion_off",
+      " \   "\<C-c>": "do_cancel",
 
 let s:keyboard = {}
 
@@ -46,8 +48,9 @@ function! s:keyboard.do_char_backward() "{{{1
 endfunction
 
 function! s:keyboard.do_delete() "{{{1
+  let after = self._after()
   call self.do_char_backward()
-  let self.data = self._before()
+  let self.data = self._before() . after
 endfunction
 
 function! s:keyboard.do_kill_to_end() "{{{1

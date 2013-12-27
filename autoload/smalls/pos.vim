@@ -1,10 +1,12 @@
-let s:pos = {}
+let s:is_visual = smalls#util#import('is_visual')
 
+let s:pos = {}
 function! s:pos.new(pos) "{{{1
   " a:pos => [line, col]
   let o = deepcopy(self)
-  let o.line = a:pos[0]
-  let o.col  = a:pos[1]
+  let [ o.line, o.col ] = a:pos
+  " a:pos[0]
+  " let o.col  = a:pos[1]
   return o
 endfunction
 
@@ -29,15 +31,19 @@ function! s:pos.is_ge_col(pos) "{{{1
   return ( self.col >= a:pos.col )
 endfunction
 
-function! s:pos.jump(...) "{{{1
-  if a:0
-    execute "normal! " . a:1
+function! s:pos.jump(mode) "{{{1
+  if s:is_visual(a:mode)
+    execute 'normal! ' . a:mode
   endif
   normal! m`
   call self.set()
 endfunction
 
 function! smalls#pos#new(pos) "{{{1
+  return s:pos.new(a:pos)
+endfunction
+
+function! smalls#pos#new_dest(pos) "{{{1
   return s:pos.new(a:pos)
 endfunction
 

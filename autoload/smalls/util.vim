@@ -62,6 +62,11 @@ function! s:pattern_for(word) "{{{1
         \ '\.', '\\v.\\V', 'g')
 endfunction
 
+function! s:is_visual(mode) "{{{1
+  return a:mode =~# s:vmode_pattern
+endfunction
+let s:vmode_pattern = "v\\|V\\|\<C-v>"
+
 function! smalls#util#use(list) "{{{1
   let u = {}
   for fname in a:list

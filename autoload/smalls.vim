@@ -1,7 +1,7 @@
 let s:plog            = smalls#util#import("plog")
 let s:getchar         = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
-let s:vmode_pattern   = "v\\|V\\|\<C-v>"
+let s:is_visual       = smalls#util#import('is_visual')
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -9,10 +9,6 @@ function! s:msg(msg) "{{{1
   echon 'smalls: '
   echohl Normal
   echon a:msg
-endfunction
-
-function! s:is_visual(mode)
-  return a:mode =~# s:vmode_pattern
 endfunction
 
 function! s:env_preserve(mode) "{{{1
@@ -33,7 +29,7 @@ endfunction
 
 function! s:options_set(options) "{{{1
   let R = {}
-  let curbuf = bufname('')
+  let curbuf = bufnr('')
   for [var, val] in items(a:options)
     let R[var] = getbufvar(curbuf, var)
     call setbufvar(curbuf, var, val)
@@ -44,7 +40,7 @@ endfunction
 
 function! s:options_restore(options) "{{{1
   for [var, val] in items(a:options)
-    call setbufvar(bufname(''), var, val)
+    call setbufvar(bufnr(''), var, val)
     unlet var val
   endfor
 endfunction
@@ -99,18 +95,29 @@ function! s:smalls.finish() "{{{1
     call self.hl.blink_cword(NOT_FOUND)
   endif
 
-  if self._is_visual() && ( NOT_FOUND || CANCELED )
-    normal! gv
+  if NOT_FOUND || CANCELED
+    call self.recover_visual()
   endif
-  if !empty(self.operation)
-    execute 'normal!' self.operation.normal
-
-    if self.operation.startinsert
-      startinsert
-    endif
-  endif
+  call self.do_operation()
   " to avoid user's input mess buffer, we consume keyinput before exit.
   while getchar(1) | call getchar() | endwhile
+endfunction
+
+function! s:smalls.recover_visual() "{{{1
+  if self._is_visual()
+    normal! gv
+  endif
+endfunction
+
+function! s:smalls.do_operation() "{{{1
+  if empty(self.operation)
+    return
+  endif
+
+  execute 'normal!' self.operation.normal
+  if self.operation.startinsert
+    startinsert
+  endif
 endfunction
 
 function! s:smalls.loop() "{{{1
@@ -208,9 +215,10 @@ endfunction
 function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.clear().shade()
 
-  let pos_new = self.get_jump_target(a:kbd.data)
-  if !empty(pos_new)
-    call self._jump_to_pos(pos_new)
+  let pos = self.get_jump_target(a:kbd.data)
+  if !empty(pos)
+    let dest = smalls#pos#new(pos)
+    call self._jump_to_pos(dest)
   endif
   throw 'SUCCESS'
 endfunction
@@ -226,26 +234,31 @@ endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
   call s:smalls._adjust_col(a:pos)
-  if self._is_visual()
-    call a:pos.jump(self.env.mode)
-  else
-    call a:pos.jump()
-  endif
+  call a:pos.jump(self.mode())
+  " if self._is_visual()
+    " call a:pos.jump(self.mode())
+  " else
+    " call a:pos.jump()
+  " endif
 endfunction
 
 function! s:smalls._is_visual() "{{{1
-  return s:is_visual(self.env.mode)
+  return s:is_visual(self.mode())
 endfunction
 
 function! s:smalls.pos() "{{{1
   return self.env.p
 endfunction
 
+function! s:smalls.mode() "{{{1
+  return self.env.mode
+endfunction
+
 function! s:smalls._need_adjust_col(pos)
-  if self.env.mode ==# 'n' | return 0 | endif
-  if self.env.mode ==# 'o' | return a:pos.is_gt(self.pos()) | endif
+  if self.mode() ==# 'n' | return 0 | endif
+  if self.mode() ==# 'o' | return a:pos.is_gt(self.pos()) | endif
   if self._is_visual()
-    return self.env.mode =~# 'v\|V'
+    return self.mode() =~# 'v\|V'
           \ ? a:pos.is_gt(self.pos())
           \ : a:pos.is_ge_col(self.pos())
   endif
@@ -256,7 +269,7 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self._need_adjust_col(a:pos)
     let a:pos.col += (wordlen - 1)
   endif
-  if self.env.mode ==# 'o'
+  if self.mode() ==# 'o'
         \ && g:smalls_operator_motion_inclusive
         \ && a:pos.is_gt(self.pos())
     let a:pos.col += 1
@@ -269,11 +282,11 @@ function! s:smalls._adjust_col(pos) "{{{1
   if self.adjust !=# 'till'
     return
   endif
-  if self.env.mode ==# 'v'
+  if self.mode() ==# 'v'
     let a:pos.col = a:pos.is_gt(self.pos())
           \ ? a:pos.col - wordlen
           \ : a:pos.col + wordlen
-  elseif self.env.mode ==# "\<C-v>"
+  elseif self.mode() ==# "\<C-v>"
     let a:pos.col = a:pos.is_ge_col(self.pos())
           \ ? a:pos.col - wordlen
           \ : a:pos.col + wordlen
@@ -291,8 +304,7 @@ endfunction
 function! s:smalls.get_jump_target(word) "{{{1
   if empty(a:word) | return [] | endif
   let poslist = self.finder.all(a:word)
-  let pos_new = smalls#jump#new(self.env, self.hl).get_pos(poslist)
-  return pos_new
+  return smalls#jump#new(self.env, self.hl).get_pos(poslist)
 endfunction
 "}}}
 

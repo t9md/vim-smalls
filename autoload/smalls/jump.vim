@@ -77,7 +77,7 @@ endfunction
 function! s:jump._get_pos(jumpk2pos) "{{{1
   let pos = values(a:jumpk2pos)
   if len(pos) ==# 1
-    return smalls#pos#new(pos[0])
+    return pos[0]
   endif
 
   let pos2jumpk = self.gen_pos2jumpk(a:jumpk2pos)
@@ -102,7 +102,7 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
 
   let dest = a:jumpk2pos[jumpk]
   return type(dest) == type([])
-        \ ? smalls#pos#new(dest)
+        \ ? dest
         \ : self._get_pos(dest)
 endfunction
 

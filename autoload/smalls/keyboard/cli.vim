@@ -90,7 +90,7 @@ function! s:keyboard.do_cancel() "{{{1
 endfunction
 
 function! s:keyboard.do_jump() "{{{1
-  call call(self.owner.do_jump, [self], self.owner)
+  call call(self.owner.do_jump, [self.data], self.owner)
 endfunction
 
 function! s:keyboard.do_excursion() "{{{1

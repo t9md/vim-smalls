@@ -56,8 +56,7 @@ function! s:keyboard._is_normal_key(c)
 endfunction
 
 function! s:keyboard.do_jump() "{{{1
-  call call(self.owner.do_jump,
-        \ [self.owner.keyboard_cli], self.owner)
+  call self.owner.keyboard_cli.call_action('do_jump')
 endfunction
 
 function! s:keyboard.do_cancel() "{{{1

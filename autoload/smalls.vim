@@ -135,7 +135,7 @@ function! s:smalls.loop() "{{{1
     try
       call kbd.read_input(timeout)
     catch /KEYBOARD_TIMEOUT/
-      call self.do_jump(kbd)
+      call self.call_action('do_jump')
     endtry
 
     if kbd.data_len() ==# 0
@@ -213,10 +213,13 @@ function! s:smalls.start(mode, adjust, ...)  "{{{1
   endtry
 endfunction
 
-function! s:smalls.do_jump(kbd) "{{{1
+function! s:smalls.do_jump(word) "{{{1
   call self.hl.clear().shade()
-
-  let dest = self.get_jump_target(a:kbd.data)
+  if empty(a:word)
+    return
+  endif
+  let poslist = self.finder.all(a:word)
+  let dest = smalls#jump#new(self.env, self.hl).get_pos(poslist)
   call self._jump_to_pos(dest)
 endfunction
 
@@ -283,13 +286,6 @@ function! s:smalls.statusline_update(mode)
   let g:smalls_current_mode = a:mode
   let &ro = &ro
   redraw
-endfunction
-
-
-function! s:smalls.get_jump_target(word) "{{{1
-  if empty(a:word) | return [] | endif
-  let poslist = self.finder.all(a:word)
-  return smalls#jump#new(self.env, self.hl).get_pos(poslist)
 endfunction
 "}}}
 

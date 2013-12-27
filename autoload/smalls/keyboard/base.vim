@@ -56,15 +56,18 @@ function! s:keyboard._is_normal_key(c) "{{{1
 endfunction
 
 function! s:keyboard.execute(c) "{{{1
-  let action = self._table[a:c]
-  if type(action) ==# type('')
-    if has_key(self, action)
-      call self[action]()
+  call self.call_action(self._table[a:c])
+endfunction
+
+function! s:keyboard.call_action(action) "{{{1
+  if type(a:action) ==# type('')
+    if has_key(self, a:action)
+      call self[a:action]()
     else
-      call self._action_missing(action)
+      call self._action_missing(a:action)
     endif
-  elseif type(action) ==# type({})
-    call call(action.func, action.args, action.self)
+  elseif type(a:action) ==# type({})
+    call call(a:action.func, a:action.args, a:action.self)
   endif
 endfunction
 

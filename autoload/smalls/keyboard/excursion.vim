@@ -184,9 +184,7 @@ function! s:keyboard.do_prev(...) "{{{1
 endfunction
 
 function! s:keyboard.do_set() "{{{1
-  let pos_new = smalls#pos#new(self.pos())
-  call self.owner._jump_to_pos(pos_new)
-  throw 'SUCCESS'
+  call self.owner._jump_to_pos(self.pos())
 endfunction
 
 function! s:keyboard.count() "{{{1

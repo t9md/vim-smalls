@@ -23,7 +23,7 @@ function! s:env_preserve(mode) "{{{1
         \ 'w$': line('w$'),
         \ 'l': l,
         \ 'c': c,
-        \ 'p': smalls#pos#new([ l, c ]),
+        \ 'p': [l, c],
         \ }
 endfunction
 
@@ -74,6 +74,7 @@ function! s:smalls.init(mode) "{{{1
   let self.operation    = {}
   let self.exception    = ''
   let self.env          = s:env_preserve(a:mode)
+  let self.env.p        = smalls#pos#new(self, self.env.p)
   let self.hl           = smalls#highlighter#new(self.env)
   let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
@@ -156,7 +157,7 @@ function! s:smalls.loop() "{{{1
       throw 'NOT_FOUND'
     elseif len(found) ==# 1 && need_auto_set
       let self._auto_set = 1
-      call kbd.do_jump_first()
+      call kbd.call_action('do_excursion_with_set')
     endif
     call self.hl.candidate(kbd.data, found[0])
   endwhile
@@ -215,31 +216,15 @@ endfunction
 function! s:smalls.do_jump(kbd) "{{{1
   call self.hl.clear().shade()
 
-  let pos = self.get_jump_target(a:kbd.data)
-  if !empty(pos)
-    let dest = smalls#pos#new(pos)
-    call self._jump_to_pos(dest)
-  endif
-  throw 'SUCCESS'
-endfunction
-
-function! s:smalls.do_jump_first(kbd) "{{{1
-  let found = self.finder.one(a:kbd.data)
-  if !empty(found)
-    let pos_new = smalls#pos#new(found[0])
-    call self._jump_to_pos(pos_new)
-  endif
-  throw 'SUCCESS'
+  let dest = self.get_jump_target(a:kbd.data)
+  call self._jump_to_pos(dest)
 endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
-  call s:smalls._adjust_col(a:pos)
-  call a:pos.jump(self.mode())
-  " if self._is_visual()
-    " call a:pos.jump(self.mode())
-  " else
-    " call a:pos.jump()
-  " endif
+  let dest = smalls#pos#new(self, a:pos)
+  call s:smalls._adjust_col(dest)
+  call dest.jump()
+  throw 'SUCCESS'
 endfunction
 
 function! s:smalls._is_visual() "{{{1

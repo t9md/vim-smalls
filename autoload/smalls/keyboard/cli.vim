@@ -5,7 +5,6 @@ let s:plog    = smalls#util#import("plog")
 let s:key_table = {
       \   "\<C-g>": "do_cancel",
       \   "\<Esc>": "do_cancel",
-      \    "\<CR>": "do_jump_first",
       \   "\<C-h>": "do_delete",
       \    "\<BS>": "do_delete",
       \   "\<C-a>": "do_head",
@@ -17,6 +16,7 @@ let s:key_table = {
       \   "\<C-u>": "do_kill_line",
       \   "\<C-r>": "do_special",
       \   "\<C-e>": "do_excursion",
+      \    "\<CR>": "do_excursion_with_set",
       \   "\<C-d>": "do_excursion_with_delete",
       \   "\<C-t>": "do_excursion_with_delete_till",
       \        "D": "do_excursion_with_delete_line",
@@ -91,10 +91,6 @@ endfunction
 
 function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self], self.owner)
-endfunction
-
-function! s:keyboard.do_jump_first() "{{{1
-  call call(self.owner.do_jump_first, [self], self.owner)
 endfunction
 
 function! s:keyboard.do_excursion() "{{{1

@@ -1,8 +1,16 @@
 " Base:
 let s:getchar         = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
+let s:special_key_table = smalls#util#import('special_key_table')()
 
 let s:keyboard = {}
+
+function! s:sort_val(v1, v2) "{{{1
+  return a:v1[1] == a:v2[1]
+        \ ? 0
+        \ : a:v1[1] > a:v2[1] ? 1 : - 1
+endfunction
+"}}}
 
 " Usage of bind()
 " call s:keyboard.bind(jump_trigger,
@@ -14,14 +22,22 @@ endfunction
 function! s:keyboard.read_input(...) "{{{1
   call self.show_prompt()
   " optional arg is timeout, empty or -1 mean 'no timeout'.
-  if empty(a:000) || a:1 ==# -1
-    call self.input(s:getchar())
+  let timeout = self._timeout_second()
+  if timeout !=# -1
+    call self.input(s:getchar_timeout(timeout))
   else
-    call self.input(s:getchar_timeout(a:1))
+    call self.input(s:getchar())
   end
 endfunction
 
-function! s:keyboard.init(owner, table, name, prompt_str) "{{{1
+function! s:keyboard._timeout_second() "{{{1
+  " should overwrite in subclass
+  return -1
+endfunction
+
+function! s:keyboard.init(owner, table, name, prompt_str, action_description) "{{{1
+  let self._help_width = {}
+  let self._action_description = a:action_description
   let self._table  = a:table
   let self._prompt_str = a:prompt_str
   let self.owner   = a:owner
@@ -98,26 +114,66 @@ function! s:keyboard._after() "{{{1
   return self.data[self.cursor : ]
 endfunction
 
-function! s:keyboard.echohl(msg, color) "{{{1
+function! s:keyboard.msg(msg, color) "{{{1
   silent execute 'echohl ' . a:color
   echon a:msg
   echohl Normal
 endfunction
 
+function! s:keyboard.echo(msg, color) "{{{1
+  silent execute 'echohl ' . a:color
+  echo a:msg
+  echohl Normal
+endfunction
+
+function! s:keyboard._help() "{{{1
+  let width_char   = 7
+  if empty(self._help_width)
+    let self._help_width.action  = 
+          \ max(map(deepcopy(self._action_description), 'len(v:key)'))
+    let self._help_width.desc  = 
+          \ max(map(deepcopy(self._action_description), 'len(v:val)'))
+  endif
+
+  let R = []
+  let format = printf("| %%-%ds | %%-%ds | %%-%ds |",
+        \ width_char, self._help_width.action, self._help_width.desc )
+  let sep = printf(format,
+        \ repeat('-', width_char),
+        \ repeat('-', self._help_width.action),
+        \ repeat('-', self._help_width.desc), 
+        \ )
+  call add(R, printf(format, 'Char', 'Action', 'Description'))
+  call add(R, sep)
+
+  for [char, action] in sort(items(self._table), function('s:sort_val'))
+    let description = get(self._action_description, action, '')
+    call add(R, printf(format,
+          \ get(s:special_key_table, char, char), action, description) )
+  endfor
+  return join(R, "\n")
+endfunction
+
+function! s:keyboard.do_help() "{{{1
+  call self.msg(self._help(), 'Type')
+  call self.msg("\nType key to continue: ", 'Normal')
+  call getchar()
+endfunction
+
 function! s:keyboard.show_prompt() "{{{1
-  call self.echohl(self._prompt_str, 'Identifier')
-  call self.echohl(self._before(),  'SmallsCli')
+  call self.msg(self._prompt_str, 'Identifier')
+  call self.msg(self._before(),  'SmallsCli')
   let after = self._after()
   if empty(after) | let after = ' ' | endif
-  call self.echohl(after[0],  'SmallsCliCursor')
-  call self.echohl(after[1:],  'SmallsCli')
+  call self.msg(after[0],  'SmallsCliCursor')
+  call self.msg(after[1:],  'SmallsCli')
   redraw
 endfunction
 
-function! smalls#keyboard#base#new(owner, table, name, prompt_str) "{{{1
+function! smalls#keyboard#base#new(owner, table, name, prompt_str, action_description) "{{{1
   call filter(a:table, 'v:val != "__UNMAP__"')
   let kbd = deepcopy(s:keyboard)
-  return kbd.init(a:owner, a:table, a:name, a:prompt_str)
+  return kbd.init(a:owner, a:table, a:name, a:prompt_str, a:action_description)
 endfunction "}}}
 
 " vim: foldmethod=marker

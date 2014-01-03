@@ -36,6 +36,7 @@ function! s:scan(str, pattern) "{{{1
   endwhile
   return ret
 endfunction
+"}}}
 
 let s:h = {}
 let s:h.ids = []
@@ -48,8 +49,9 @@ let s:priorities = {
       \ 'SmallsJumpTarget': 111,
       \ }
 
-function! s:h.new(env) "{{{1
-  let self.env = a:env
+function! s:h.new(conf, env) "{{{1
+  let self.conf = a:conf
+  let self.env  = a:env
   let self.ids = {}
   for color in keys(s:priorities)
     let self.ids[color] = []
@@ -57,8 +59,6 @@ function! s:h.new(env) "{{{1
   return self
 endfunction
 
-function! s:h.dump() "{{{1
-endfunction
 
 function! s:h.hl(color, pattern) "{{{1
   call add(self.ids[a:color],
@@ -80,7 +80,7 @@ function! s:h.clear(...) "{{{1
 endfunction
 
 function! s:h.shade() "{{{1
-  if ! g:smalls_shade
+  if ! self.conf.shade
     return self
   endif
   let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
@@ -184,8 +184,8 @@ function! s:h.current(word, pos) "{{{1
   return self
 endfunction
 
-function! smalls#highlighter#new(env) "{{{1
-  return s:h.new(a:env)
+function! smalls#highlighter#new(conf, env) "{{{1
+  return s:h.new(a:conf, a:env)
 endfunction
 
 function! smalls#highlighter#extend_priority(table) "{{{1

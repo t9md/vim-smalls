@@ -64,7 +64,7 @@ function! s:pos._adjust_col() "{{{1
     let self.col += (wordlen - 1)
   endif
 
-  if mode ==# 'o' && g:smalls_operator_motion_inclusive && self.is_gt(pos_org)
+  if mode ==# 'o' && self.owner.conf.operator_motion_inclusive && self.is_gt(pos_org)
     let self.pos.col += 1
     if self.col > len(getline(self.line)) " line end
       let self.line += 1

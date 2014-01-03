@@ -69,7 +69,7 @@ function! s:jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
 endfunction
 
 function! s:jump.get_pos(poslist)
-  let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(g:smalls_jump_keys, '\zs'))
+  let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(self.conf.jump_keys, '\zs'))
   return self._get_pos(jumpk2pos)
 endfunction
 
@@ -105,13 +105,14 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
         \ : self._get_pos(dest)
 endfunction
 
-function! s:jump.new(env, hl)
-  let self.env = a:env
-  let self.hl = a:hl
+function! s:jump.new(conf, env, hl)
+  let self.conf = a:conf
+  let self.env  = a:env
+  let self.hl   = a:hl
   return self
 endfunction
 
-function! smalls#jump#new(env, hl) "{{{1
-  return  s:jump.new(a:env, a:hl)
+function! smalls#jump#new(conf, env, hl) "{{{1
+  return  s:jump.new(a:conf, a:env, a:hl)
 endfunction "}}}
 " vim: foldmethod=marker

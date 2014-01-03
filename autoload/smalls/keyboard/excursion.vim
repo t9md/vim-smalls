@@ -33,10 +33,41 @@ let s:key_table = {
       \        "v": "do_select_v",
       \        "V": "do_select_V",
       \   "\<C-v>": "do_select_CTRL_V",
+      \    "\<F1>": "do_help",
       \ }
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
       " \   "\<C-v>": "do_select_CTRL_V_with_set",
+
+let s:action_description = {
+      \ "do_cancel": 'Cancel',
+      \ "do_back_cli": 'Back to CLI mode',
+      \ "do_jump": 'Start jump',
+      \ "do_set":  'Set cursor on current candidate and exit',
+      \ "do_next": 'next candidate',
+      \ "do_prev": 'prev candidate',
+      \ "do_first": 'move to first candidate',
+      \ "do_last":  'mode to last candidate',
+      \ "do_line_head": 'move to first candidate of this line',
+      \ "do_line_tail": 'move to last candidate of this line', 
+      \ "do_up": 'move to cnadidate of one line up',
+      \ "do_down": 'move to cnadidate of one line down',
+      \ "do_left": 'move to left candidate',
+      \ "do_right": 'move to right candidate',
+      \ "do_delete": 'delete area from original pos to target pos',
+      \ "do_delete_till": 'delete area from original pos to BEFORE tareget pos',
+      \ "do_delete_line": 'delete linewise',
+      \ "do_change": 'delete and start insert',
+      \ "do_yank": 'yank area',
+      \ "do_yank_line": 'yank linewise',
+      \ "do_select_v": 'select area with char-wise (v)',
+      \ "do_select_V": 'select area with line-wise (V)', 
+      \ "do_select_CTRL_V": 'select area with block-wise (C-v)', 
+      \ "do_help": 'show this help',
+      \ "do_select_v_with_set": 'select with v and exit',
+      \ "do_select_V_with_set": 'select with V and exit',
+      \ "do_select_CTRL_V_with_set": 'select with C-v and exit',
+      \ }
 
 let s:keyboard = {}
 
@@ -305,7 +336,8 @@ function! smalls#keyboard#excursion#replace_table(table) "{{{1
 endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
-  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, 'excursion', '[Excursion]')
+  let keyboard = smalls#keyboard#base#new(a:owner, 
+        \ s:key_table, 'excursion', 'exc >', s:action_description)
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)
 endfunction "}}}

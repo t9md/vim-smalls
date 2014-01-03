@@ -28,14 +28,46 @@ let s:key_table = {
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
       \   "\<C-c>": "do_excursion_with_change",
+      \        "E": "do_auto_excursion_toggle",
+      \    "\<F1>": "do_help",
       \ }
-      " \   "\<C-e>": "do_auto_excursion_off",
-      " \   "\<C-c>": "do_cancel",
+
+let s:action_description = {
+      \ "do_cancel": 'Cancel',
+      \ "do_delete": 'Delete cursor char',
+      \ "do_head":   'Set cursor to head',
+      \ "do_char_forward": 'Move cursor one char forward',
+      \ "do_char_backward": 'Move cursor one char backward',
+      \ "do_kill_to_end": 'Delete chars after cursor',
+      \ "do_kill_line": 'Delete all chars you input',
+      \ "do_special": 'Special handling [experimental]',
+      \ "do_excursion": 'Begin [excursion] mode',
+      \ "do_excursion_with_set": 'do_set of [excursion]',
+      \ "do_excursion_with_delete": 'do_delete of [excurion]',
+      \ "do_excursion_with_delete_till": 'do_delete_till of [excurion]',
+      \ "do_excursion_with_delete_line": 'do_delete_line of [excurion]',
+      \ "do_excursion_with_yank": 'do_delete_till of [excurion]',
+      \ "do_excursion_with_yank_line": 'do_yank_line of [excursion]',
+      \ "do_excursion_with_select_V":  'do_select_V(line) of [excursion]',
+      \ "do_excursion_with_select_CTRL_V": 'do_select_CTRL_V(block) of [excursion]',
+      \ "do_excursion_with_next": 'start excursion then do_next',
+      \ "do_excursion_with_prev":   'start excursion then do_prev',  
+      \ "do_excursion_with_change": 'start excursion then do_change',  
+      \ "do_auto_excursion_toggle": 'toggle auto_excursion',
+      \ "do_help": 'show this help',
+      \ }
 
 let s:keyboard = {}
 
 function! s:keyboard.do_head() "{{{1
   let self.cursor = 0
+endfunction
+
+function! s:keyboard._timeout_second() "{{{1
+  let conf = self.owner.conf
+  return ( conf.auto_jump &&
+        \ ( self.data_len() >= conf.auto_jump_min_input_length ))
+        \ ? conf.auto_jump_timeout : -1
 endfunction
 
 function! s:keyboard.do_char_forward() "{{{1
@@ -71,7 +103,7 @@ function! s:keyboard.do_end() "{{{1
 endfunction
 
 function! s:keyboard.do_special() "{{{1
-  call self.echohl("[S]", 'Statement')
+  call self.msg("[S]", 'Statement')
   call self.show_prompt()
   let c = s:getchar()
   if c == "\<C-w>"
@@ -96,8 +128,10 @@ function! s:keyboard.do_excursion() "{{{1
   call call(self.owner.do_excursion, [self], self.owner)
 endfunction
 
-function! s:keyboard.do_auto_excursion_off() "{{{1
-  let self.owner.auto_excursion = 0
+function! s:keyboard.do_auto_excursion_toggle() "{{{1
+  let self.owner.conf.auto_excursion = !self.owner.conf.auto_excursion
+  let msg = printf("[auto_excurtion: %d] ", self.owner.conf.auto_excursion)
+  call self.msg(msg, 'Statement')
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1
@@ -118,11 +152,12 @@ function! smalls#keyboard#cli#replace_table(table) "{{{1
 endfunction
 
 function! smalls#keyboard#cli#new(owner) "{{{1
-  let jump_trigger = get(g:, "smalls_jump_trigger", g:smalls_jump_keys[0])
+  let jump_trigger = get(g:, "smalls_jump_trigger", a:owner.conf.jump_keys[0])
   if ! has_key(s:key_table, jump_trigger)
     let s:key_table[jump_trigger] = 'do_jump'
   endif
-  let keyboard = smalls#keyboard#base#new(a:owner, s:key_table, 'cli', "> ")
+  let keyboard = smalls#keyboard#base#new(a:owner,
+        \ s:key_table, 'cli', "cli > ", s:action_description)
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
 

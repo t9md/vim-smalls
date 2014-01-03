@@ -1,5 +1,5 @@
-let s:getchar         = smalls#util#import("getchar")
-let s:getchar_timeout = smalls#util#import("getchar_timeout")
+" let s:getchar         = smalls#util#import("getchar")
+" let s:getchar_timeout = smalls#util#import("getchar_timeout")
 let s:is_visual       = smalls#util#import('is_visual')
 
 " Util:
@@ -52,9 +52,6 @@ function! s:highlight_preserve(hlname) "{{{1
         \  substitute(matchstr(HL_SAVE, 'xxx \zs.*'), "\n", ' ', 'g')
 endfunction
 
-function! s:hide_cursor() "{{{1
-  highlight Cursor ctermfg=NONE ctermbg=NONE guifg=NONE guibg=NONE
-endfunction
 "}}}
 
 let s:vim_options = {
@@ -65,8 +62,61 @@ let s:vim_options = {
       \ '&readonly':   0,
       \ '&spell':      0,
       \ }
+
+
 " Main:
 let s:smalls = {}
+function! s:smalls._config() "{{{1
+  let R = {
+        \ 'shade':                           g:smalls_shade,
+        \ 'jump_keys':                       g:smalls_jump_keys,
+        \ 'operator_motion_inclusive':       g:smalls_operator_motion_inclusive,
+        \ 'blink_on_notfound':               g:smalls_blink_on_notfound,
+        \ 'blink_on_auto_set':               g:smalls_blink_on_auto_set,
+        \ 'current_mode':                    g:smalls_current_mode,
+        \ 'auto_jump':                       g:smalls_auto_jump,
+        \ 'auto_jump_timeout':               g:smalls_auto_jump_timeout,
+        \ 'auto_jump_min_input_length':      g:smalls_auto_jump_min_input_length,
+        \ 'auto_excursion':                  g:smalls_auto_excursion,
+        \ 'auto_excursion_min_input_length': g:smalls_auto_excursion_min_input_length,
+        \ 'auto_set':                        g:smalls_auto_set,
+        \ 'auto_set_min_input_length':       g:smalls_auto_set_min_input_length,
+        \ }
+  return R
+endfunction
+
+function! s:smalls.start(mode, adjust, config)  "{{{1
+  try
+    let self.adjust = a:adjust
+    let options_saved = s:options_set(s:vim_options)
+    let self.conf = extend(self._config(), a:config, 'force')
+    call self.init(a:mode)
+    call self.cursor_hide()
+    call self.loop()
+
+  catch 'SUCCESS'
+  catch
+    let self.exception = v:exception
+  finally
+    call self.hl.clear()
+    call s:options_restore(options_saved)
+    call self.cursor_restore()
+    return self.finish()
+  endtry
+endfunction
+
+function! s:smalls.cursor_hide() "{{{1
+  let self.__hl_cursor_cmd = s:highlight_preserve('Cursor')
+  let self.__t_ve_save = &t_ve
+
+  highlight Cursor NONE
+  let &t_ve=''
+endfunction
+
+function! s:smalls.cursor_restore() "{{{1
+  execute self.__hl_cursor_cmd
+  let &t_ve = self.__t_ve_save
+endfunction
 
 function! s:smalls.init(mode) "{{{1
   let self._auto_set    = 0
@@ -74,7 +124,7 @@ function! s:smalls.init(mode) "{{{1
   let self.exception    = ''
   let self.env          = s:env_preserve(a:mode)
   let self.env.p        = smalls#pos#new(self, self.env.p)
-  let self.hl           = smalls#highlighter#new(self.env)
+  let self.hl           = smalls#highlighter#new(self.conf, self.env)
   let self.finder       = smalls#finder#new(self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
 endfunction
@@ -90,8 +140,8 @@ function! s:smalls.finish() "{{{1
     echo ''
   endif
 
-  if ( NOT_FOUND && g:smalls_blink_on_notfound ) ||
-        \ ( self._auto_set && g:smalls_blink_on_auto_set )
+  if ( NOT_FOUND && self.conf.blink_on_notfound ) ||
+        \ ( self._auto_set && self.conf.blink_on_auto_set )
     call self.hl.blink_cword(NOT_FOUND)
   endif
 
@@ -104,7 +154,7 @@ function! s:smalls.finish() "{{{1
 endfunction
 
 function! s:smalls.recover_visual() "{{{1
-  if self._is_visual()
+  if s:is_visual(self.mode())
     normal! gv
   endif
 endfunction
@@ -126,15 +176,10 @@ function! s:smalls.loop() "{{{1
 
   while 1
     call self.hl.shade().cursor()
-
-    let timeout = 
-          \ ( g:smalls_auto_jump &&
-          \ ( kbd.data_len() >= g:smalls_auto_jump_min_input_length ))
-          \ ? g:smalls_auto_jump_timeout : -1
     try
-      call kbd.read_input(timeout)
+      call kbd.read_input()
     catch /KEYBOARD_TIMEOUT/
-      call self.call_action('do_jump')
+      call kbd.call_action('do_jump')
     endtry
 
     if kbd.data_len() ==# 0
@@ -142,13 +187,13 @@ function! s:smalls.loop() "{{{1
       continue
     endif
 
-    if self.auto_excursion &&
-          \ kbd.data_len() >=# g:smalls_auto_excursion_min_input_length
+    if self.conf.auto_excursion &&
+          \ kbd.data_len() >=# self.conf.auto_excursion_min_input_length
       call self.do_excursion(kbd)
     endif
 
-    let need_auto_set = g:smalls_auto_set &&
-          \ kbd.data_len() >=# g:smalls_auto_set_min_input_length
+    let need_auto_set = self.conf.auto_set &&
+          \ kbd.data_len() >=# self.conf.auto_set_min_input_length
     let found = need_auto_set
           \ ? self.finder.all(kbd.data) : self.finder.one(kbd.data)
 
@@ -189,42 +234,15 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   endtry
 endfunction
 
-function! s:smalls.start(mode, adjust, ...)  "{{{1
-  try
-    let self.adjust = a:adjust
-    let self.auto_excursion = a:0 ? 1 : 0
-    let options_saved = s:options_set(s:vim_options)
-    let hl_cursor_cmd = s:highlight_preserve('Cursor')
-
-    call self.init(a:mode)
-    call s:hide_cursor()
-    call self.loop()
-
-  catch 'SUCCESS'
-  catch
-    let self.exception = v:exception
-
-  finally
-    call self.hl.clear()
-    execute hl_cursor_cmd
-    call s:options_restore(options_saved)
-    return self.finish()
-  endtry
-endfunction
-
 function! s:smalls.do_jump(word) "{{{1
   call self.hl.clear().shade()
   if empty(a:word)
     return
   endif
   let poslist = self.finder.all(a:word)
-  let dest = smalls#jump#new(self.env, self.hl).get_pos(poslist)
+  let dest    = smalls#jump#new(self.conf, self.env, self.hl).get_pos(poslist)
   call smalls#pos#new(self, dest).jump()
   throw 'SUCCESS'
-endfunction
-
-function! s:smalls._is_visual() "{{{1
-  return s:is_visual(self.mode())
 endfunction
 
 function! s:smalls.pos() "{{{1
@@ -248,4 +266,9 @@ function! smalls#start(...) "{{{1
   call call( s:smalls.start, a:000, s:smalls)
 endfunction "}}}
 "}}}
+if expand("%:p") !=# expand("<sfile>:p")
+  finish
+endif
+
+echo 'OK'
 " vim: foldmethod=marker

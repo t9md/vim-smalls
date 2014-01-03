@@ -399,9 +399,12 @@ TODO								*smalls-todo*
 * [ ] operator to combine smalls with text-object-function smalls within
   function and replace character which cli-C-R become useful.
 * [ ] introduce smalls throughout multiwindow(multiwin-mode?)
-* [ ] improve to support 'c' operator
-* [ ] add auto_set or landing variable which finish and set cursor when 
+* [x] improve to support 'c' operator
+* [x] add auto_set or landing variable which finish and set cursor when 
       specified char exceed while single landing candidate.
+* [ ] wildcard support
+      [x] add '.' meta char which match one char
+      [ ] add '*' wildcard which match multiple chars
 * [x] rewrite region selection
  - add select()  action to pos.vim and select actually then use '`<', '`>' to
    get area of highlight. so need rewriten highlighter.region() action.

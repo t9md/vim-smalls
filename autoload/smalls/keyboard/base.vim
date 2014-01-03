@@ -1,6 +1,6 @@
 " Base:
-let s:getchar         = smalls#util#import("getchar")
-let s:getchar_timeout = smalls#util#import("getchar_timeout")
+let s:getchar           = smalls#util#import("getchar")
+let s:getchar_timeout   = smalls#util#import("getchar_timeout")
 let s:special_key_table = smalls#util#import('special_key_table')()
 
 let s:keyboard = {}

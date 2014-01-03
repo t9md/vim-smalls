@@ -1,12 +1,12 @@
-" let s:getchar         = smalls#util#import("getchar")
-" let s:getchar_timeout = smalls#util#import("getchar_timeout")
 let s:is_visual       = smalls#util#import('is_visual')
 
 " Util:
 function! s:msg(msg) "{{{1
-  echohl Type
-  echon 'smalls: '
-  echohl Normal
+  if !empty(a:msg)
+    echohl Type
+    echon 'smalls: '
+    echohl Normal
+  endif
   echon a:msg
 endfunction
 
@@ -51,7 +51,6 @@ function! s:highlight_preserve(hlname) "{{{1
   return 'highlight ' . a:hlname . ' ' .
         \  substitute(matchstr(HL_SAVE, 'xxx \zs.*'), "\n", ' ', 'g')
 endfunction
-
 "}}}
 
 let s:vim_options = {
@@ -63,11 +62,11 @@ let s:vim_options = {
       \ '&spell':      0,
       \ }
 
-
 " Main:
 let s:smalls = {}
 function! s:smalls._config() "{{{1
   let R = {
+        \ 'adjust':                          '',
         \ 'shade':                           g:smalls_shade,
         \ 'helplang':                        g:smalls_helplang,
         \ 'jump_keys':                       g:smalls_jump_keys,
@@ -86,12 +85,11 @@ function! s:smalls._config() "{{{1
   return R
 endfunction
 
-function! s:smalls.start(mode, adjust, config)  "{{{1
+function! s:smalls.start(mode, config)  "{{{1
   try
-    let self.adjust = a:adjust
     let options_saved = s:options_set(s:vim_options)
-    let self.conf = extend(self._config(), a:config, 'force')
-    call self.init(a:mode)
+    let self.conf     = extend(self._config(), a:config, 'force')
+    call self.init(a:mode ==# 'v' ? visualmode() : a:mode)
     call self.cursor_hide()
     call self.loop()
 
@@ -102,7 +100,7 @@ function! s:smalls.start(mode, adjust, config)  "{{{1
     call self.hl.clear()
     call s:options_restore(options_saved)
     call self.cursor_restore()
-    return self.finish()
+    call self.finish()
   endtry
 endfunction
 
@@ -134,12 +132,7 @@ function! s:smalls.finish() "{{{1
   call self.statusline_update('')
   let NOT_FOUND = self.exception ==# 'NOT_FOUND'
   let CANCELED  = self.exception ==# 'CANCELED'
-
-  if !empty(self.exception)
-    call s:msg(self.exception)
-  else
-    echo ''
-  endif
+  call s:msg(self.exception)
 
   if ( NOT_FOUND && self.conf.blink_on_notfound ) ||
         \ ( self._auto_set && self.conf.blink_on_auto_set )

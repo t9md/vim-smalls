@@ -308,7 +308,7 @@ function! s:keyboard.do_delete() "{{{1
 endfunction
 
 function! s:keyboard.do_delete_till() "{{{1
-  let self.owner.adjust = 'till'
+  let self.owner.conf.adjust = 'till'
   call self.do_delete()
 endfunction
 

@@ -71,7 +71,7 @@ function! s:pos._adjust_col() "{{{1
       let self.col = 1
     endif
   endif
-  if self.owner.adjust !=# 'till'
+  if self.owner.conf.adjust !=# 'till'
     return
   endif
   if mode ==# 'v'

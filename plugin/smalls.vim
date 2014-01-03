@@ -80,21 +80,21 @@ augroup plugin-smalls
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('n', '', {})<CR>
-xnoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start(visualmode(), '')<CR>
-onoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('o', '', {})<CR>
+nnoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('n', {})<CR>
+xnoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('v', {})<CR>
+onoremap <silent> <Plug>(smalls)   :<C-u>call smalls#start('o', {})<CR>
 
 nnoremap <silent> <Plug>(smalls-excursion)
-      \ :<C-u>call smalls#start('n', '', { 'auto_excursion': 1 })<CR>
+      \ :<C-u>call smalls#start('n', { 'auto_excursion': 1 })<CR>
 xnoremap <silent> <Plug>(smalls-excursion)
-      \ :<C-u>call smalls#start(visualmode(), '', { 'auto_excursion': 1 })<CR>
+      \ :<C-u>call smalls#start('v', { 'auto_excursion': 1 })<CR>
 onoremap <silent> <Plug>(smalls-excursion)
-      \ :<C-u>call smalls#start('o', '', { 'auto_excursion': 1 })<CR>
+      \ :<C-u>call smalls#start('o', { 'auto_excursion': 1 })<CR>
 
-" nnoremap <silent> <Plug>(smalls-debug)    :<C-u>call smalls#debug(1)<CR>
 
 " Command:
-command! Smalls call smalls#start('n')
+command! Smalls call smalls#start('n', {})
+command! SmallsExcursion call smalls#start('n', { 'auto_excursion': 1 })
 
 " Finish:
 let &cpo = s:old_cpo

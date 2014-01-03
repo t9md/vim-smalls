@@ -1,9 +1,9 @@
 let s:pattern_for = smalls#util#import("pattern_for")
 
 let s:finder = {}
-
-function! s:finder.new(env) "{{{1
+function! s:finder.new(conf, env) "{{{1
   let self.env = a:env
+  let self.conf = a:conf
   return self
 endfunction
 
@@ -19,7 +19,8 @@ function! s:finder.all(word, ...) "{{{1
   try
     for start in [ 'cursor_NEXT_COL', 'cursor_TOW' ]
       call self[start]()
-      call self.search(s:pattern_for(a:word), RESULT, self.env['w$'], one)
+      call self.search(s:pattern_for(a:word, self.conf.wildchar),
+            \ RESULT, self.env['w$'], one)
       if one && !empty(RESULT) | return RESULT | endif
     endfor
   finally
@@ -77,8 +78,8 @@ function! s:finder.cursor_NEXT_COL() "{{{1
   call cursor(0, col('.') + 1)
 endfunction
 
-function! smalls#finder#new(env) "{{{1
-  return s:finder.new(a:env)
+function! smalls#finder#new(conf, env) "{{{1
+  return s:finder.new(a:conf, a:env)
 endfunction
 "}}}
 " vim: foldmethod=marker

@@ -52,10 +52,13 @@ function! s:getchar_timeout(timeout) "{{{1
   endwhile
 endfunction
 
-function! s:pattern_for(word) "{{{1
-  return substitute(
-        \ '\V\c' . escape(a:word, '\') . '\v' ,
-        \ '\.', '\\v.\\V', 'g')
+function! s:pattern_for(word, wildchar) "{{{1
+  let pat = '\V\c' . escape(a:word, '\') . '\v'
+  let pat = substitute(pat, '\.', '\\v.\\V', 'g')
+  if !empty(a:wildchar)
+    let pat = substitute(pat, a:wildchar , '\\v.*\\V', 'g')
+  endif
+  return pat
 endfunction
 
 function! s:is_visual(mode) "{{{1

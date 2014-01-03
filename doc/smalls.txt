@@ -371,7 +371,9 @@ TODO								*smalls-todo*
       specified char exceed while single landing candidate.
 * [ ] wildcard support
       [x] add '.' meta char which match one char
-      [ ] add '*' wildcard which match multiple chars
+      [x] add '*' wildcard which match multiple chars
+      [ ] consider word adsjustment at landing time wordlen is vary depend on
+	  match len of wildchar(but is wildchar useful? I don't think so).
 * [x] rewrite region selection
  - add select()  action to pos.vim and select actually then use '`<', '`>' to
    get area of highlight. so need rewriten highlighter.region() action.
@@ -410,6 +412,7 @@ What I did is simply combine search feature to original great plugin.
 CHANGELOG						   *smalls-changelog*
 2014-01-04:
 	[new-feature] descriptive help with <F1> on cli and excursion.
+	[new-feature] experimental wildchar now support.
 2013-11-29:
 	- count support. rename var refactoring.
 2013-11-25:

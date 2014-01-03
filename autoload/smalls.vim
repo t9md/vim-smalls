@@ -67,6 +67,7 @@ let s:smalls = {}
 function! s:smalls._config() "{{{1
   let R = {
         \ 'adjust':                          '',
+        \ 'wildchar':                        g:smalls_wildchar,
         \ 'shade':                           g:smalls_shade,
         \ 'helplang':                        g:smalls_helplang,
         \ 'jump_keys':                       g:smalls_jump_keys,
@@ -89,6 +90,7 @@ function! s:smalls.start(mode, config)  "{{{1
   try
     let options_saved = s:options_set(s:vim_options)
     let self.conf     = extend(self._config(), a:config, 'force')
+    let self.conf.wildchar = escape(self.conf.wildchar, '\')
     call self.init(a:mode ==# 'v' ? visualmode() : a:mode)
     call self.cursor_hide()
     call self.loop()
@@ -124,7 +126,7 @@ function! s:smalls.init(mode) "{{{1
   let self.env          = s:env_preserve(a:mode)
   let self.env.p        = smalls#pos#new(self, self.env.p)
   let self.hl           = smalls#highlighter#new(self.conf, self.env)
-  let self.finder       = smalls#finder#new(self.env)
+  let self.finder       = smalls#finder#new(self.conf, self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
 endfunction
 

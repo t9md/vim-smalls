@@ -12,6 +12,7 @@ set cpo&vim
 " Main:
 let s:options = {
       \ 'g:smalls_shade' : 1,
+      \ 'g:smalls_wildchar' : '',
       \ 'g:smalls_helplang' : &helplang,
       \ 'g:smalls_jump_keys': ';ABCDEFGHIJKLMNOPQRSTUVWXYZ',
       \ 'g:smalls_highlight': {},

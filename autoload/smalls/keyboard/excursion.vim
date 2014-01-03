@@ -40,7 +40,8 @@ let s:key_table = {
       " \        "V": "do_select_V_with_set",
       " \   "\<C-v>": "do_select_CTRL_V_with_set",
 
-let s:action_description = {
+let s:help = {}
+let s:help.en = {
       \ "do_cancel": 'Cancel',
       \ "do_back_cli": 'Back to CLI mode',
       \ "do_jump": 'Start jump',
@@ -68,6 +69,35 @@ let s:action_description = {
       \ "do_select_v_with_set": 'select with v and exit',
       \ "do_select_V_with_set": 'select with V and exit',
       \ "do_select_CTRL_V_with_set": 'select with C-v and exit',
+      \ }
+let s:help.ja = {
+      \ "do_cancel": 'キャンセル',
+      \ "do_back_cli": 'CLI モードに戻る',
+      \ "do_jump": 'ジャンプを開始',
+      \ "do_set":  '現在候補にカーソルをセット',
+      \ "do_next": '次の候補へ',
+      \ "do_prev": '前の候補へ',
+      \ "do_first": '最初の候補へ',
+      \ "do_last":  '最後の候補へ',
+      \ "do_line_head": '現在行の最初の候補へ',
+      \ "do_line_tail": '現在行の最後の候補へ', 
+      \ "do_up": '1行上の候補へ',
+      \ "do_down": '1行下の候補へ',
+      \ "do_left": '現在行の左の候補へ',
+      \ "do_right": '現在行の右の候補へ',
+      \ "do_delete": '元位置からターゲットまでの範囲を削除',
+      \ "do_delete_till": '元位置からターゲットの手前までの範囲を削除',
+      \ "do_delete_line": '行を削除(linewise)',
+      \ "do_change": '削除して、インサート開始',
+      \ "do_yank": '範囲をヤンク',
+      \ "do_yank_line": '行をヤンク(linewise)',
+      \ "do_select_v": '文字を選択 (v)',
+      \ "do_select_V": '行を選択 (V)', 
+      \ "do_select_CTRL_V": 'ブロックを選択 (C-v)', 
+      \ "do_help": 'ヘルプを表示',
+      \ "do_select_v_with_set": '選択(v) して終了',
+      \ "do_select_V_with_set": '選択(V) して終了',
+      \ "do_select_CTRL_V_with_set": '選択(C-v) して終了',
       \ }
 
 let s:keyboard = {}
@@ -338,7 +368,7 @@ endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, 
-        \ s:key_table, 'excursion', 'exc >', s:action_description)
+        \ s:key_table, 'excursion', 'exc >', s:help)
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)
 endfunction "}}}

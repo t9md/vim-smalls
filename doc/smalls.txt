@@ -297,47 +297,14 @@ CLI MODE KEYBIND~
 cli-keyboard is basic keyboard used to search and trigger jump screen.
 key map is following.
 
-	| Key            | Action                 |
-	| -------------- | ---------------------- |
-	| <C-c>          | do_cancel              |
-	| <Esc>          | do_cancel              |
-	| <CR>           | do_jump_first          |
-	| <C-h>          | do_delete              |
-	| <BS>           | do_delete              |
-	| <C-a>          | do_head                |
-	| <C-e>          | do_end                 |
-	| <C-f>          | do_char_forward        |
-	| <C-b>          | do_char_backward       |
-	| <C-k>          | do_kill_to_end         |
-	| <C-u>          | do_kill_line           |
-	| <C-y>          | do_yank                |
-	| <C-r>          | do_special        *1   |
-	| <Tab>          | do_excursion_with_next |
-	| <C-n>          | do_excursion_with_next |
-	| <S-Tab>        | do_excursion_with_prev |
-	| <C-p>          | do_excursion_with_prev |
-	| {jump_trigger} | do_jump                |
-	*1 very experimental action "don't ask what" for a meanwhile ;).
+Type <F1> for help
 	
 						    *smalls-excursion-keybind*
 EXCURSION MODE KEYBIND~
 EXCURSION mode enable you to jump between candidate with 'hjkl'.
 You can jump switch excursion mode from normal CLI mode
 
-        | Key      | Action       |
-        | -------- | ------------ |
-        | <C-c>    | do_cancel    |
-        | <Esc>    | do_back_cli  |
-        | n        | do_next      |
-        | <Tab>    | do_next      |
-        | p        | do_prev      |
-        | <S-Tab>  | do_prev      |
-        | k        | do_up        |
-        | j        | do_down      |
-        | h        | do_left      |
-        | l        | do_right     |
-        | ;        | do_set       |
-        | <CR>     | do_set       |
+Type <F1> for help
                                                 
 ==============================================================================
 CONFIGURATION EXAMPLE					      *smalls-example*

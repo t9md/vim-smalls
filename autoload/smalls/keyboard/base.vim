@@ -35,9 +35,8 @@ function! s:keyboard._timeout_second() "{{{1
   return -1
 endfunction
 
-function! s:keyboard.init(owner, table, name, prompt_str, action_description) "{{{1
-  let self._help_width = {}
-  let self._action_description = a:action_description
+function! s:keyboard.init(owner, table, name, prompt_str, help) "{{{1
+  let self._help = a:help
   let self._table  = a:table
   let self._prompt_str = a:prompt_str
   let self.owner   = a:owner
@@ -126,28 +125,36 @@ function! s:keyboard.echo(msg, color) "{{{1
   echohl Normal
 endfunction
 
-function! s:keyboard._help() "{{{1
+function! s:keyboard.help() "{{{1
+  let helplang = split(self.owner.conf.helplang, ',')
+  for lang in helplang + ['en']
+    if has_key(self._help, lang)
+      let desc_table = get(self._help, lang)
+      break
+    endif
+  endfor
+
   let width_char   = 7
-  if empty(self._help_width)
-    let self._help_width.action  = 
-          \ max(map(deepcopy(self._action_description), 'len(v:key)'))
-    let self._help_width.desc  = 
-          \ max(map(deepcopy(self._action_description), 'len(v:val)'))
-  endif
+  let width_action = max(map(deepcopy(self._table), 'len(v:val)'))
+  let width_desc   = max(map(deepcopy(desc_table), 'strdisplaywidth(v:val)'))
 
   let R = []
-  let format = printf("| %%-%ds | %%-%ds | %%-%ds |",
-        \ width_char, self._help_width.action, self._help_width.desc )
+  let format = printf("| %%-%dS | %%-%dS | %%-%dS |",
+        \ width_char, width_action, width_desc )
   let sep = printf(format,
         \ repeat('-', width_char),
-        \ repeat('-', self._help_width.action),
-        \ repeat('-', self._help_width.desc), 
+        \ repeat('-', width_action),
+        \ repeat('-', width_desc), 
         \ )
   call add(R, printf(format, 'Char', 'Action', 'Description'))
   call add(R, sep)
 
   for [char, action] in sort(items(self._table), function('s:sort_val'))
-    let description = get(self._action_description, action, '')
+    if action =~# '^do_excursion_with_'
+      let description = '[exc] do_' . matchstr(action, '^do_excursion_with_\zs.*$')
+    else
+      let description = get(desc_table, action, '')
+    endif
     call add(R, printf(format,
           \ get(s:special_key_table, char, char), action, description) )
   endfor
@@ -155,7 +162,7 @@ function! s:keyboard._help() "{{{1
 endfunction
 
 function! s:keyboard.do_help() "{{{1
-  call self.msg(self._help(), 'Type')
+  call self.msg(self.help(), 'Type')
   call self.msg("\nType key to continue: ", 'Normal')
   call getchar()
 endfunction
@@ -170,10 +177,10 @@ function! s:keyboard.show_prompt() "{{{1
   redraw
 endfunction
 
-function! smalls#keyboard#base#new(owner, table, name, prompt_str, action_description) "{{{1
+function! smalls#keyboard#base#new(owner, table, name, prompt_str, help) "{{{1
   call filter(a:table, 'v:val != "__UNMAP__"')
   let kbd = deepcopy(s:keyboard)
-  return kbd.init(a:owner, a:table, a:name, a:prompt_str, a:action_description)
+  return kbd.init(a:owner, a:table, a:name, a:prompt_str, a:help)
 endfunction "}}}
 
 " vim: foldmethod=marker

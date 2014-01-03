@@ -33,55 +33,46 @@ let s:key_table = {
       \    "\<F1>": "do_help",
       \ }
 
-" let s:action_description = {}
-let s:action_description = {
-      \ "do_cancel": 'Cancel',
-      \ "do_delete": 'Delete cursor char',
-      \ "do_head":   'Set cursor to head',
-      \ "do_char_forward": 'Move cursor one char forward',
-      \ "do_char_backward": 'Move cursor one char backward',
-      \ "do_kill_to_end": 'Delete chars after cursor',
-      \ "do_kill_line": 'Delete all chars you input',
-      \ "do_special": 'Special handling [experimental]',
-      \ "do_excursion": 'Begin [excursion] mode',
-      \ "do_excursion_with_set": 'do_set of [excursion]',
-      \ "do_excursion_with_delete": 'do_delete of [excurion]',
-      \ "do_excursion_with_delete_till": 'do_delete_till of [excurion]',
-      \ "do_excursion_with_delete_line": 'do_delete_line of [excurion]',
-      \ "do_excursion_with_yank": 'do_delete_till of [excurion]',
-      \ "do_excursion_with_yank_line": 'do_yank_line of [excursion]',
-      \ "do_excursion_with_select_V":  'do_select_V(line) of [excursion]',
-      \ "do_excursion_with_select_CTRL_V": 'do_select_CTRL_V(block) of [excursion]',
-      \ "do_excursion_with_next": 'start excursion then do_next',
-      \ "do_excursion_with_prev":   'start excursion then do_prev',  
-      \ "do_excursion_with_change": 'start excursion then do_change',  
-      \ "do_auto_excursion_toggle": 'toggle auto_excursion',
-      \ "do_help": 'show this help',
+let s:help = {}
+let s:help.en = {
+      \ "do_cancel":                       'Cancel',
+      \ "do_delete":                       'delete char before cursor',
+      \ "do_head":                         'Set cursor to head',
+      \ "do_char_forward":                 'Move cursor one char forward',
+      \ "do_char_backward":                'Move cursor one char backward',
+      \ "do_kill_to_end":                  'Delete chars after cursor',
+      \ "do_kill_line":                    'Delete all chars you input',
+      \ "do_special":                      'Special handling [experimental]',
+      \ "do_excursion":                    'Begin [exc] mode',
+      \ "do_excursion_with_set":           '[exc] do_set',
+      \ "do_excursion_with_delete":        '[exc]do_delete',
+      \ "do_excursion_with_delete_till":   '[exc] do_delete_till',
+      \ "do_excursion_with_delete_line":   '[exc] do_delete_line',
+      \ "do_excursion_with_yank":          '[exc] do_yank',
+      \ "do_excursion_with_yank_line":     '[exc] do_yank_line',
+      \ "do_excursion_with_select_V":      '[exc] do_select_V(line)',
+      \ "do_excursion_with_select_CTRL_V": '[exc]do_select_CTRL_V(block)',
+      \ "do_excursion_with_next":          '[exc] do_next',
+      \ "do_excursion_with_prev":          '[exc] do_prev',
+      \ "do_excursion_with_change":        '[exc] do_change',
+      \ "do_auto_excursion_toggle":        'toggle auto_excursion',
+      \ "do_jump":                         'Start jump',
+      \ "do_help":                         'show this help',
       \ }
-" let s:action_description.ja = {
-      " \ "do_cancel": 'キャンセル',
-      " \ "do_delete": 'カーソル
-      " \ "do_head":   'Set cursor to head',
-      " \ "do_char_forward": 'Move cursor one char forward',
-      " \ "do_char_backward": 'Move cursor one char backward',
-      " \ "do_kill_to_end": 'Delete chars after cursor',
-      " \ "do_kill_line": 'Delete all chars you input',
-      " \ "do_special": 'Special handling [experimental]',
-      " \ "do_excursion": 'Begin [excursion] mode',
-      " \ "do_excursion_with_set": 'do_set of [excursion]',
-      " \ "do_excursion_with_delete": 'do_delete of [excurion]',
-      " \ "do_excursion_with_delete_till": 'do_delete_till of [excurion]',
-      " \ "do_excursion_with_delete_line": 'do_delete_line of [excurion]',
-      " \ "do_excursion_with_yank": 'do_delete_till of [excurion]',
-      " \ "do_excursion_with_yank_line": 'do_yank_line of [excursion]',
-      " \ "do_excursion_with_select_V":  'do_select_V(line) of [excursion]',
-      " \ "do_excursion_with_select_CTRL_V": 'do_select_CTRL_V(block) of [excursion]',
-      " \ "do_excursion_with_next": 'start excursion then do_next',
-      " \ "do_excursion_with_prev":   'start excursion then do_prev',  
-      " \ "do_excursion_with_change": 'start excursion then do_change',  
-      " \ "do_auto_excursion_toggle": 'toggle auto_excursion',
-      " \ "do_help": 'show this help',
-      " \ }
+let s:help.ja = {
+      \ "do_cancel":                       'キャンセル',
+      \ "do_delete":                       'カーソルの前の文字を消す',
+      \ "do_head":                         'カーソルを先頭に',
+      \ "do_char_forward":                 'カーソルを1文字進める',
+      \ "do_char_backward":                'カーソルを1文字戻す',
+      \ "do_kill_to_end":                  'カーソルから行末までを削除',
+      \ "do_kill_line":                    '全文字削除',
+      \ "do_special":                      '特別な事をする [試作段階]',
+      \ "do_excursion":                    '[exc] モードを開始',
+      \ "do_auto_excursion_toggle":        'auto_excursion をトグル',
+      \ "do_jump":                         'ジャンプを開始',
+      \ "do_help":                         'このヘルプを表示',
+      \ }
 
 let s:keyboard = {}
 
@@ -183,7 +174,7 @@ function! smalls#keyboard#cli#new(owner) "{{{1
     let s:key_table[jump_trigger] = 'do_jump'
   endif
   let keyboard = smalls#keyboard#base#new(a:owner,
-        \ s:key_table, 'cli', "cli > ", s:action_description)
+        \ s:key_table, 'cli', "cli > ", s:help)
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
 

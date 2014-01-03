@@ -438,6 +438,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2014-01-04:
+	[new-feature] descriptive help with <F1> on cli and excursion.
 2013-11-29:
 	- count support. rename var refactoring.
 2013-11-25:

@@ -1,5 +1,6 @@
 " Excurstion:
-let s:getchar = smalls#util#import("getchar")
+let s:getchar   = smalls#util#import("getchar")
+let s:is_visual = smalls#util#import('is_visual')
 
 let s:key_table = {
       \   "\<C-g>": "do_cancel",
@@ -302,7 +303,7 @@ endfunction
 
 function! s:keyboard._do_normal(key, wise, ...)
   let force_wise = !empty(a:000)
-  if force_wise || !self.owner._is_visual()
+  if force_wise || ! s:is_visual(self.owner.mode())
     call self._do_select(a:wise)
   endif
   let self.owner.operation = {

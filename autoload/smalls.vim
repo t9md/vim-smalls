@@ -69,6 +69,7 @@ let s:smalls = {}
 function! s:smalls._config() "{{{1
   let R = {
         \ 'shade':                           g:smalls_shade,
+        \ 'helplang':                        g:smalls_helplang,
         \ 'jump_keys':                       g:smalls_jump_keys,
         \ 'operator_motion_inclusive':       g:smalls_operator_motion_inclusive,
         \ 'blink_on_notfound':               g:smalls_blink_on_notfound,

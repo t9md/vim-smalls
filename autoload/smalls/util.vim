@@ -121,8 +121,9 @@ function! s:function_key() "{{{1
 endfunction
 
 function! s:combination_key() "{{{1
-  let shift_aware     = [ '<M-%s>', '<A-%s>', '<D-%s>' ]
-  let not_shift_aware = [ '<S-%s>', '<C-%s>' ]
+  let modifire_meta    = [ '<M-%s>', '<A-%s>', '<D-%s>' ]
+  let modifire_control = [ '<C-%s>' ]
+  let modifire_shift   = [ '<S-%s>' ]
   let R = []
 
   let chars = map(range(33, 126), 'nr2char(v:val)')
@@ -132,10 +133,13 @@ function! s:combination_key() "{{{1
   let other = filter(copy(chars), "v:val =~# '\\A'")
 
   for char in chars
-    let R += map(copy(shift_aware), 'printf(v:val, char)')
+    let R += map(copy(modifire_meta), 'printf(v:val, char)')
   endfor
   for char in lower + other
-    let R += map(copy(not_shift_aware), 'printf(v:val, char)')
+    let R += map(copy(modifire_control), 'printf(v:val, char)')
+  endfor
+  for char in other
+    let R += map(copy(modifire_shift), 'printf(v:val, char)')
   endfor
   return R
 endfunction

@@ -1,4 +1,5 @@
 " Cli:
+" scriptencoding utf-8
 let s:getchar = smalls#util#import("getchar")
 
 let s:key_table = {
@@ -32,6 +33,7 @@ let s:key_table = {
       \    "\<F1>": "do_help",
       \ }
 
+" let s:action_description = {}
 let s:action_description = {
       \ "do_cancel": 'Cancel',
       \ "do_delete": 'Delete cursor char',
@@ -56,6 +58,30 @@ let s:action_description = {
       \ "do_auto_excursion_toggle": 'toggle auto_excursion',
       \ "do_help": 'show this help',
       \ }
+" let s:action_description.ja = {
+      " \ "do_cancel": 'キャンセル',
+      " \ "do_delete": 'カーソル
+      " \ "do_head":   'Set cursor to head',
+      " \ "do_char_forward": 'Move cursor one char forward',
+      " \ "do_char_backward": 'Move cursor one char backward',
+      " \ "do_kill_to_end": 'Delete chars after cursor',
+      " \ "do_kill_line": 'Delete all chars you input',
+      " \ "do_special": 'Special handling [experimental]',
+      " \ "do_excursion": 'Begin [excursion] mode',
+      " \ "do_excursion_with_set": 'do_set of [excursion]',
+      " \ "do_excursion_with_delete": 'do_delete of [excurion]',
+      " \ "do_excursion_with_delete_till": 'do_delete_till of [excurion]',
+      " \ "do_excursion_with_delete_line": 'do_delete_line of [excurion]',
+      " \ "do_excursion_with_yank": 'do_delete_till of [excurion]',
+      " \ "do_excursion_with_yank_line": 'do_yank_line of [excursion]',
+      " \ "do_excursion_with_select_V":  'do_select_V(line) of [excursion]',
+      " \ "do_excursion_with_select_CTRL_V": 'do_select_CTRL_V(block) of [excursion]',
+      " \ "do_excursion_with_next": 'start excursion then do_next',
+      " \ "do_excursion_with_prev":   'start excursion then do_prev',  
+      " \ "do_excursion_with_change": 'start excursion then do_change',  
+      " \ "do_auto_excursion_toggle": 'toggle auto_excursion',
+      " \ "do_help": 'show this help',
+      " \ }
 
 let s:keyboard = {}
 

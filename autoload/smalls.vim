@@ -225,8 +225,11 @@ endfunction
 
 function! s:smalls._jump_to_pos(pos) "{{{1
   let dest = smalls#pos#new(self, a:pos)
-  call s:smalls._adjust_col(dest)
   call dest.jump()
+  " call dest._adjust_col().jump()
+  " call dest.jump()
+  " call s:smalls._adjust_col(dest)
+  " call dest.jump()
   throw 'SUCCESS'
 endfunction
 

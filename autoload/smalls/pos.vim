@@ -31,6 +31,8 @@ function! s:pos.is_ge_col(pos) "{{{1
 endfunction
 
 function! s:pos.jump() "{{{1
+  call self._adjust_col()
+
   let mode = self.owner.mode()
   if s:is_visual(mode)
     execute 'normal! ' . mode
@@ -38,6 +40,53 @@ function! s:pos.jump() "{{{1
   normal! m`
   call self.set()
 endfunction
+
+function! s:pos._need_adjust_col() "{{{1
+  let mode    = self.owner.mode()
+  let pos_org = self.owner.pos()
+
+  if mode ==# 'n' | return 0                   | endif
+  if mode ==# 'o' | return self.is_gt(pos_org) | endif
+
+  if s:is_visual(mode)
+    return mode =~# 'v\|V'
+          \ ? self.is_gt(pos_org)
+          \ : self.is_ge_col(pos_org)
+  endif
+endfunction
+
+
+function! s:pos._adjust_col() "{{{1
+  let mode    = self.owner.mode()
+  let pos_org = self.owner.pos()
+  let wordlen = self.owner.keyboard_cli.data_len()
+  if self._need_adjust_col()
+    let self.col += (wordlen - 1)
+  endif
+
+  if mode ==# 'o' && g:smalls_operator_motion_inclusive && self.is_gt(pos_org)
+    let self.pos.col += 1
+    if self.col > len(getline(self.line)) " line end
+      let self.line += 1
+      let self.col = 1
+    endif
+  endif
+  if self.owner.adjust !=# 'till'
+    return
+  endif
+  if mode ==# 'v'
+    let self.col = self.is_gt(pos_org)
+          \ ? self.col - wordlen
+          \ : self.col + wordlen
+  elseif mode ==# "\<C-v>"
+    let self.col = self.is_ge_col(pos_org)
+          \ ? self.col - wordlen
+          \ : self.col + wordlen
+  endif
+  return self
+endfunction
+
+
 
 function! smalls#pos#new(owner, pos) "{{{1
   return s:pos.new(a:owner, a:pos)

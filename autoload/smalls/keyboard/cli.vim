@@ -1,6 +1,5 @@
 " Cli:
 let s:getchar = smalls#util#import("getchar")
-let s:plog    = smalls#util#import("plog")
 
 let s:key_table = {
       \   "\<C-g>": "do_cancel",

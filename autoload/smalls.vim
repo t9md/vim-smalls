@@ -1,4 +1,3 @@
-let s:plog            = smalls#util#import("plog")
 let s:getchar         = smalls#util#import("getchar")
 let s:getchar_timeout = smalls#util#import("getchar_timeout")
 let s:is_visual       = smalls#util#import('is_visual')
@@ -220,16 +219,7 @@ function! s:smalls.do_jump(word) "{{{1
   endif
   let poslist = self.finder.all(a:word)
   let dest = smalls#jump#new(self.env, self.hl).get_pos(poslist)
-  call self._jump_to_pos(dest)
-endfunction
-
-function! s:smalls._jump_to_pos(pos) "{{{1
-  let dest = smalls#pos#new(self, a:pos)
-  call dest.jump()
-  " call dest._adjust_col().jump()
-  " call dest.jump()
-  " call s:smalls._adjust_col(dest)
-  " call dest.jump()
+  call smalls#pos#new(self, dest).jump()
   throw 'SUCCESS'
 endfunction
 
@@ -245,46 +235,7 @@ function! s:smalls.mode() "{{{1
   return self.env.mode
 endfunction
 
-function! s:smalls._need_adjust_col(pos)
-  if self.mode() ==# 'n' | return 0 | endif
-  if self.mode() ==# 'o' | return a:pos.is_gt(self.pos()) | endif
-  if self._is_visual()
-    return self.mode() =~# 'v\|V'
-          \ ? a:pos.is_gt(self.pos())
-          \ : a:pos.is_ge_col(self.pos())
-  endif
-endfunction
-
-function! s:smalls._adjust_col(pos) "{{{1
-  let wordlen = self.keyboard_cli.data_len()
-  if self._need_adjust_col(a:pos)
-    let a:pos.col += (wordlen - 1)
-  endif
-  if self.mode() ==# 'o'
-        \ && g:smalls_operator_motion_inclusive
-        \ && a:pos.is_gt(self.pos())
-    let a:pos.col += 1
-    if a:pos.col > len(getline(a:pos.line)) " line end
-      let a:pos.line += 1
-      let a:pos.col = 1
-    endif
-  endif
-
-  if self.adjust !=# 'till'
-    return
-  endif
-  if self.mode() ==# 'v'
-    let a:pos.col = a:pos.is_gt(self.pos())
-          \ ? a:pos.col - wordlen
-          \ : a:pos.col + wordlen
-  elseif self.mode() ==# "\<C-v>"
-    let a:pos.col = a:pos.is_ge_col(self.pos())
-          \ ? a:pos.col - wordlen
-          \ : a:pos.col + wordlen
-  endif
-endfunction
-
-function! s:smalls.statusline_update(mode)
+function! s:smalls.statusline_update(mode) "{{{1
   " force to update statusline by meaningless option update ':help statusline'
   let g:smalls_current_mode = a:mode
   let &ro = &ro
@@ -296,8 +247,5 @@ endfunction
 function! smalls#start(...) "{{{1
   call call( s:smalls.start, a:000, s:smalls)
 endfunction "}}}
-
-function! smalls#debug() "{{{
-endfunction
 "}}}
 " vim: foldmethod=marker

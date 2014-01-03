@@ -1,6 +1,5 @@
 " Excurstion:
 let s:getchar = smalls#util#import("getchar")
-let s:plog    = smalls#util#import("plog")
 
 let s:key_table = {
       \   "\<C-g>": "do_cancel",
@@ -183,7 +182,8 @@ function! s:keyboard.do_prev(...) "{{{1
 endfunction
 
 function! s:keyboard.do_set() "{{{1
-  call self.owner._jump_to_pos(self.pos())
+  call smalls#pos#new(self.owner, self.pos()).jump()
+  throw 'SUCCESS'
 endfunction
 
 function! s:keyboard.count() "{{{1

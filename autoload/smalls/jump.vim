@@ -1,6 +1,5 @@
 let s:ensure  = smalls#util#import("ensure")
 let s:getchar = smalls#util#import("getchar")
-let s:plog    = smalls#util#import("plog")
 
 let s:jump = {}
 function! s:jump.setlines(lines) "{{{1

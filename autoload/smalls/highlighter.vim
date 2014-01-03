@@ -1,4 +1,3 @@
-let s:plog        = smalls#util#import("plog")
 let s:pattern_for = smalls#util#import("pattern_for")
 
 " function! s:intrpl(string, vars) "{{{1

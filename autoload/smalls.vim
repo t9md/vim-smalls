@@ -14,7 +14,7 @@ function! s:env_preserve(mode) "{{{1
   " to get precise start point in visual mode.
   if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
   let [ l, c ] = [ line('.'), col('.') ]
-  if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
+  " if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
 
   return {
         \ 'mode_org': a:mode,
@@ -126,7 +126,7 @@ function! s:smalls.init(mode) "{{{1
   let self.exception    = ''
   let self.env          = s:env_preserve(a:mode)
   let self.env.p        = smalls#pos#new(self, self.env.p)
-  let self.hl           = smalls#highlighter#new(self.conf, self.env)
+  let self.hl           = smalls#highlighter#new(self, self.conf, self.env)
   let self.finder       = smalls#finder#new(self.conf, self.env)
   let self.keyboard_cli = smalls#keyboard#cli#new(self)
 endfunction

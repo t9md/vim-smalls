@@ -32,15 +32,16 @@ let s:priorities = {
       \ 'SmallsCandidate':  103,
       \ 'SmallsRegion':     104,
       \ 'SmallsCurrent':    107,
-      \ 'SmallsPos':        100,
+      \ 'SmallsPos':        106,
       \ 'SmallsJumpTarget': 111,
       \ }
       " \ 'SmallsPos':        106,
 
-function! s:h.new(conf, env) "{{{1
-  let self.conf = a:conf
-  let self.env  = a:env
-  let self.ids = {}
+function! s:h.new(owner, conf, env) "{{{1
+  let self.owner = a:owner
+  let self.conf  = a:conf
+  let self.env   = a:env
+  let self.ids   = {}
   for color in keys(s:priorities)
     let self.ids[color] = []
   endfor
@@ -71,8 +72,10 @@ function! s:h.shade() "{{{1
   if ! self.conf.shade
     return self
   endif
-  call self.hl("SmallsShade", '\v'.
-        \ s:intrpl('%{w0}l\_.*%{w$}l', self.env))
+  let pattern = printf('\v%%%dl\_.*%%%dl', self.env['w0'], self.env['w$'])
+  call self.hl("SmallsShade", pattern)
+  " call self.hl("SmallsShade", '\v'.
+        " \ s:intrpl('%{w0}l\_.*%{w$}l', self.env))
   return self
 endfunction
 
@@ -87,7 +90,7 @@ endfunction
 
 function! s:h.blink_cword(NOT_FOUND) "{{{1
   " used to notify curor position to user when exit smalls
-  let color = a:NOT_FOUND ? 'SmallsPos' : 'SmallsCurrent'
+  let color      = a:NOT_FOUND ? 'SmallsPos' : 'SmallsCurrent'
   let sleep_time = '80m'
   for i in range(2)
     call self.cword(color) | redraw | exe 'sleep' sleep_time
@@ -95,110 +98,82 @@ function! s:h.blink_cword(NOT_FOUND) "{{{1
   endfor
 endfunction
 
+function! s:h.offset_for(word, line) "{{{1
+  return self.is_wild(a:word)
+        \ ? len(matchstr(getline(a:line), s:pattern_for(a:word, self.conf.wildchar)))
+        \ : len(a:word)
+endfunction
+"}}}
+
 function! s:h._region(word, pos) "{{{1
-  let pos_org = self.env.p
-  let pos_new = smalls#pos#new({}, a:pos)
-  let wordlen = len(a:word)
+  let S = deepcopy(self.env.p)
+  let E = smalls#pos#new(self.owner, a:pos)
+  let p =  S.analyze(S, E)
+  let offset = self.offset_for(a:word, E.line)
+  call E.adjust(p['CASE'])
 
-  let POSNEW_IS_GT     = pos_new.is_gt(pos_org)
-  let POSNEW_IS_GE_COL = pos_new.is_ge_col(pos_org)
-
-  " possibly move backward, so only adjust forward direction carefully.
   if self.env.mode =~# 'v\|o'
-      let [ LINEs, COLs, LINEe, COLe ] = POSNEW_IS_GT
-            \ ? [ pos_org.line, pos_org.col - 1, pos_new.line, pos_new.col + wordlen + 1 ]
-            \ : [ pos_new.line, pos_new.col - 1, pos_org.line, pos_org.col + 2       ]
-    let pat = printf('\v\c%%%dl%%>%dc\_.*%%%dl%%<%dc', LINEs, COLs, LINEe, COLe)
-
+    " if p.U.line == p.D.col
+    let pat = printf('\v\c%%%dl%%>%dc\_.*%%%dl%%<%dc',
+          \ p.U.line, p.U.col - 1, p.D.line, p.D.col + 1)
   elseif self.env.mode =~# 'V'
-    let [ LINEs, LINEe ] = POSNEW_IS_GT
-          \ ? [pos_org.line, pos_new.line ]
-          \ : [pos_new.line, pos_org.line ]
-    let pat = printf('\v\c%%%dl\_.*%%%dl', LINEs, LINEe)
-
+    let pat = printf('\v\c%%%dl\_.*%%%dl', p.U.line, p.D.line)
   elseif self.env.mode =~# "\<C-v>"
-    " let pos_new = smalls#pos#new({}, a:pos)
-    " if self.is_wild(a:word)
-      " let offset = len(matchstr(getline(new_pos.line),
-            " \ s:pattern_for(a:word, self.conf.wildchar)))
-      " let new_pos.col = new_pos.col + offset
-    " else
-      " let new_pos.col = new_pos.col + len(a:word)
-    " endif
-
-    let FWD_R = 1 " FORWARD  RIGHT
-    let BWD_L = 2 " BACKWARD LEFT
-    let FWD_L = 3 " FORWARD  LEFT
-    let BWD_R = 4 " BACKWARD RIGHT
-
-    "     [ FWD_R ]    [ BWD_L ]    [ FWD_L ]    [ BWD_R ]
-    "    S---------+  E---------+  +---------S  +---------E
-    "    |         |  |         |  |         |  |         |
-    "    +---------E  +---------S  E---------+  S---------+
-    let S = self.env.p
-    let E = smalls#pos#new({}, a:pos)
-    let E_L_ge = E.is_ge_line(S)
-    let E_C_ge = E.is_ge_col(S)
-
-    let CASE =
-          \ (  E_L_ge &&  E_C_ge ) ? FWD_R :
-          \ ( !E_L_ge && !E_C_ge ) ? BWD_L :
-          \ (  E_L_ge && !E_C_ge ) ? FWD_L :
-          \ ( !E_L_ge &&  E_C_ge ) ? BWD_R :
-          \ NEVER_HAPPEN
-
-    let [ U, D, L, R ] =
-          \ CASE ==#  FWD_R  ?  [ S, E, S, E ] :
-          \ CASE ==#  BWD_L  ?  [ E, S, E, S ] :
-          \ CASE ==#  FWD_L  ?  [ S, E, E, S ] :
-          \ CASE ==#  BWD_R  ?  [ E, S, S, E ] :
-          \ NEVER_HAPPEN
-
-    if CASE ==# FWD_R || CASE ==# BWD_R
-      let R.col += wordlen - 1
-    endif
-
-    let [ LINEs, COLs, LINEe, COLe ] = [ U.line, L.col, D.line, R.col ]
-
-          " \ CASE is FWD_R ? [ pU.line, pL.col, pD.line, pR.col + wordlen - 1 ] :
-          " \ CASE is BWD_L ? [ pU.line, pL.col, pD.line, pR.col ] :
-          " \ CASE is FWD_L ? [ pU.line, pL.col, pD.line, pR.col ] :
-          " \ CASE is BWD_R ? [ pU.line, pL.col, pD.line, pR.col + wordlen - 1 ] :
-    let fmt = '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc'
-    let pat = printf( fmt , LINEs - 1, COLs - 1, LINEe + 1, COLe + 1)
-
-    " let CASE =
-          " \ (  POSNEW_IS_GT &&  POSNEW_IS_GE_COL ) ? FWD_R :
-          " \ ( !POSNEW_IS_GT &&  POSNEW_IS_GE_COL ) ? BWD_L :
-          " \ (  POSNEW_IS_GT && !POSNEW_IS_GE_COL ) ? FWD_L :
-          " \ ( !POSNEW_IS_GT && !POSNEW_IS_GE_COL ) ? BWD_R :
-          " \ NEVER_HAPPEN
-
-
-                 " let self.u = u
-  " let self.l = l       |       let self.r = r
-                 " let self.d = d
-
-
-    " let [ LINEs, COLs, LINEe, COLe ] =
-          " \ CASE is FWD_R ? [ pos_org.line, pos_org.col, pos_new.line, pos_new.col - 1 + wordlen ] :
-          " \ CASE is BWD_L ? [ pos_new.line, pos_org.col, pos_org.line, pos_new.col - 1 + wordlen ] :
-          " \ CASE is FWD_L ? [ pos_org.line, pos_new.col, pos_new.line, pos_org.col               ] :
-          " \ CASE is BWD_R ? [ pos_new.line, pos_new.col, pos_org.line, pos_org.col               ] :
-          " \ NEVER_HAPPEN
-
-    " let [ LINEs, COLs, LINEe, COLe ] =
-          " \ CASE is FWD_R ? [ pos_org.line, pos_org.col, pos_new.line, pos_new.col - 1 + wordlen ] :
-          " \ CASE is BWD_L ? [ pos_new.line, pos_org.col, pos_org.line, pos_new.col - 1 + wordlen ] :
-          " \ CASE is FWD_L ? [ pos_org.line, pos_new.col, pos_new.line, pos_org.col               ] :
-          " \ CASE is BWD_R ? [ pos_new.line, pos_new.col, pos_org.line, pos_org.col               ] :
-          " \ NEVER_HAPPEN
-
+    let pat = printf( '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc',
+          \ p.U.line - 1, p.L.col - 1, p.D.line + 1, p.R.col + 1)
   endif
 
   call self.hl("SmallsRegion", pat)
 endfunction
 
+" function! s:h._region(word, pos) "{{{1
+  " " let E = smalls#pos#new(self.owner, a:pos)
+  " " call E._adjust_col()
+  " let   [ FWD_R,      BWD_L,     FWD_L,       BWD_R  ] = [ 1, 2, 3, 4 ]
+  " "    S---------E E---------+ +---------S +---------E
+  " "    |         E E         | E         | |         |
+  " "    +---------E E---------S E---------+ S---------+
+  " let S = deepcopy(self.env.p)
+  " let E = smalls#pos#new({}, a:pos)
+  " let pos_info =  S.analyze(S, E)
+
+  " let offset = self.offset_for(a:word, E.line)
+
+  " let CASE =
+        " \ (  S.line <= E.line && S.col <= E.col ) ? FWD_R :
+        " \ (  S.line >= E.line && S.col >= E.col ) ? BWD_L :
+        " \ (  S.line <  E.line && S.col >= E.col ) ? FWD_L :
+        " \ (  S.line >  E.line && S.col <= E.col ) ? BWD_R :
+        " \ NEVER_HAPPEN
+
+  " let [ U, D, L, R ] =
+        " \ CASE ==#  FWD_R  ?  [ S, E, S, E ] :
+        " \ CASE ==#  BWD_L  ?  [ E, S, E, S ] :
+        " \ CASE ==#  FWD_L  ?  [ S, E, E, S ] :
+        " \ CASE ==#  BWD_R  ?  [ E, S, S, E ] :
+        " \ NEVER_HAPPEN
+
+  " " possibly move backward, so only adjust forward direction carefully.
+  " if self.env.mode =~# 'v\|o'
+    " if CASE ==# FWD_R || CASE ==# FWD_L
+      " let D.col += offset
+    " endif
+    " let pat = printf('\v\c%%%dl%%>%dc\_.*%%%dl%%<%dc',
+          " \ U.line, U.col - 1, D.line, D.col + 1)
+
+  " elseif self.env.mode =~# 'V'
+    " let pat = printf('\v\c%%%dl\_.*%%%dl', U.line, D.line)
+
+  " elseif self.env.mode =~# "\<C-v>"
+    " if (CASE ==# FWD_R || CASE ==# BWD_R) | let R.col += offset | endif
+    " if (CASE ==# FWD_L || CASE ==# BWD_L) | let R.col += 1      | endif
+
+    " let pat = printf( '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc',
+          " \ U.line - 1, L.col - 1, D.line + 1, R.col)
+  " endif
+
+  " call self.hl("SmallsRegion", pat)
+" endfunction
 
 function! s:h.jump_target(poslist) "{{{1
   let pattern = join(
@@ -224,19 +199,13 @@ endfunction
 function! s:h._current(word, pos) "{{{1
   call self.clear("SmallsCurrent")
 
-  let pos = smalls#pos#new({}, a:pos)
-  if self.is_wild(a:word)
-    let offset = len(matchstr(getline(pos.line),
-          \ s:pattern_for(a:word, self.conf.wildchar)))
-    let pos.col = pos.col + offset
-  else
-    let pos.col = pos.col + len(a:word)
-  endif
+  let dest      = smalls#pos#new({}, a:pos)
+  let offset    = self.offset_for(a:word, dest.line)
+  let dest.col += offset
 
-  let pattern = s:pattern_for(a:word, self.conf.wildchar)
-        \ . s:intrpl('%{cl}l%{cc}c', { 'cl': pos.line, 'cc': pos.col })
-
-  " call self.hl("SmallsCurrent", pattern)
+  let pattern = s:pattern_for(a:word, self.conf.wildchar) . 
+        \ printf('%%%dl%%%dc', dest.line, dest.col)
+  call self.hl("SmallsCurrent", pattern)
   call self.clear("SmallsRegion")
   if self.env.mode != 'n'
     call self._region(a:word, a:pos)
@@ -244,8 +213,8 @@ function! s:h._current(word, pos) "{{{1
   return self
 endfunction
 
-function! smalls#highlighter#new(conf, env) "{{{1
-  return s:h.new(a:conf, a:env)
+function! smalls#highlighter#new(owner, conf, env) "{{{1
+  return s:h.new(a:owner, a:conf, a:env)
 endfunction
 
 function! smalls#highlighter#extend_priority(table) "{{{1

@@ -1,4 +1,5 @@
 let s:is_visual = smalls#util#import('is_visual')
+let s:pattern_for = smalls#util#import("pattern_for")
 
 let s:pos = {}
 function! s:pos.new(owner, pos) "{{{1
@@ -45,52 +46,83 @@ function! s:pos.jump() "{{{1
   call self.set()
 endfunction
 
-function! s:pos._need_adjust_col() "{{{1
-  let mode    = self.owner.mode()
-  let pos_org = self.owner.pos()
-
-  if mode ==# 'n' | return 0                   | endif
-  if mode ==# 'o' | return self.is_gt(pos_org) | endif
-
-  if s:is_visual(mode)
-    return mode =~# 'v\|V'
-          \ ? self.is_gt(pos_org)
-          \ : self.is_ge_col(pos_org)
-  endif
+function! s:pos.is_wild() "{{{1
+  return !empty(matchstr(self.word(), '\V' . self.owner.conf.wildchar))
 endfunction
 
+function! s:pos.word() "{{{1
+  return self.owner.keyboard_cli.data
+endfunction
 
-function! s:pos._adjust_col() "{{{1
-  let mode    = self.owner.mode()
+function! s:pos.offset() "{{{1
+  let word = self.word()
+  return self.is_wild()
+        \ ? len(matchstr(getline(self.line),
+        \   s:pattern_for(word, self.owner.conf.wildchar)))
+        \ : len(word)
+endfunction
+"}}}
+
+unlockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
+let  [ s:FWD_R,    s:BWD_L,    s:FWD_L,   s:BWD_R  ] = [ 1, 2, 3, 4 ]
+"    S---------E E---------+ +---------S +---------E
+"    |         E E         | E         | |         |
+"    +---------E E---------S E---------+ S---------+
+lockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
+
+function! s:pos.analyze(pos_s, pos_e) "{{{1
+  let S = a:pos_s
+  let E = a:pos_e
+  let CASE =
+        \ ( S.line <= E.line && S.col <= E.col ) ? s:FWD_R :
+        \ ( S.line >= E.line && S.col >= E.col ) ? s:BWD_L :
+        \ ( S.line <  E.line && S.col >= E.col ) ? s:FWD_L :
+        \ ( S.line >  E.line && S.col <= E.col ) ? s:BWD_R :
+        \ NEVER_HAPPEN
+
+  let [ U, D, L, R ] =
+        \ CASE ==#  s:FWD_R ? [ S, E, S, E ] :
+        \ CASE ==#  s:BWD_L ? [ E, S, E, S ] :
+        \ CASE ==#  s:FWD_L ? [ S, E, E, S ] :
+        \ CASE ==#  s:BWD_R ? [ E, S, S, E ] :
+        \ NEVER_HAPPEN
+  return { 'CASE': CASE, 'U': U, 'D': D, 'L': L, 'R': R }
+endfunction
+
+function! s:pos.adjust(case) "{{{1
+  let offset = self.offset()
+  let mode = self.owner.mode()
+  let C      = a:case
   let pos_org = self.owner.pos()
-  let wordlen = self.owner.keyboard_cli.data_len()
-  if self._need_adjust_col()
-    let self.col += (wordlen - 1)
+
+  if     mode =~# 'v\|o'
+    if (C ==# s:FWD_R || C ==# s:FWD_L) | let self.col += offset - 1 | endif
+  elseif mode =~# "\<C-v>"
+    if (C ==# s:FWD_R || C ==# s:BWD_R) | let self.col += offset | endif
+    if (C ==# s:FWD_R || C ==# s:BWD_R) | let self.col -= 1      | endif
   endif
 
-  if mode ==# 'o' && self.owner.conf.operator_motion_inclusive && self.is_gt(pos_org)
-    let self.pos.col += 1
-    if self.col > len(getline(self.line)) " line end
-      let self.line += 1
-      let self.col = 1
-    endif
-  endif
   if self.owner.conf.adjust !=# 'till'
     return
   endif
-  if mode ==# 'v'
-    let self.col = self.is_gt(pos_org)
-          \ ? self.col - wordlen
-          \ : self.col + wordlen
+  if  mode ==# 'v'
+    let self.col = (C ==# s:FWD_R || C==# s:FWD_L)
+          \ ? self.col - offset
+          \ : self.col + offset
+
   elseif mode ==# "\<C-v>"
-    let self.col = self.is_ge_col(pos_org)
-          \ ? self.col - wordlen
-          \ : self.col + wordlen
+    let self.col = (C ==# s:FWD_R || C==# s:FWD_R)
+          \ ? self.col - offset
+          \ : self.col + offset
   endif
-  return self
 endfunction
 
-
+function! s:pos._adjust_col() "{{{1
+  let pos_org = self.owner.pos()
+  let p       = self.analyze(pos_org, self)
+  let word    = self.owner.keyboard_cli.data
+  call self.adjust(p['CASE'])
+endfunction
 
 function! smalls#pos#new(owner, pos) "{{{1
   return s:pos.new(a:owner, a:pos)
@@ -99,11 +131,5 @@ endfunction
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
-
-" let pos1 = smalls#pos#new([3,3])
-" let pos2 = smalls#pos#new([3,4])
-" echo pos1.is_ge_col(pos2)
-" echo pos2.is_forward_col(pos1)
-" echo pos2.is_forward_to(pos1)
 
 " vim: foldmethod=marker

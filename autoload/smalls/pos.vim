@@ -30,6 +30,10 @@ function! s:pos.is_ge_col(pos) "{{{1
   return ( self.col >= a:pos.col )
 endfunction
 
+function! s:pos.is_ge_line(pos) "{{{1
+  return ( self.line >= a:pos.line )
+endfunction
+
 function! s:pos.jump() "{{{1
   call self._adjust_col()
 

@@ -31,8 +31,9 @@ let s:options = {
 
       " Color format
       " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
+      " \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           '#403D3D', '#66D9EF']],
 let s:color = {
-      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           '#403D3D', '#66D9EF']],
+      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE', '#66D9EF']],
       \ 'SmallsCurrent':    [['NONE',      'magenta', 'white', ], [ 'NONE',           '#f92672', '#ffffff']],
       \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#f92672']],
       \ 'SmallsPos':        [['underline', 'magenta', 'white', ], [ 'bold,underline', 'LawnGreen', 'Black']],

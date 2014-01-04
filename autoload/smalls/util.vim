@@ -56,7 +56,8 @@ function! s:pattern_for(word, wildchar) "{{{1
   let pat = '\V\c' . escape(a:word, '\') . '\v'
   let pat = substitute(pat, '\.', '\\v.\\V', 'g')
   if !empty(a:wildchar)
-    let pat = substitute(pat, a:wildchar , '\\v.*\\V', 'g')
+    let pat = substitute(pat, 
+          \ escape(a:wildchar, '\') , '\\v.*\\V', 'g')
   endif
   return pat
 endfunction

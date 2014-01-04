@@ -31,6 +31,7 @@ let s:key_table = {
       \   "\<C-c>": "do_excursion_with_change",
       \        "E": "do_auto_excursion_toggle",
       \    "\<F1>": "do_help",
+      \        "?": "do_help",
       \ }
 
 let s:help = {}
@@ -174,7 +175,7 @@ function! smalls#keyboard#cli#new(owner) "{{{1
     let s:key_table[jump_trigger] = 'do_jump'
   endif
   let keyboard = smalls#keyboard#base#new(a:owner,
-        \ s:key_table, 'cli', "cli > ", s:help)
+        \ s:key_table, 'cli', s:help)
   return extend(keyboard, s:keyboard, 'force')
 endfunction "}}}
 

@@ -35,6 +35,7 @@ let s:key_table = {
       \        "V": "do_select_V",
       \   "\<C-v>": "do_select_CTRL_V",
       \    "\<F1>": "do_help",
+      \        "?": "do_help",
       \ }
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
@@ -291,20 +292,21 @@ function! s:keyboard._action_missing(action) "{{{1
   call self['do_' . next_action ]()
 endfunction
 
-function! s:keyboard.do_select_v() "{{{1
-  call self._do_select('v')
+function! s:keyboard.do_select_v(...) "{{{1
+  call self._do_select('v', !empty(a:0))
 endfunction
 
-function! s:keyboard.do_select_V() "{{{1
-  call self._do_select('V')
+function! s:keyboard.do_select_V(...) "{{{1
+  call self._do_select('V', !empty(a:0))
 endfunction
 
-function! s:keyboard.do_select_CTRL_V() "{{{1
-  call self._do_select("\<C-v>")
+function! s:keyboard.do_select_CTRL_V(...) "{{{1
+  call self._do_select("\<C-v>", !empty(a:0))
 endfunction
 
 function! s:keyboard.do_delete() "{{{1
-  call self._do_normal('d', 'v')
+  call self.do_select_v()
+  call self._do_normal('d')
 endfunction
 
 function! s:keyboard.do_delete_till() "{{{1
@@ -313,29 +315,34 @@ function! s:keyboard.do_delete_till() "{{{1
 endfunction
 
 function! s:keyboard.do_delete_line() "{{{1
-  call self._do_normal('d', 'V', 1)
+  call self.do_select_V(1)
+  call self._do_normal('d')
 endfunction
 
 function! s:keyboard.do_yank() "{{{1
-  call self._do_normal('y', 'v')
+  call self.do_select_v()
+  call self._do_normal('y')
 endfunction
 
 function! s:keyboard.do_yank_line() "{{{1
-  call self._do_normal('y', 'V', 1)
+  call self.do_select_V(1)
+  call self._do_normal('y')
 endfunction
 
 function! s:keyboard.do_change() "{{{1
   " FIXME need robust change to support 'c' precisely
   " need <expr> map, but <expr> don't allow buffer change within expression
   " ,means need to give-up easy motion style jump.
-  call self._do_normal('c', 'v')
+  " call self.do_select_v()
+  call self.do_select_v()
+  call self._do_normal('c')
 endfunction
 
-function! s:keyboard._do_normal(key, wise, ...)
-  let force_wise = !empty(a:000)
-  if force_wise || ! s:is_visual(self.owner.mode())
-    call self._do_select(a:wise)
-  endif
+function! s:keyboard._do_normal(key)
+  " let force_wise = !empty(a:000)
+  " if force_wise || ! s:is_visual(self.owner.mode())
+    " call self._do_select(a:wise)
+  " endif
   let self.owner.operation = {
         \ 'normal':      a:key ==# 'c' ? 'd' : a:key,
         \ 'startinsert': a:key ==# 'c',
@@ -343,15 +350,16 @@ function! s:keyboard._do_normal(key, wise, ...)
   call self.do_set()
 endfunction
 
-function! s:keyboard._do_select(key, ...) "{{{1
+function! s:keyboard._do_select(key, force) "{{{1
   " only emulate select, so set to env.mode
-  let self.owner.env.mode = a:key
-  if !empty(a:000)
-    call self.do_set()
+  " highlighter will refresh screen based on env.mode
+  if a:force
+    let self.owner.env.mode = a:key
+  else
+    let self.owner.env.mode =
+          \ self.owner.env.mode !=# a:key 
+          \ ? a:key : self.owner.env.mode_org
   endif
-endfunction
-
-function! s:keyboard.do_debug() "{{{1
 endfunction
 
 function! smalls#keyboard#excursion#get_table() "{{{1
@@ -368,7 +376,7 @@ endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, 
-        \ s:key_table, 'excursion', 'exc >', s:help)
+        \ s:key_table, 'exc', s:help)
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)
 endfunction "}}}

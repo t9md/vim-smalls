@@ -35,10 +35,10 @@ function! s:keyboard._timeout_second() "{{{1
   return -1
 endfunction
 
-function! s:keyboard.init(owner, table, name, prompt_str, help) "{{{1
+function! s:keyboard.init(owner, table, name, help) "{{{1
   let self._help = a:help
   let self._table  = a:table
-  let self._prompt_str = a:prompt_str
+  " let self._prompt_str = a:prompt_str
   let self.owner   = a:owner
   let self._yanked = ''
   let self.name  = a:name
@@ -168,7 +168,11 @@ function! s:keyboard.do_help() "{{{1
 endfunction
 
 function! s:keyboard.show_prompt() "{{{1
-  call self.msg(self._prompt_str, 'Identifier')
+  call self.msg(self.name, 'Identifier')
+  call self.msg(printf(' %-2s', self._mode_str()), 'Statement')
+  call self.msg(' > ', 'Identifier')
+  " call self.msg(self._prompt_str(), 'Identifier')
+  " call self.msg('[ ' . self.owner.mode() . ' ]', 'String')
   call self.msg(self._before(),  'SmallsCli')
   let after = self._after()
   if empty(after) | let after = ' ' | endif
@@ -177,10 +181,27 @@ function! s:keyboard.show_prompt() "{{{1
   redraw
 endfunction
 
-function! smalls#keyboard#base#new(owner, table, name, prompt_str, help) "{{{1
+let s:mode_map = {
+      \ 'n':      'n ',
+      \ 'v':      'v ',
+      \ 'V':      'V ',
+      \ "\<C-v>": '^V',
+      \ 'o':      'o ',
+      \ }
+
+function! s:keyboard._mode_str() "{{{1
+  return s:mode_map[self.owner.mode()]
+endfunction
+
+function! s:keyboard._prompt_str() "{{{1
+  let mode = printf(' [ %-2s ]', s:mode_map[self.owner.mode()])
+  return self.name . mode . ' > '
+endfunction
+
+function! smalls#keyboard#base#new(owner, table, name, help) "{{{1
   call filter(a:table, 'v:val != "__UNMAP__"')
   let kbd = deepcopy(s:keyboard)
-  return kbd.init(a:owner, a:table, a:name, a:prompt_str, a:help)
+  return kbd.init(a:owner, a:table, a:name, a:help)
 endfunction "}}}
 
 " vim: foldmethod=marker

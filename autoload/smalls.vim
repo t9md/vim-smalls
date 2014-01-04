@@ -17,6 +17,7 @@ function! s:env_preserve(mode) "{{{1
   if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
 
   return {
+        \ 'mode_org': a:mode,
         \ 'mode': a:mode,
         \ 'w0': line('w0'),
         \ 'w$': line('w$'),
@@ -90,7 +91,7 @@ function! s:smalls.start(mode, config)  "{{{1
   try
     let options_saved = s:options_set(s:vim_options)
     let self.conf     = extend(self._config(), a:config, 'force')
-    let self.conf.wildchar = escape(self.conf.wildchar, '\')
+    " let self.conf.wildchar = escape(self.conf.wildchar, '\')
     call self.init(a:mode ==# 'v' ? visualmode() : a:mode)
     call self.cursor_hide()
     call self.loop()

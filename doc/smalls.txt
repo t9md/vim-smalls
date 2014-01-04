@@ -366,12 +366,15 @@ TODO								*smalls-todo*
 * [ ] operator to combine smalls with text-object-function smalls within
   function and replace character which cli-C-R become useful.
 * [ ] introduce smalls throughout multiwindow(multiwin-mode?)
+      may be decline, technically it possible, but it not have much benefit.
+      choosewin.vim helps most of demand.
 * [x] improve to support 'c' operator
 * [x] add auto_set or landing variable which finish and set cursor when 
       specified char exceed while single landing candidate.
 * [ ] wildcard support
       [x] add '.' meta char which match one char
       [x] add '*' wildcard which match multiple chars
+      [x] highlight 
       [ ] consider word adsjustment at landing time wordlen is vary depend on
 	  match len of wildchar(but is wildchar useful? I don't think so).
 * [x] rewrite region selection

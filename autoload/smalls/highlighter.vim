@@ -1,18 +1,5 @@
 let s:pattern_for = smalls#util#import("pattern_for")
 
-" function! s:intrpl(string, vars) "{{{1
-  " let mark = '\v\{(.{-})\}'
-  " return substitute(a:string, mark,'\=a:vars[submatch(1)]', 'g')
-" endfunction "}}}
-
-" function! s:intrpl(string, vars) "{{{1
-  " let mark = '\v\{(.{-})\}'
-  " for kv in items(a:vars)
-    " exe 'let ' . join(kv, '=')
-  " endfor
-  " return substitute(a:string, mark,'\=eval(submatch(1))', '')
-" endfunction "}}}
-
 function! s:intrpl(string, vars) "{{{1
   let mark = '\v\{(.{-})\}'
   let r = []
@@ -21,7 +8,7 @@ function! s:intrpl(string, vars) "{{{1
   endfor
   call map(r, 'eval(v:val)')
   return substitute(a:string, mark,'\=remove(r, 0)', 'g')
-endfunction "}}}
+endfunction
 
 function! s:scan(str, pattern) "{{{1
   let ret = []
@@ -66,7 +53,7 @@ function! s:h.hl(color, pattern) "{{{1
 endfunction
 
 function! s:h.clear(...) "{{{1
-  let colors = a:0 ? a:000 : keys(self.ids)
+  let colors = !empty(a:000) ? a:000 : keys(self.ids)
   for color in colors
     if !has_key(self.ids, color)
       continue
@@ -83,15 +70,13 @@ function! s:h.shade() "{{{1
   if ! self.conf.shade
     return self
   endif
-  let pat = s:intrpl('%{w0}l\_.*%{w$}l', self.env)
-  call self.hl("SmallsShade", '\v'. pat )
+  call self.hl("SmallsShade", '\v'.
+        \ s:intrpl('%{w0}l\_.*%{w$}l', self.env))
   return self
 endfunction
 
 function! s:h.cursor() "{{{1
   call self.hl('SmallsPos', '\%#')
-  " let pos = '%{l}l%{c}c'
-  " call self.hl("SmallsPos", s:intrpl('\v\c' . pos, self.env))
   return self
 endfunction
 
@@ -105,51 +90,47 @@ function! s:h.blink_cword(NOT_FOUND) "{{{1
   let sleep_time = '80m'
   for i in range(2)
     call self.cword(color) | redraw | exe 'sleep' sleep_time
-    call self.clear()      | redraw | exe 'sleep' sleep_time
+    call self.clear(color) | redraw | exe 'sleep' sleep_time
   endfor
 endfunction
 
-function! s:h.region(word, pos) "{{{1
+function! s:h._region(word, pos) "{{{1
   call self.clear("SmallsRegion")
   let wordlen = len(a:word)
-  let e = {
-        \ 'nl': a:pos[0],
-        \ 'nc': a:pos[1],
-        \ 'ke': a:pos[1] + wordlen - 1,
+  let vars = {
+        \ 'nl': a:pos.line,
+        \ 'nc': a:pos.col,
+        \ 'ke': a:pos.col + wordlen - 1,
         \ }
-  call extend(e, self.env, 'error')
+  call extend(vars, self.env, 'error')
 
   " possibly move backward, so only adjust forward direction carefully.
-  if self._is_forward(a:pos)
+  if a:pos.is_gt(self.env.p)
     let pat =
-          \ self.env.mode =~# 'v\|o' ? '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c' :
-          \ self.env.mode ==# 'V' ? '%{l}l\_.*%{nl}l' :
+          \ self.env.mode =~# 'v\|o'
+          \   ? '%{l}l%>{c-1}c\_.*%{nl}l%<{nc+1}c' :
+          \ self.env.mode ==# 'V'
+          \   ? '%{l}l\_.*%{nl}l' :
           \ self.env.mode ==# "\<C-v>" ?
-          \   ( self._is_col_forward(a:pos[1])
+          \   ( a:pos.is_ge_col(self.env.p)
           \   ? '\v\c%>{l-1}l%>{c-1}c.*%<{nl+1}l%<{ke+1}c'
           \   : '\v\c%>{l-1}l%>{nc-1}c.*%<{nl+1}l%<{c+1}c' )
           \ : NEVER_HAPPEN
   else
     let pat =
-          \ self.env.mode =~# 'v\|o' ? '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c' :
-          \ self.env.mode ==# 'V' ? '%{nl}l\_.*%{l}l' :
+          \ self.env.mode =~# 'v\|o' ?
+          \   '%{nl}l%>{nc}c\_.*%{l}l%<{c+2}c' :
+          \ self.env.mode ==# 'V' ?
+          \   '%{nl}l\_.*%{l}l' :
           \ self.env.mode ==# "\<C-v>" ?
-          \   ( self._is_col_forward(a:pos[1])
+          \   ( a:pos.is_ge_col(self.env.p)
           \   ? '\v\c%>{nl-1}l%>{c-1}c.*%<{l+1}l%<{ke+1}c'
           \   : '\v\c%>{nl-1}l%>{nc-1}c.*%<{l+1}l%<{c+1}c' )
           \ : NEVER_HAPPEN
   endif
-  call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, e))
+  call self.hl("SmallsRegion", s:intrpl('\v\c'. pat, vars))
 endfunction
 
-function! s:h._is_forward(dst_pos) "{{{1
-  return ( self.env.p.line < a:dst_pos[0] ) ||
-        \ (( self.env.p.line == a:dst_pos[0] ) && ( self.env.p.col < a:dst_pos[1] ))
-endfunction
-
-function! s:h._is_col_forward(col) "{{{1
-  return ( self.env.p.col <= a:col )
-endfunction
 
 function! s:h.jump_target(poslist) "{{{1
   let pattern = join(
@@ -163,23 +144,25 @@ function! s:h.candidate(word, pos) "{{{1
   if empty(a:pos)  | return | endif
 
   call self.hl("SmallsCandidate", s:pattern_for(a:word, self.conf.wildchar))
-  call self.current(a:word, a:pos)
+
+  call self._current(a:word, a:pos)
   return self
 endfunction
 
-function! s:h.current(word, pos) "{{{1
+function! s:h._current(word, pos) "{{{1
   call self.clear("SmallsCurrent")
-  if empty(a:word) | return | endif
-  if empty(a:pos)  | return | endif
-  let e = {
-        \ 'cl': a:pos[0],
-        \ 'ke': a:pos[1] + len(a:word) - 1,
+
+  let pos = smalls#pos#new({}, a:pos)
+  let vars = {
+        \ 'cl': pos.line,
+        \ 'ke': pos.col + len(a:word) - 1,
         \ }
-  let pattern =  s:pattern_for(a:word, self.conf.wildchar) . s:intrpl('%{cl}l%{ke+1}c', e)
-  call extend(e, self.env, 'error')
+  " call extend(vars, self.env, 'error')
+  let pattern = s:pattern_for(a:word, self.conf.wildchar)
+        \ . s:intrpl('%{cl}l%{ke+1}c', vars)
   call self.hl("SmallsCurrent", pattern)
   if self.env.mode != 'n'
-    call self.region(a:word, a:pos)
+    call self._region(a:word, pos)
   endif
   return self
 endfunction

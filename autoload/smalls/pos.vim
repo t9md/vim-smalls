@@ -74,17 +74,16 @@ lockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
 
 function! s:pos.where() "{{{1
   " determine case and return case number( CONSTANTS )
-  if !empty(self._where)
-    return self._where
+  if empty(self._where)
+    let S = self.owner.pos()
+    let E = self
+    let self._where = 
+          \ ( S.line <= E.line && S.col <= E.col ) ? s:FWD_R :
+          \ ( S.line <  E.line && S.col >  E.col ) ? s:FWD_L :
+          \ ( S.line >= E.line && S.col >  E.col ) ? s:BWD_L :
+          \ ( S.line >  E.line && S.col <= E.col ) ? s:BWD_R :
+          \ NEVER_HAPPEN
   endif
-  let S = self.owner.pos()
-  let E = self
-  let self._where = 
-        \ ( S.line <= E.line && S.col <= E.col ) ? s:FWD_R :
-        \ ( S.line <  E.line && S.col >  E.col ) ? s:FWD_L :
-        \ ( S.line >= E.line && S.col >  E.col ) ? s:BWD_L :
-        \ ( S.line >  E.line && S.col <= E.col ) ? s:BWD_R :
-        \ NEVER_HAPPEN
   return self._where
 endfunction
 

@@ -141,7 +141,6 @@ function! s:keyboard._toggle_option(opt) "{{{1
     return
   endif
   let self.owner.conf[a:opt] = !self.owner.conf[a:opt]
-  call g:plog(self.owner.conf[a:opt])
   let msg = printf("[%s: %d] ", a:opt, self.owner.conf[a:opt])
   call self.msg(msg, 'Statement')
 endfunction

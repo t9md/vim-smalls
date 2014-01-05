@@ -1,28 +1,28 @@
 let s:pattern_for = smalls#util#import("pattern_for")
 
-function! s:intrpl(string, vars) "{{{1
-  let mark = '\v\{(.{-})\}'
-  let r = []
-  for expr in s:scan(a:string, mark)
-    call add(r, substitute(expr, '\v([a-z][a-z$0]*)', '\=a:vars[submatch(1)]', 'g'))
-  endfor
-  call map(r, 'eval(v:val)')
-  return substitute(a:string, mark,'\=remove(r, 0)', 'g')
-endfunction
+" function! s:intrpl(string, vars) "{{{1
+  " let mark = '\v\{(.{-})\}'
+  " let r = []
+  " for expr in s:scan(a:string, mark)
+    " call add(r, substitute(expr, '\v([a-z][a-z$0]*)', '\=a:vars[submatch(1)]', 'g'))
+  " endfor
+  " call map(r, 'eval(v:val)')
+  " return substitute(a:string, mark,'\=remove(r, 0)', 'g')
+" endfunction
 
-function! s:scan(str, pattern) "{{{1
-  let ret = []
-  let nth = 1
-  while 1
-    let m = matchlist(a:str, a:pattern, 0, nth)
-    if empty(m)
-      break
-    endif
-    call add(ret, m[1])
-    let nth += 1
-  endwhile
-  return ret
-endfunction
+" function! s:scan(str, pattern) "{{{1
+  " let ret = []
+  " let nth = 1
+  " while 1
+    " let m = matchlist(a:str, a:pattern, 0, nth)
+    " if empty(m)
+      " break
+    " endif
+    " call add(ret, m[1])
+    " let nth += 1
+  " endwhile
+  " return ret
+" endfunction
 "}}}
 
 let s:h = {}
@@ -74,8 +74,6 @@ function! s:h.shade() "{{{1
   endif
   let pattern = printf('\v%%%dl\_.*%%%dl', self.env['w0'], self.env['w$'])
   call self.hl("SmallsShade", pattern)
-  " call self.hl("SmallsShade", '\v'.
-        " \ s:intrpl('%{w0}l\_.*%{w$}l', self.env))
   return self
 endfunction
 

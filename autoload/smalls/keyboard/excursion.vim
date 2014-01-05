@@ -1,4 +1,5 @@
 " Excurstion:
+scriptencoding utf-8
 let s:getchar   = smalls#util#import("getchar")
 let s:is_visual = smalls#util#import('is_visual')
 

@@ -36,15 +36,14 @@ function! s:keyboard._timeout_second() "{{{1
 endfunction
 
 function! s:keyboard.init(owner, table, name, help) "{{{1
-  let self._help = a:help
-  let self._table  = a:table
-  " let self._prompt_str = a:prompt_str
-  let self.owner   = a:owner
-  let self._yanked = ''
-  let self.name  = a:name
-  let self.data    = ''
-  let self.cursor  = 0
-  let self.input_history = []
+  let self._help             = a:help
+  let self._table            = a:table
+  let self.owner             = a:owner
+  let self._yanked           = ''
+  let self.name              = a:name
+  let self.data              = ''
+  let self.cursor            = 0
+  let self.input_history     = []
   let self.input_history_max = 10
   return self
 endfunction
@@ -102,7 +101,6 @@ endfunction
 function! s:keyboard._set(c) "{{{1
   " set char or chars into cursor position.
   let self.data = self._before() . a:c .  self._after()
-  " call g:plog(self.data)
   let self.cursor += len(a:c)
 endfunction 
 

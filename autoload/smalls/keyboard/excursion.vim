@@ -106,6 +106,8 @@ let s:keyboard = {}
 function! s:keyboard.init(word, poslist) "{{{1
   let self.index       = 0
   let self._count      = ''
+  let self.data        = self.owner.keyboard_cli.data
+  let self.cursor      = len(self.data)
   let self._sorted     = []
   let self.word        = a:word
   let self.poslist     = a:poslist
@@ -255,8 +257,6 @@ endfunction
 
 function! s:keyboard.count_reset() "{{{1
   let self._count = ''
-  let self.data = ''
-  redraw
 endfunction
 
 function! s:keyboard._setchar(c) "{{{1
@@ -279,11 +279,10 @@ function! s:keyboard._setchar(c) "{{{1
     elseif lastchar_cli ==# tolower(a:c) " upper char for backward movement
       call self.do_prev()
     endif
-    return ''
   else
     let self._count .= a:c
-    return a:c
   endif
+  return ''
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1

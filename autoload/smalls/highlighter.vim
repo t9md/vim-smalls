@@ -106,74 +106,22 @@ endfunction
 "}}}
 
 function! s:h._region(word, pos) "{{{1
-  let S = deepcopy(self.env.p)
   let E = smalls#pos#new(self.owner, a:pos)
-  let p =  S.analyze(S, E)
-  let offset = self.offset_for(a:word, E.line)
-  call E.adjust(p['CASE'])
+  let CASE = E.get_case(self.env.p)
+  let [U, D, L, R] = E.pos_UDLR(CASE, self.env.p)
+  call E.adjust(CASE)
 
   if self.env.mode =~# 'v\|o'
-    " if p.U.line == p.D.col
     let pat = printf('\v\c%%%dl%%>%dc\_.*%%%dl%%<%dc',
-          \ p.U.line, p.U.col - 1, p.D.line, p.D.col + 1)
+          \ U.line, U.col - 1, D.line, D.col + 1)
   elseif self.env.mode =~# 'V'
-    let pat = printf('\v\c%%%dl\_.*%%%dl', p.U.line, p.D.line)
+    let pat = printf('\v\c%%%dl\_.*%%%dl', U.line, D.line)
   elseif self.env.mode =~# "\<C-v>"
     let pat = printf( '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc',
-          \ p.U.line - 1, p.L.col - 1, p.D.line + 1, p.R.col + 1)
+          \ U.line - 1, L.col - 1, D.line + 1, R.col + 1)
   endif
-
   call self.hl("SmallsRegion", pat)
 endfunction
-
-" function! s:h._region(word, pos) "{{{1
-  " " let E = smalls#pos#new(self.owner, a:pos)
-  " " call E._adjust_col()
-  " let   [ FWD_R,      BWD_L,     FWD_L,       BWD_R  ] = [ 1, 2, 3, 4 ]
-  " "    S---------E E---------+ +---------S +---------E
-  " "    |         E E         | E         | |         |
-  " "    +---------E E---------S E---------+ S---------+
-  " let S = deepcopy(self.env.p)
-  " let E = smalls#pos#new({}, a:pos)
-  " let pos_info =  S.analyze(S, E)
-
-  " let offset = self.offset_for(a:word, E.line)
-
-  " let CASE =
-        " \ (  S.line <= E.line && S.col <= E.col ) ? FWD_R :
-        " \ (  S.line >= E.line && S.col >= E.col ) ? BWD_L :
-        " \ (  S.line <  E.line && S.col >= E.col ) ? FWD_L :
-        " \ (  S.line >  E.line && S.col <= E.col ) ? BWD_R :
-        " \ NEVER_HAPPEN
-
-  " let [ U, D, L, R ] =
-        " \ CASE ==#  FWD_R  ?  [ S, E, S, E ] :
-        " \ CASE ==#  BWD_L  ?  [ E, S, E, S ] :
-        " \ CASE ==#  FWD_L  ?  [ S, E, E, S ] :
-        " \ CASE ==#  BWD_R  ?  [ E, S, S, E ] :
-        " \ NEVER_HAPPEN
-
-  " " possibly move backward, so only adjust forward direction carefully.
-  " if self.env.mode =~# 'v\|o'
-    " if CASE ==# FWD_R || CASE ==# FWD_L
-      " let D.col += offset
-    " endif
-    " let pat = printf('\v\c%%%dl%%>%dc\_.*%%%dl%%<%dc',
-          " \ U.line, U.col - 1, D.line, D.col + 1)
-
-  " elseif self.env.mode =~# 'V'
-    " let pat = printf('\v\c%%%dl\_.*%%%dl', U.line, D.line)
-
-  " elseif self.env.mode =~# "\<C-v>"
-    " if (CASE ==# FWD_R || CASE ==# BWD_R) | let R.col += offset | endif
-    " if (CASE ==# FWD_L || CASE ==# BWD_L) | let R.col += 1      | endif
-
-    " let pat = printf( '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc',
-          " \ U.line - 1, L.col - 1, D.line + 1, R.col)
-  " endif
-
-  " call self.hl("SmallsRegion", pat)
-" endfunction
 
 function! s:h.jump_target(poslist) "{{{1
   let pattern = join(

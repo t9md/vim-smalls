@@ -50,6 +50,7 @@ function! s:set_options(options) "{{{
     unlet value
   endfor
 endfunction "}}}
+
 function! s:clear_highlight(color) "{{{1
   for color in keys(a:color)
     exe 'highlight' color 'none'

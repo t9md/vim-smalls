@@ -29,7 +29,7 @@ let s:key_table = {
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
       \   "\<C-c>": "do_excursion_with_change",
-      \        "E": "do_auto_excursion_toggle",
+      \        "E": "do_toggle_auto_set",
       \    "\<F1>": "do_help",
       \        "?": "do_help",
       \ }
@@ -45,17 +45,6 @@ let s:help.en = {
       \ "do_kill_line":                    'Delete all chars you input',
       \ "do_special":                      'Special handling [experimental]',
       \ "do_excursion":                    'Begin [exc] mode',
-      \ "do_excursion_with_set":           '[exc] do_set',
-      \ "do_excursion_with_delete":        '[exc]do_delete',
-      \ "do_excursion_with_delete_till":   '[exc] do_delete_till',
-      \ "do_excursion_with_delete_line":   '[exc] do_delete_line',
-      \ "do_excursion_with_yank":          '[exc] do_yank',
-      \ "do_excursion_with_yank_line":     '[exc] do_yank_line',
-      \ "do_excursion_with_select_V":      '[exc] do_select_V(line)',
-      \ "do_excursion_with_select_CTRL_V": '[exc]do_select_CTRL_V(block)',
-      \ "do_excursion_with_next":          '[exc] do_next',
-      \ "do_excursion_with_prev":          '[exc] do_prev',
-      \ "do_excursion_with_change":        '[exc] do_change',
       \ "do_auto_excursion_toggle":        'toggle auto_excursion',
       \ "do_jump":                         'Start jump',
       \ "do_help":                         'show this help',
@@ -146,16 +135,34 @@ function! s:keyboard.do_excursion() "{{{1
   call call(self.owner.do_excursion, [self], self.owner)
 endfunction
 
-function! s:keyboard.do_auto_excursion_toggle() "{{{1
-  let self.owner.conf.auto_excursion = !self.owner.conf.auto_excursion
-  let msg = printf("[auto_excurtion: %d] ", self.owner.conf.auto_excursion)
+function! s:keyboard._toggle_option(opt) "{{{1
+  if !has_key(self.owner.conf, a:opt)
+    call self.msg(printf("Unknown option '%s' ", a:opt), 'WarningMsg')
+    return
+  endif
+  let self.owner.conf[a:opt] = !self.owner.conf[a:opt]
+  call g:plog(self.owner.conf[a:opt])
+  let msg = printf("[%s: %d] ", a:opt, self.owner.conf[a:opt])
   call self.msg(msg, 'Statement')
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1
-  let action = matchstr(a:action, '^do_excursion_with_\zs.*$')
-  call call(self.owner.do_excursion, [self, action], self.owner)
+  for [action, pattern] in items(s:dynamic_actions)
+    let match = matchstr(a:action, pattern)
+    if !empty(match)
+      if action ==# 'excursion'
+        call call(self.owner.do_excursion, [self, match], self.owner)
+      elseif action ==# 'toggle'
+        call self._toggle_option(match)
+      endif
+      return
+    endif
+  endfor
 endfunction
+let s:dynamic_actions =  {
+      \  'excursion': '^do_excursion_with_\zs.*$',
+      \  'toggle':    '^do_toggle_\zs.*$',
+      \ }
 
 function! smalls#keyboard#cli#get_table() "{{{1
   return s:key_table

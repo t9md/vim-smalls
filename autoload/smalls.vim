@@ -224,7 +224,6 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
 
       call self.hl.candidate(word, kbd.pos())
       call kbd.read_input()
-      " redraw
     endwhile
   catch 'BACK_CLI'
     call self.statusline_update('cli')

@@ -70,29 +70,34 @@ let  [ s:FWD_R,    s:BWD_L,    s:FWD_L,   s:BWD_R  ] = [ 1, 2, 3, 4 ]
 "    +---------E E---------S E---------+ S---------+
 lockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
 
-function! s:pos.analyze(pos_s, pos_e) "{{{1
-  let S = a:pos_s
-  let E = a:pos_e
-  let CASE =
+function! s:pos.get_case(pos_start) "{{{1
+  " determine case and return case number( CONSTANTS )
+  let S = a:pos_start
+  let E = self
+  return
         \ ( S.line <= E.line && S.col <= E.col ) ? s:FWD_R :
-        \ ( S.line >= E.line && S.col >= E.col ) ? s:BWD_L :
-        \ ( S.line <  E.line && S.col >= E.col ) ? s:FWD_L :
+        \ ( S.line <  E.line && S.col >  E.col ) ? s:FWD_L :
+        \ ( S.line >= E.line && S.col >  E.col ) ? s:BWD_L :
         \ ( S.line >  E.line && S.col <= E.col ) ? s:BWD_R :
         \ NEVER_HAPPEN
+endfunction
 
-  let [ U, D, L, R ] =
-        \ CASE ==#  s:FWD_R ? [ S, E, S, E ] :
-        \ CASE ==#  s:BWD_L ? [ E, S, E, S ] :
-        \ CASE ==#  s:FWD_L ? [ S, E, E, S ] :
-        \ CASE ==#  s:BWD_R ? [ E, S, S, E ] :
+function! s:pos.pos_UDLR(case, pos_start) "{{{1
+  " return [ Up, Down, Left, Right ]
+  let S = a:pos_start
+  let E = self
+  return
+        \ a:case ==#  s:FWD_R ? [ S, E, S, E ] :
+        \ a:case ==#  s:BWD_L ? [ E, S, E, S ] :
+        \ a:case ==#  s:FWD_L ? [ S, E, E, S ] :
+        \ a:case ==#  s:BWD_R ? [ E, S, S, E ] :
         \ NEVER_HAPPEN
-  return { 'CASE': CASE, 'U': U, 'D': D, 'L': L, 'R': R }
 endfunction
 
 function! s:pos.adjust(case) "{{{1
-  let offset = self.offset()
-  let mode = self.owner.mode()
-  let C      = a:case
+  let offset  = self.offset()
+  let mode    = self.owner.mode()
+  let C       = a:case
   let pos_org = self.owner.pos()
 
   if     mode =~# 'v\|o'
@@ -118,10 +123,7 @@ function! s:pos.adjust(case) "{{{1
 endfunction
 
 function! s:pos._adjust_col() "{{{1
-  let pos_org = self.owner.pos()
-  let p       = self.analyze(pos_org, self)
-  let word    = self.owner.keyboard_cli.data
-  call self.adjust(p['CASE'])
+  call self.adjust(self.get_case(self.owner.pos()))
 endfunction
 
 function! smalls#pos#new(owner, pos) "{{{1

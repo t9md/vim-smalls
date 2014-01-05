@@ -102,6 +102,7 @@ endfunction
 function! s:keyboard._set(c) "{{{1
   " set char or chars into cursor position.
   let self.data = self._before() . a:c .  self._after()
+  " call g:plog(self.data)
   let self.cursor += len(a:c)
 endfunction 
 
@@ -171,8 +172,6 @@ function! s:keyboard.show_prompt() "{{{1
   call self.msg(self.name, 'Identifier')
   call self.msg(printf(' %-2s', self._mode_str()), 'Statement')
   call self.msg(' > ', 'Identifier')
-  " call self.msg(self._prompt_str(), 'Identifier')
-  " call self.msg('[ ' . self.owner.mode() . ' ]', 'String')
   call self.msg(self._before(),  'SmallsCli')
   let after = self._after()
   if empty(after) | let after = ' ' | endif

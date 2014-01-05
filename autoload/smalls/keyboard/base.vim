@@ -167,7 +167,7 @@ function! s:keyboard.do_help() "{{{1
 endfunction
 
 function! s:keyboard.show_prompt() "{{{1
-  call self.msg(self.name, 'Identifier')
+  call self.show_id()
   call self.msg(printf(' %-2s', self._mode_str()), 'Statement')
   call self.msg(' > ', 'Identifier')
   call self.msg(self._before(),  'SmallsCli')

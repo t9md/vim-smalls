@@ -120,14 +120,14 @@ function! s:smalls.cursor_restore() "{{{1
 endfunction
 
 function! s:smalls.init(mode) "{{{1
-  let self._auto_set    = 0
-  let self.operation    = {}
-  let self.exception    = ''
-  let self.env          = s:env_preserve(a:mode)
-  let self.env.p        = smalls#pos#new(self, self.env.p)
-  let self.hl           = smalls#highlighter#new(self, self.conf, self.env)
-  let self.finder       = smalls#finder#new(self.conf, self.env)
-  let self.keyboard_cli = smalls#keyboard#cli#new(self)
+  let self._auto_set       = 0
+  let self.operation       = {}
+  let self.exception       = ''
+  let self.env             = s:env_preserve(a:mode)
+  let self.env.p           = smalls#pos#new(self, self.env.p)
+  let self.hl              = smalls#highlighter#new(self, self.conf, self.env)
+  let self.finder          = smalls#finder#new(self.conf, self.env)
+  let self.keyboard_cli    = smalls#keyboard#cli#new(self)
 endfunction
 
 function! s:smalls.finish() "{{{1

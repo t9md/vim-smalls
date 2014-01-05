@@ -104,6 +104,10 @@ let s:help.ja = {
 
 let s:keyboard = {}
 
+function! s:keyboard.show_id() "{{{1
+  call self.msg(self.name, 'SmallsCurrent')
+endfunction
+
 function! s:keyboard.init(word, poslist) "{{{1
   let self.index       = 0
   let self._count      = ''

@@ -66,6 +66,10 @@ let s:help.ja = {
 
 let s:keyboard = {}
 
+function! s:keyboard.show_id() "{{{1
+  call self.msg(self.name, 'SmallsCandidate')
+endfunction
+
 function! s:keyboard.do_head() "{{{1
   let self.cursor = 0
 endfunction

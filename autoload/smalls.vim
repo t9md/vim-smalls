@@ -91,7 +91,7 @@ function! s:smalls.start(mode, config)  "{{{1
   try
     let options_saved = s:options_set(s:vim_options)
     let self.conf     = extend(self._config(), a:config, 'force')
-    let mode = a:mode ==# 'v' ? visualmode() : a:mode
+    let mode          = a:mode ==# 'v' ? visualmode() : a:mode
     call self.init(mode)
     call self.cursor_hide()
     call self.loop()

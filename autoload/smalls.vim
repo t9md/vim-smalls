@@ -91,8 +91,7 @@ function! s:smalls.start(mode, config)  "{{{1
   try
     let options_saved = s:options_set(s:vim_options)
     let self.conf     = extend(self._config(), a:config, 'force')
-    " let self.conf.wildchar = escape(self.conf.wildchar, '\')
-    call self.init(a:mode ==# 'v' ? visualmode() : a:mode)
+    call self.init( a:mode ==# 'v' ? visualmode() : a:mode)
     call self.cursor_hide()
     call self.loop()
 
@@ -262,9 +261,4 @@ function! smalls#start(...) "{{{1
   call call( s:smalls.start, a:000, s:smalls)
 endfunction "}}}
 "}}}
-if expand("%:p") !=# expand("<sfile>:p")
-  finish
-endif
-
-echo 'OK'
 " vim: foldmethod=marker

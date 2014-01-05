@@ -1,5 +1,5 @@
-" Excurstion:
 scriptencoding utf-8
+" Excurstion:
 let s:getchar   = smalls#util#import("getchar")
 let s:is_visual = smalls#util#import('is_visual')
 

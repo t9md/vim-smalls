@@ -1,5 +1,5 @@
-" Cli:
 scriptencoding utf-8
+" Cli:
 let s:getchar = smalls#util#import("getchar")
 
 let s:key_table = {

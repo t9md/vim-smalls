@@ -373,7 +373,7 @@ endfunction
 
 function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, 
-        \ s:key_table, 'exc', s:help)
+        \ s:key_table, 'EXC', s:help)
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init(a:word, a:poslist)
 endfunction "}}}

@@ -155,7 +155,7 @@ function! s:h._current(word, pos) "{{{1
 
   let pattern = s:pattern_for(a:word, self.conf.wildchar) . 
         \ printf('%%%dl%%%dc', dest.line, dest.col)
-  " call self.hl("SmallsCurrent", pattern)
+  call self.hl("SmallsCurrent", pattern)
   call self.clear("SmallsRegion")
   if self.env.mode != 'n'
     call self._region(a:word, a:pos)

@@ -181,11 +181,11 @@ function! s:keyboard.show_prompt() "{{{1
 endfunction
 
 let s:mode_map = {
-      \ 'n':      'n ',
-      \ 'v':      'v ',
-      \ 'V':      'V ',
-      \ "\<C-v>": '^V',
-      \ 'o':      'o ',
+      \ 'n':      'N ',
+      \ 'v':      'V ',
+      \ 'V':      'VL',
+      \ "\<C-v>": 'VB',
+      \ 'o':      'OP',
       \ }
 
 function! s:keyboard._mode_str() "{{{1

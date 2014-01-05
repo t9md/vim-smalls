@@ -292,47 +292,35 @@ function! s:keyboard._action_missing(action) "{{{1
 endfunction
 
 function! s:keyboard.do_select_v(...) "{{{1
-  " call self._do_select('v', !empty(a:0))
   call self._do_select('v')
 endfunction
 
 function! s:keyboard.do_select_V(...) "{{{1
-  " call self._do_select('V', !empty(a:0))
   call self._do_select('V')
 endfunction
 
 function! s:keyboard.do_select_CTRL_V(...) "{{{1
-  " call self._do_select("\<C-v>", !empty(a:0))
   call self._do_select("\<C-v>")
 endfunction
 
 function! s:keyboard.do_delete() "{{{1
-  " call self.do_select_v()
-  " call self._do_normal('d')
   call self._do_normal('d', 'v')
 endfunction
 
 function! s:keyboard.do_delete_till() "{{{1
   let self.owner.conf.adjust = 'till'
-  " call self.do_delete()
   call self._do_normal('d', 'v')
 endfunction
 
 function! s:keyboard.do_delete_line() "{{{1
-  " call self.do_select_V(1)
-  " call self._do_normal('d')
   call self._do_normal('d', 'V', 1)
 endfunction
 
 function! s:keyboard.do_yank() "{{{1
-  " call self.do_select_v()
-  " call self._do_normal('y')
   call self._do_normal('y', 'v')
 endfunction
 
 function! s:keyboard.do_yank_line() "{{{1
-  " call self.do_select_V(1)
-  " call self._do_normal('y')
   call self._do_normal('y', 'V', 1)
 endfunction
 
@@ -340,16 +328,14 @@ function! s:keyboard.do_change() "{{{1
   " FIXME need robust change to support 'c' precisely
   " need <expr> map, but <expr> don't allow buffer change within expression
   " ,means need to give-up easy motion style jump.
-  " call self.do_select_v()
-  " call self.do_select_v()
-  " call self._do_normal('c')
   call self._do_normal('c', 'v')
 endfunction
 
 function! s:keyboard._do_normal(key, wise, ...)
   let force_wise = !empty(a:000)
+
   if force_wise || ! s:is_visual(self.owner.mode())
-    call self._do_select(a:wise)
+    call self._do_select(a:wise, force_wise)
   endif
   let self.owner.operation = {
         \ 'normal':      a:key ==# 'c' ? 'd' : a:key,
@@ -358,37 +344,18 @@ function! s:keyboard._do_normal(key, wise, ...)
   call self.do_set()
 endfunction
 
-" function! s:keyboard._do_normal(key)
-  " let force_wise = !empty(a:000)
-  " if force_wise || ! s:is_visual(self.owner.mode())
-    " call self._do_select(a:wise)
-  " endif
-  " let self.owner.operation = {
-        " \ 'normal':      a:key ==# 'c' ? 'd' : a:key,
-        " \ 'startinsert': a:key ==# 'c',
-        " \ }
-  " call self.do_set()
-" endfunction
-
 function! s:keyboard._do_select(key, ...) "{{{1
   " only emulate select, so set to env.mode
   " highlighter will refresh screen based on env.mode
-  let self.owner.env.mode = a:key
-  if !empty(a:000)
-    call self.do_set()
+  let force_wise = !empty(a:000) && a:1
+  if force_wise
+    let self.owner.env.mode = a:key
+  else
+  let self.owner.env.mode =
+        \ self.owner.env.mode ==# a:key 
+        \  ? self.owner.env.mode_org
+        \  : a:key
   endif
-
-  " if force_wise || 
-    " call self._do_select(a:wise)
-  " endif
-
-  " if a:force ! s:is_visual(self.owner.mode())
-    " let self.owner.env.mode = a:key
-  " else
-    " let self.owner.env.mode =
-          " \ self.owner.env.mode !=# a:key 
-          " \ ? a:key : self.owner.env.mode_org
-  " endif
 endfunction
 
 function! smalls#keyboard#excursion#get_table() "{{{1

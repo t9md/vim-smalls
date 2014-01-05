@@ -107,19 +107,21 @@ endfunction
 
 function! s:h._region(word, pos) "{{{1
   let E = smalls#pos#new(self.owner, a:pos)
-  let CASE = E.get_case(self.env.p)
-  let [U, D, L, R] = E.pos_UDLR(CASE, self.env.p)
-  call E.adjust(CASE)
+  let [U, D, L, R] = E.get_UDLR()
+  call E.adjust()
 
   if self.env.mode =~# 'v\|o'
-    let pat = printf('\v\c%%%dl%%>%dc\_.*%%%dl%%<%dc',
-          \ U.line, U.col - 1, D.line, D.col + 1)
+    let pat = printf('\v\c%%%dl%%%dc\_.*%%%dl%%%dc',
+          \ U.line, U.col, D.line, D.col + 1)
+
   elseif self.env.mode =~# 'V'
     let pat = printf('\v\c%%%dl\_.*%%%dl', U.line, D.line)
+
   elseif self.env.mode =~# "\<C-v>"
     let pat = printf( '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc',
           \ U.line - 1, L.col - 1, D.line + 1, R.col + 1)
   endif
+
   call self.hl("SmallsRegion", pat)
 endfunction
 
@@ -153,7 +155,7 @@ function! s:h._current(word, pos) "{{{1
 
   let pattern = s:pattern_for(a:word, self.conf.wildchar) . 
         \ printf('%%%dl%%%dc', dest.line, dest.col)
-  call self.hl("SmallsCurrent", pattern)
+  " call self.hl("SmallsCurrent", pattern)
   call self.clear("SmallsRegion")
   if self.env.mode != 'n'
     call self._region(a:word, a:pos)

@@ -7,6 +7,7 @@ function! s:pos.new(owner, pos) "{{{1
   let o = deepcopy(self)
   let [ o.line, o.col ] = a:pos
   let o.owner = a:owner
+  let o._where = ''
   return o
 endfunction
 
@@ -36,7 +37,7 @@ function! s:pos.is_ge_line(pos) "{{{1
 endfunction
 
 function! s:pos.jump() "{{{1
-  call self._adjust_col()
+  call self.adjust()
 
   let mode = self.owner.mode()
   if s:is_visual(mode)
@@ -56,10 +57,11 @@ endfunction
 
 function! s:pos.offset() "{{{1
   let word = self.word()
-  return self.is_wild()
+  let R = self.is_wild()
         \ ? len(matchstr(getline(self.line),
         \   s:pattern_for(word, self.owner.conf.wildchar)))
         \ : len(word)
+  return R - 1
 endfunction
 "}}}
 
@@ -70,60 +72,59 @@ let  [ s:FWD_R,    s:BWD_L,    s:FWD_L,   s:BWD_R  ] = [ 1, 2, 3, 4 ]
 "    +---------E E---------S E---------+ S---------+
 lockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
 
-function! s:pos.get_case(pos_start) "{{{1
+function! s:pos.where() "{{{1
   " determine case and return case number( CONSTANTS )
-  let S = a:pos_start
+  if !empty(self._where)
+    return self._where
+  endif
+  let S = self.owner.pos()
   let E = self
-  return
+  let self._where = 
         \ ( S.line <= E.line && S.col <= E.col ) ? s:FWD_R :
         \ ( S.line <  E.line && S.col >  E.col ) ? s:FWD_L :
         \ ( S.line >= E.line && S.col >  E.col ) ? s:BWD_L :
         \ ( S.line >  E.line && S.col <= E.col ) ? s:BWD_R :
         \ NEVER_HAPPEN
+  return self._where
 endfunction
 
-function! s:pos.pos_UDLR(case, pos_start) "{{{1
+function! s:pos.get_UDLR() "{{{1
   " return [ Up, Down, Left, Right ]
-  let S = a:pos_start
+  let S = self.owner.pos()
   let E = self
+  let CASE = self.where()
   return
-        \ a:case ==#  s:FWD_R ? [ S, E, S, E ] :
-        \ a:case ==#  s:BWD_L ? [ E, S, E, S ] :
-        \ a:case ==#  s:FWD_L ? [ S, E, E, S ] :
-        \ a:case ==#  s:BWD_R ? [ E, S, S, E ] :
+        \ CASE ==#  s:FWD_R ? [ S, E, S, E ] :
+        \ CASE ==#  s:BWD_L ? [ E, S, E, S ] :
+        \ CASE ==#  s:FWD_L ? [ S, E, E, S ] :
+        \ CASE ==#  s:BWD_R ? [ E, S, S, E ] :
         \ NEVER_HAPPEN
 endfunction
 
-function! s:pos.adjust(case) "{{{1
+function! s:pos.adjust() "{{{1
+  let CASE    = self.where()
   let offset  = self.offset()
   let mode    = self.owner.mode()
-  let C       = a:case
-  let pos_org = self.owner.pos()
 
   if     mode =~# 'v\|o'
-    if (C ==# s:FWD_R || C ==# s:FWD_L) | let self.col += offset - 1 | endif
+    if (CASE ==# s:FWD_R || CASE ==# s:FWD_L) | let self.col += offset | endif
   elseif mode =~# "\<C-v>"
-    if (C ==# s:FWD_R || C ==# s:BWD_R) | let self.col += offset | endif
-    if (C ==# s:FWD_R || C ==# s:BWD_R) | let self.col -= 1      | endif
+    if (CASE ==# s:FWD_R || CASE ==# s:BWD_R) | let self.col += offset | endif
   endif
 
   if self.owner.conf.adjust !=# 'till'
     return
   endif
   if  mode ==# 'v'
-    let self.col = (C ==# s:FWD_R || C==# s:FWD_L)
+    let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_L)
           \ ? self.col - offset
           \ : self.col + offset
 
   elseif mode ==# "\<C-v>"
-    let self.col = (C ==# s:FWD_R || C==# s:FWD_R)
+    let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_R)
           \ ? self.col - offset
           \ : self.col + offset
   endif
-endfunction
-
-function! s:pos._adjust_col() "{{{1
-  call self.adjust(self.get_case(self.owner.pos()))
 endfunction
 
 function! smalls#pos#new(owner, pos) "{{{1

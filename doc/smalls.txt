@@ -363,6 +363,7 @@ is specified or not.
 ============================================================================
 TODO								*smalls-todo*
 
+* [ ] skip concealed char?
 * [ ] operator to combine smalls with text-object-function smalls within
   function and replace character which cli-C-R become useful.
 * [ ] introduce smalls throughout multiwindow(multiwin-mode?)

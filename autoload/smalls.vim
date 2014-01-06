@@ -12,9 +12,13 @@ endfunction
 
 function! s:env_preserve(mode) "{{{1
   " to get precise start point in visual mode.
-  if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
+  let dest = []
+  if s:is_visual(a:mode)
+    exe "normal! gv\<Esc>"
+    let dest = [ line('.'), col('.') ]
+    exe "normal! gvo\<Esc>"
+  endif
   let [ l, c ] = [ line('.'), col('.') ]
-  " if s:is_visual(a:mode) | exe "normal! gvo\<Esc>" | endif
 
   return {
         \ 'mode_org': a:mode,
@@ -22,6 +26,7 @@ function! s:env_preserve(mode) "{{{1
         \ 'w0': line('w0'),
         \ 'w$': line('w$'),
         \ 'l': l,
+        \ 'dest': dest,
         \ 'c': c,
         \ 'p': [l, c],
         \ }
@@ -167,12 +172,16 @@ function! s:smalls.do_operation() "{{{1
   endif
 endfunction
 
+function! s:smalls.word() "{{{1
+  return self.keyboard_cli.data
+endfunction
+
 function! s:smalls.loop() "{{{1
   call self.statusline_update('cli')
   let kbd = self.keyboard_cli
 
   while 1
-    call self.hl.shade().cursor()
+    call self.hl.refresh()
     try
       call kbd.read_input()
     catch /KEYBOARD_TIMEOUT/
@@ -180,7 +189,6 @@ function! s:smalls.loop() "{{{1
     endtry
 
     if kbd.data_len() ==# 0
-      call self.hl.clear("SmallsCandidate", "SmallsCurrent")
       continue
     endif
 
@@ -200,7 +208,7 @@ function! s:smalls.loop() "{{{1
       let self._auto_set = 1
       call kbd.call_action('do_excursion_with_set')
     endif
-    call self.hl.candidate(kbd.data, found[0])
+    let self.env.dest = found[0]
   endwhile
 endfunction
 
@@ -212,17 +220,14 @@ function! s:smalls.do_excursion(kbd, ...) "{{{1
   let first_action = a:0 ? a:1 : ''
   let poslist = self.finder.all(word)
   let kbd     = smalls#keyboard#excursion#new(self, word, poslist)
-
   try
     while 1
-      call self.hl.shade().cursor()
-
       if !empty(first_action)
-        call kbd['do_' . first_action]()
+        call kbd.call_action('do_' . first_action)
         let first_action = ''
       endif
-
-      call self.hl.candidate(word, kbd.pos())
+      let self.env.dest = kbd.pos()
+      call self.hl.refresh()
       call kbd.read_input()
     endwhile
   catch 'BACK_CLI'

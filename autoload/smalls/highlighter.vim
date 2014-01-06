@@ -1,30 +1,5 @@
 let s:pattern_for = smalls#util#import("pattern_for")
 
-" function! s:intrpl(string, vars) "{{{1
-  " let mark = '\v\{(.{-})\}'
-  " let r = []
-  " for expr in s:scan(a:string, mark)
-    " call add(r, substitute(expr, '\v([a-z][a-z$0]*)', '\=a:vars[submatch(1)]', 'g'))
-  " endfor
-  " call map(r, 'eval(v:val)')
-  " return substitute(a:string, mark,'\=remove(r, 0)', 'g')
-" endfunction
-
-" function! s:scan(str, pattern) "{{{1
-  " let ret = []
-  " let nth = 1
-  " while 1
-    " let m = matchlist(a:str, a:pattern, 0, nth)
-    " if empty(m)
-      " break
-    " endif
-    " call add(ret, m[1])
-    " let nth += 1
-  " endwhile
-  " return ret
-" endfunction
-"}}}
-
 let s:h = {}
 let s:h.ids = []
 let s:priorities = {
@@ -103,8 +78,20 @@ function! s:h.offset_for(word, line) "{{{1
 endfunction
 "}}}
 
-function! s:h._region(word, pos) "{{{1
-  let E = smalls#pos#new(self.owner, a:pos)
+function! s:h.refresh()
+  call self.shade().cursor().candidate().current().region()
+endfunction
+
+function! s:h.region() "{{{1
+  call self.clear("SmallsRegion")
+  if self.env.mode ==# 'n'
+    return self
+  endif
+  let pos = self.env.dest
+  if empty(pos)
+    return self
+  endif
+  let E  = smalls#pos#new(self.owner, pos)
   let [U, D, L, R] = E.get_UDLR()
   call E.adjust()
 
@@ -119,45 +106,48 @@ function! s:h._region(word, pos) "{{{1
     let pat = printf( '\v\c%%>%dl%%>%dc.*%%<%dl%%<%dc',
           \ U.line - 1, L.col - 1, D.line + 1, R.col + 1)
   endif
-
   call self.hl("SmallsRegion", pat)
+  return self
 endfunction
 
 function! s:h.jump_target(poslist) "{{{1
   let pattern = join(
         \ map(a:poslist, "'%'. v:val[0] .'l%'. v:val[1] .'c'" ), '|')
   call self.hl('SmallsJumpTarget', '\v'. pattern)
-endfunction
-
-function! s:h.candidate(word, pos) "{{{1
-  call self.clear("SmallsCandidate")
-  if empty(a:word) | return | endif
-  if empty(a:pos)  | return | endif
-
-  call self.hl("SmallsCandidate", s:pattern_for(a:word, self.conf.wildchar))
-
-  call self._current(a:word, a:pos)
   return self
 endfunction
 
-function! s:h.is_wild(word)
+function! s:h.candidate() "{{{1
+  call self.clear("SmallsCandidate")
+  let word = self.owner.word()
+  if empty(word)  | return self | endif
+
+  call self.hl("SmallsCandidate", s:pattern_for(word, self.conf.wildchar))
+  return self
+endfunction
+
+function! s:h.is_wild(word) "{{{1
   return !empty(matchstr(a:word, '\V' . self.conf.wildchar))
 endfunction
 
-function! s:h._current(word, pos) "{{{1
+" function! s:h.word() "{{{1
+  " return self.owner.word()
+" endfunction
+
+function! s:h.current() "{{{1
   call self.clear("SmallsCurrent")
-
-  let dest      = smalls#pos#new({}, a:pos)
-  let offset    = self.offset_for(a:word, dest.line)
-  let dest.col += offset
-
-  let pattern = s:pattern_for(a:word, self.conf.wildchar) . 
-        \ printf('%%%dl%%%dc', dest.line, dest.col)
-  call self.hl("SmallsCurrent", pattern)
-  call self.clear("SmallsRegion")
-  if self.env.mode != 'n'
-    call self._region(a:word, a:pos)
+  let word = self.owner.word()
+  let pos = self.env.dest
+  if empty(word) || empty(pos)
+    return self
   endif
+  let [line, col]  = pos
+  let offset       = self.offset_for(word, line)
+  let col         += offset
+
+  let pattern = s:pattern_for(word, self.conf.wildchar) . 
+        \ printf('%%%dl%%%dc', line, col)
+  call self.hl("SmallsCurrent", pattern)
   return self
 endfunction
 

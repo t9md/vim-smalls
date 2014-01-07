@@ -66,6 +66,11 @@ let s:help.ja = {
 
 let s:keyboard = {}
 
+function! s:keyboard.init() "{{{1
+  let self.poslist = []
+  return self
+endfunction
+
 function! s:keyboard.show_id() "{{{1
   call self.msg(self.name, 'SmallsCandidate')
 endfunction
@@ -79,6 +84,34 @@ function! s:keyboard._timeout_second() "{{{1
   return ( conf.auto_jump &&
         \ ( self.data_len() >= conf.auto_jump_min_input_length ))
         \ ? conf.auto_jump_timeout : -1
+endfunction
+
+function! s:keyboard._do_auto_excursion() "{{{1
+  let conf = self.owner.conf
+  if conf.auto_excursion &&
+        \ (self.data_len() >=# conf.auto_excursion_min_input_length)
+    call self.call_action('do_excursion')
+  endif
+endfunction
+
+function! s:keyboard._do_auto_set() "{{{1
+  let conf = self.owner.conf
+  if len(self.poslist) ==# 1 && conf.auto_set &&
+        \ self.data_len() >=# conf.auto_set_min_input_length
+    let self.owner._auto_set = 1
+    call self.call_action('do_excursion_with_set')
+  endif
+endfunction
+
+function! s:keyboard.post_input() "{{{1
+  call self._do_auto_excursion()
+  let found = self.owner.finder.all(self.data)
+  if empty(found)
+    throw 'NOT_FOUND'
+  endif
+  let self.poslist = found
+  call self._do_auto_set()
+  let self.owner.env.dest = found[0]
 endfunction
 
 function! s:keyboard.do_char_forward() "{{{1
@@ -186,7 +219,8 @@ function! smalls#keyboard#cli#new(owner) "{{{1
   endif
   let keyboard = smalls#keyboard#base#new(a:owner,
         \ s:key_table, 'CLI', s:help)
-  return extend(keyboard, s:keyboard, 'force')
+  call extend(keyboard, s:keyboard, 'force')
+  return keyboard.init()
 endfunction "}}}
 
 " vim: foldmethod=marker

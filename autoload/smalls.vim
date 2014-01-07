@@ -165,7 +165,6 @@ function! s:smalls.do_operation() "{{{1
   if empty(self.operation)
     return
   endif
-
   execute 'normal!' self.operation.normal
   if self.operation.startinsert
     startinsert
@@ -179,7 +178,6 @@ endfunction
 function! s:smalls.loop() "{{{1
   call self.statusline_update('cli')
   let kbd = self.keyboard_cli
-
   while 1
     call self.hl.refresh()
     try
@@ -187,28 +185,9 @@ function! s:smalls.loop() "{{{1
     catch /KEYBOARD_TIMEOUT/
       call kbd.call_action('do_jump')
     endtry
-
     if kbd.data_len() ==# 0
       continue
     endif
-
-    if self.conf.auto_excursion &&
-          \ kbd.data_len() >=# self.conf.auto_excursion_min_input_length
-      call self.do_excursion(kbd)
-    endif
-
-    let need_auto_set = self.conf.auto_set &&
-          \ kbd.data_len() >=# self.conf.auto_set_min_input_length
-    let found = need_auto_set
-          \ ? self.finder.all(kbd.data) : self.finder.one(kbd.data)
-
-    if empty(found)
-      throw 'NOT_FOUND'
-    elseif len(found) ==# 1 && need_auto_set
-      let self._auto_set = 1
-      call kbd.call_action('do_excursion_with_set')
-    endif
-    let self.env.dest = found[0]
   endwhile
 endfunction
 

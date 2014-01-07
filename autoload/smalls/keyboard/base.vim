@@ -28,6 +28,10 @@ function! s:keyboard.read_input(...) "{{{1
   else
     call self.input(s:getchar())
   end
+
+  if exists('*self.post_input')
+    call self.post_input()
+  endif
 endfunction
 
 function! s:keyboard._timeout_second() "{{{1
@@ -36,6 +40,7 @@ function! s:keyboard._timeout_second() "{{{1
 endfunction
 
 function! s:keyboard.init(owner, table, name, help) "{{{1
+  let self.conf              = a:owner.conf
   let self._help             = a:help
   let self._table            = a:table
   let self.owner             = a:owner

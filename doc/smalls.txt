@@ -414,6 +414,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2014-01-07:
+	[bugfix] now properly recover undo history with |rundo| and |wundo|.
 2014-01-04:
 	[new-feature] descriptive help with <F1> on cli and excursion.
 	[new-feature] experimental wildchar now support.

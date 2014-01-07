@@ -108,15 +108,22 @@ function! s:keyboard.show_id() "{{{1
   call self.msg(self.name, 'SmallsCurrent')
 endfunction
 
-function! s:keyboard.init(word, poslist) "{{{1
+function! s:keyboard.post_input() "{{{1
+  let self.owner.env.dest = self.pos()
+endfunction
+
+function! s:keyboard.init(poslist, first_action) "{{{1
   let self.index       = 0
   let self._count      = ''
   let self.data        = self.owner.keyboard_cli.data
   let self.cursor      = len(self.data)
   let self._sorted     = []
-  let self.word        = a:word
   let self.poslist     = a:poslist
   let self.poslist_max = len(a:poslist)
+
+  if !empty(a:first_action)
+    call self['do_' . a:first_action ]()
+  endif
   return self
 endfunction
 
@@ -133,7 +140,7 @@ function! s:keyboard.do_cancel() "{{{1
 endfunction
 
 function! s:keyboard.do_back_cli() "{{{1
-  throw 'BACK_CLI'
+  call self.owner.keyboard_change(self.owner.keyboard_cli)
 endfunction
 
 function! s:keyboard.line() "{{{1
@@ -278,7 +285,7 @@ function! s:keyboard._setchar(c) "{{{1
       call self.execute(last_2_char)
     endif
 
-    let lastchar_cli = self.owner.keyboard_cli.data[-1:]
+    let lastchar_cli = self.data[-1:]
     if lastchar_cli ==# a:c "same char entered to excursion mode
       call self.do_next()
     elseif lastchar_cli ==# tolower(a:c) " upper char for backward movement
@@ -375,11 +382,11 @@ function! smalls#keyboard#excursion#replace_table(table) "{{{1
   let s:key_table = a:table
 endfunction
 
-function! smalls#keyboard#excursion#new(owner, word, poslist) "{{{1
+function! smalls#keyboard#excursion#new(owner) "{{{1
   let keyboard = smalls#keyboard#base#new(a:owner, 
-        \ s:key_table, 'EXC', s:help)
+        \ s:key_table, 'exc', s:help)
   call extend(keyboard, s:keyboard, 'force')
-  return keyboard.init(a:word, a:poslist)
+  return keyboard
 endfunction "}}}
 
 " vim: foldmethod=marker

@@ -133,6 +133,8 @@ function! s:smalls.init(mode) "{{{1
   let self.hl              = smalls#highlighter#new(self, self.conf, self.env)
   let self.finder          = smalls#finder#new(self.conf, self.env)
   let self.keyboard_cli    = smalls#keyboard#cli#new(self)
+  let self.keyboard_exc    = smalls#keyboard#excursion#new(self)
+  let self.keyboard_cur    = self.keyboard_cli
 endfunction
 
 function! s:smalls.finish() "{{{1
@@ -182,42 +184,22 @@ function! s:smalls.word() "{{{1
 endfunction
 
 function! s:smalls.loop() "{{{1
-  call self.statusline_update('cli')
-  let kbd = self.keyboard_cli
   while 1
     call self.hl.refresh()
     try
-      call kbd.read_input()
+      call self.keyboard_cur.read_input()
+      "[NOTE] keyboard_cur might be changed within read_input()
+      call self.keyboard_cur.post_input()
     catch /KEYBOARD_TIMEOUT/
-      call kbd.call_action('do_jump')
+      call self.keyboard_cur.call_action('do_jump')
     endtry
-    if kbd.data_len() ==# 0
-      continue
-    endif
   endwhile
 endfunction
 
-function! s:smalls.do_excursion(kbd, ...) "{{{1
-  let word = a:kbd.data
-  if empty(word) | return [] | endif
-
-  call self.statusline_update('excursion')
-  let first_action = a:0 ? a:1 : ''
-  let poslist = self.finder.all(word)
-  let kbd     = smalls#keyboard#excursion#new(self, word, poslist)
-  try
-    while 1
-      if !empty(first_action)
-        call kbd.call_action('do_' . first_action)
-        let first_action = ''
-      endif
-      let self.env.dest = kbd.pos()
-      call self.hl.refresh()
-      call kbd.read_input()
-    endwhile
-  catch 'BACK_CLI'
-    call self.statusline_update('cli')
-  endtry
+function! s:smalls.keyboard_change(kbd)
+  call g:plog('kbd canged: ' . a:kbd.name)
+  call self.statusline_update(a:kbd.name)
+  let self.keyboard_cur = a:kbd
 endfunction
 
 function! s:smalls.do_jump(word) "{{{1

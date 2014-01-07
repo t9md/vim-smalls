@@ -108,6 +108,10 @@ function! s:keyboard._do_auto_set() "{{{1
 endfunction
 
 function! s:keyboard.post_input() "{{{1
+  if empty(self.data)
+    return
+  endif
+
   let found = self.owner.finder.all(self.data)
   if empty(found)
     throw 'NOT_FOUND'
@@ -173,8 +177,12 @@ function! s:keyboard.do_jump() "{{{1
   call call(self.owner.do_jump, [self.data], self.owner)
 endfunction
 
-function! s:keyboard.do_excursion() "{{{1
-  call call(self.owner.do_excursion, [self], self.owner)
+function! s:keyboard.do_excursion(...) "{{{1
+  if empty(self.data)
+    return
+  endif
+  call self.owner.keyboard_exc.init(self.poslist, a:0 ? a:1 : '')
+  call self.owner.keyboard_change(self.owner.keyboard_exc)
 endfunction
 
 function! s:keyboard._toggle_option(opt) "{{{1
@@ -192,7 +200,7 @@ function! s:keyboard._action_missing(action) "{{{1
     let match = matchstr(a:action, pattern)
     if !empty(match)
       if action ==# 'excursion'
-        call call(self.owner.do_excursion, [self, match], self.owner)
+        call self.do_excursion(match)
       elseif action ==# 'toggle'
         call self._toggle_option(match)
       endif
@@ -223,7 +231,7 @@ function! smalls#keyboard#cli#new(owner) "{{{1
     let s:key_table[jump_trigger] = 'do_jump'
   endif
   let keyboard = smalls#keyboard#base#new(a:owner,
-        \ s:key_table, 'CLI', s:help)
+        \ s:key_table, 'cli', s:help)
   call extend(keyboard, s:keyboard, 'force')
   return keyboard.init()
 endfunction "}}}

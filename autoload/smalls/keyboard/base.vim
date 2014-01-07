@@ -23,15 +23,12 @@ function! s:keyboard.read_input(...) "{{{1
   call self.show_prompt()
   " optional arg is timeout, empty or -1 mean 'no timeout'.
   let timeout = self._timeout_second()
+
   if timeout !=# -1
     call self.input(s:getchar_timeout(timeout))
   else
     call self.input(s:getchar())
   end
-
-  if exists('*self.post_input')
-    call self.post_input()
-  endif
 endfunction
 
 function! s:keyboard._timeout_second() "{{{1

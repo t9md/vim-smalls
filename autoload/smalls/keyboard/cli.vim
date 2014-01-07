@@ -90,6 +90,7 @@ function! s:keyboard._do_auto_excursion() "{{{1
   let conf = self.owner.conf
   if conf.auto_excursion &&
         \ (self.data_len() >=# conf.auto_excursion_min_input_length)
+    call g:plog('hoge')
     call self.call_action('do_excursion')
   endif
 endfunction
@@ -104,11 +105,12 @@ function! s:keyboard._do_auto_set() "{{{1
 endfunction
 
 function! s:keyboard.post_input() "{{{1
-  call self._do_auto_excursion()
   let found = self.owner.finder.all(self.data)
   if empty(found)
     throw 'NOT_FOUND'
   endif
+  call self._do_auto_excursion()
+
   let self.poslist = found
   call self._do_auto_set()
   let self.owner.env.dest = found[0]

@@ -13,7 +13,6 @@ let s:key_table = {
       \   "\<Tab>": "do_next",
       \        "p": "do_prev",
       \ "\<S-Tab>": "do_prev",
-      \       "gg": "do_first",
       \        "G": "do_last",
       \        "0": "do_line_head",
       \        "^": "do_line_head",
@@ -337,9 +336,6 @@ function! s:keyboard.do_yank_line() "{{{1
 endfunction
 
 function! s:keyboard.do_change() "{{{1
-  " FIXME need robust change to support 'c' precisely
-  " need <expr> map, but <expr> don't allow buffer change within expression
-  " ,means need to give-up easy motion style jump.
   call self._do_normal('c', 'v')
 endfunction
 

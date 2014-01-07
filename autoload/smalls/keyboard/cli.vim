@@ -28,6 +28,7 @@ let s:key_table = {
       \   "\<C-n>": "do_excursion_with_next",
       \ "\<S-Tab>": "do_excursion_with_prev",
       \   "\<C-p>": "do_excursion_with_prev",
+      \        "G": "do_excursion_with_last",
       \   "\<C-c>": "do_excursion_with_change",
       \        "E": "do_toggle_auto_set",
       \    "\<F1>": "do_help",
@@ -116,9 +117,9 @@ function! s:keyboard.post_input() "{{{1
   if empty(found)
     throw 'NOT_FOUND'
   endif
-  call self._do_auto_excursion()
-
   let self.poslist = found
+
+  call self._do_auto_excursion()
   call self._do_auto_set()
   let self.owner.env.dest = found[0]
 endfunction

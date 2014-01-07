@@ -3,10 +3,7 @@ let s:getchar = smalls#util#import("getchar")
 
 let s:jump = {}
 function! s:jump.setlines(lines) "{{{1
-  try
-    undojoin
-  catch
-  endtry
+  silent! undojoin
   for [lnum, content] in items(a:lines)
     call setline(lnum, content)
   endfor
@@ -85,6 +82,7 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
   let lines_jmp = self.gen_jump_lines(lines_org, pos2jumpk)
 
   try
+    execute 'wundo' self.undofile
     call self.hl.jump_target(poslist)
     call self.setlines(lines_jmp)
     redraw
@@ -96,6 +94,9 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
     call s:ensure(has_key(a:jumpk2pos, jumpk), 'Invalid target' )
   finally
     call self.setlines(lines_org)
+    if filereadable(self.undofile)
+      silent execute 'rundo' self.undofile
+    endif
     call self.hl.clear('SmallsJumpTarget')
   endtry
 
@@ -106,6 +107,9 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
 endfunction
 
 function! s:jump.new(conf, env, hl)
+  if !exists('self.undofile')
+    let self.undofile = tempname()
+  endif
   let self.conf = a:conf
   let self.env  = a:env
   let self.hl   = a:hl

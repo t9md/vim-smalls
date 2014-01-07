@@ -88,17 +88,16 @@ endfunction
 
 function! s:keyboard._do_auto_excursion() "{{{1
   let conf = self.owner.conf
-  if conf.auto_excursion &&
-        \ (self.data_len() >=# conf.auto_excursion_min_input_length)
-    call g:plog('hoge')
+  if conf['auto_excursion'] &&
+        \ (self.data_len() >=# conf['auto_excursion_min_input_length'])
     call self.call_action('do_excursion')
   endif
 endfunction
 
 function! s:keyboard._do_auto_set() "{{{1
   let conf = self.owner.conf
-  if len(self.poslist) ==# 1 && conf.auto_set &&
-        \ self.data_len() >=# conf.auto_set_min_input_length
+  if len(self.poslist) ==# 1 && conf['auto_set'] &&
+        \ self.data_len() >=# conf['auto_set_min_input_length']
     let self.owner._auto_set = 1
     call self.call_action('do_excursion_with_set')
   endif

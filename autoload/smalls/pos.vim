@@ -116,13 +116,13 @@ function! s:pos.adjust() "{{{1
   endif
   if  mode ==# 'v'
     let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_L)
-          \ ? self.col - offset
-          \ : self.col + offset
+          \ ? self.col - offset - 1
+          \ : self.col + offset + 1
 
   elseif mode ==# "\<C-v>"
     let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_R)
-          \ ? self.col - offset
-          \ : self.col + offset
+          \ ? self.col - offset - 1
+          \ : self.col + offset + 1
   endif
 endfunction
 

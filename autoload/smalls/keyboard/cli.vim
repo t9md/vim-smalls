@@ -99,7 +99,11 @@ function! s:keyboard._do_auto_set() "{{{1
   if len(self.poslist) ==# 1 && conf['auto_set'] &&
         \ self.data_len() >=# conf['auto_set_min_input_length']
     let self.owner._auto_set = 1
-    call self.call_action('do_excursion_with_set')
+    try
+      call self.call_action('do_excursion_with_set')
+    catch 'SUCCESS'
+      throw 'AUTO_SET'
+    endtry
   endif
 endfunction
 

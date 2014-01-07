@@ -126,7 +126,6 @@ function! s:smalls.cursor_restore() "{{{1
 endfunction
 
 function! s:smalls.init(mode) "{{{1
-  let self._auto_set       = 0
   let self.operation       = {}
   let self.exception       = ''
   let self.env             = s:env_preserve(a:mode)
@@ -138,12 +137,19 @@ endfunction
 
 function! s:smalls.finish() "{{{1
   call self.statusline_update('')
-  let NOT_FOUND = self.exception ==# 'NOT_FOUND'
-  let CANCELED  = self.exception ==# 'CANCELED'
+
+  let conf      = self.conf
+  let exception = self.exception
+  let NOT_FOUND = exception ==# 'NOT_FOUND'
+  let CANCELED  = exception ==# 'CANCELED'
+  let AUTO_SET  = exception ==# 'AUTO_SET'
+  if AUTO_SET
+    let self.exception = ''
+  endif
   call s:msg(self.exception)
 
-  if ( NOT_FOUND && self.conf.blink_on_notfound ) ||
-        \ ( self._auto_set && self.conf.blink_on_auto_set )
+  if ( NOT_FOUND && conf['blink_on_notfound']) ||
+        \ ( AUTO_SET && conf['blink_on_auto_set'] )
     call self.hl.blink_cword(NOT_FOUND)
   endif
 

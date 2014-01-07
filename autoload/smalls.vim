@@ -197,7 +197,6 @@ function! s:smalls.loop() "{{{1
 endfunction
 
 function! s:smalls.keyboard_change(kbd)
-  call g:plog('kbd canged: ' . a:kbd.name)
   call self.statusline_update(a:kbd.name)
   let self.keyboard_cur = a:kbd
 endfunction

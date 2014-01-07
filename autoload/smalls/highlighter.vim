@@ -79,7 +79,6 @@ endfunction
 "}}}
 
 function! s:h.refresh()
-  call g:plog('refresh')
   call self.shade().cursor().candidate().current().region()
 endfunction
 
@@ -139,7 +138,6 @@ function! s:h.current() "{{{1
   call self.clear("SmallsCurrent")
   let word = self.owner.word()
   let pos = self.owner.env.dest
-  call g:plog(pos)
   if empty(word) || empty(pos)
     return self
   endif

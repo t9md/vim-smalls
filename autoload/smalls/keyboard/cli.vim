@@ -15,8 +15,9 @@ let s:key_table = {
       \   "\<C-k>": "do_kill_to_end",
       \   "\<C-u>": "do_kill_line",
       \   "\<C-r>": "do_special",
-      \   "\<C-e>": "do_excursion",
+      \        "E": "do_excursion",
       \    "\<CR>": "do_excursion_with_set",
+      \   "\<C-e>": "do_excursion_with_setopt_adjust_to_wordend_then_set",
       \   "\<C-d>": "do_excursion_with_delete",
       \   "\<C-t>": "do_excursion_with_delete_till",
       \        "D": "do_excursion_with_delete_line",
@@ -30,10 +31,10 @@ let s:key_table = {
       \   "\<C-p>": "do_excursion_with_prev",
       \        "G": "do_excursion_with_last",
       \   "\<C-c>": "do_excursion_with_change",
-      \        "E": "do_toggle_auto_set",
       \    "\<F1>": "do_help",
       \        "?": "do_help",
       \ }
+      " \        "E": "do_toggle_auto_set",
 
 let s:help = {}
 let s:help.en = {
@@ -122,6 +123,10 @@ function! s:keyboard.post_input() "{{{1
   call self._do_auto_excursion()
   call self._do_auto_set()
   let self.owner.env.dest = found[0]
+endfunction
+
+function! s:keyboard.on_timeout() "{{{1
+  call self.do_jump()
 endfunction
 
 function! s:keyboard.do_char_forward() "{{{1

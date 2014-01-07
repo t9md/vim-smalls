@@ -5,10 +5,12 @@ let s:is_visual = smalls#util#import('is_visual')
 
 let s:key_table = {
       \   "\<C-g>": "do_cancel",
-      \   "\<C-e>": "do_back_cli",
+      \        "E": "do_back_cli",
       \   "\<Esc>": "do_back_cli",
       \    "\<CR>": "do_jump",
       \        ";": "do_set",
+      \        "e": "do_setopt_adjust_to_wordend",
+      \   "\<C-e>": "do_setopt_adjust_to_wordend_then_set",
       \        "n": "do_next",
       \   "\<Tab>": "do_next",
       \        "p": "do_prev",
@@ -37,6 +39,7 @@ let s:key_table = {
       \    "\<F1>": "do_help",
       \        "?": "do_help",
       \ }
+      " \        "e": "do_set_on_wordend",
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
       " \   "\<C-v>": "do_select_CTRL_V_with_set",
@@ -262,6 +265,11 @@ function! s:keyboard.do_set() "{{{1
   throw 'SUCCESS'
 endfunction
 
+function! s:keyboard.do_set_on_wordend() "{{{1
+  let self.owner.conf.adjust = 'wordend'
+  call self.do_set()
+endfunction
+
 function! s:keyboard.count() "{{{1
   return empty(self._count) ? 1 : str2nr(self._count)
 endfunction
@@ -297,9 +305,20 @@ function! s:keyboard._setchar(c) "{{{1
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1
-  let [ first_action, next_action ] = split(a:action, '_with_')
-  call self[first_action]()
-  call self['do_' . next_action ]()
+  call g:plog(a:action)
+  if a:action =~# '_then_'
+    let [ first_action, next_action ] = split(a:action, '_then_')
+    call self.call_action(first_action)
+    call self['do_' . next_action ]()
+  endif
+  if a:action =~# 'setopt_\zs.*$'
+    let match =  matchstr(a:action, 'setopt_\zs.*$')
+    let [opt, val] =  split(match, '_to_')
+    call g:plog([opt, val])
+    let self.owner.conf[opt] = val
+    let msg = printf("[%s: %s] ", opt, self.owner.conf[opt])
+    call self.msg(msg, 'Statement')
+  endif
 endfunction
 
 function! s:keyboard.do_select_v(...) "{{{1

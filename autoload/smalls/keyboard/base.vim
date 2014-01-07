@@ -136,8 +136,9 @@ function! s:keyboard.help() "{{{1
   endfor
 
   let width_char   = 7
-  let width_action = max(map(deepcopy(self._table), 'len(v:val)'))
-  let width_desc   = max(map(deepcopy(desc_table), 'strdisplaywidth(v:val)'))
+  let width_action = max(map(values(self._table), 'len(v:val)'))
+  let width_desc   = max(map(values(desc_table), 'strdisplaywidth(v:val)')
+        \ + [width_action])
 
   let R = []
   let format = printf("| %%-%dS | %%-%dS | %%-%dS |",
@@ -152,7 +153,7 @@ function! s:keyboard.help() "{{{1
 
   for [char, action] in sort(items(self._table), function('s:sort_val'))
     if action =~# '^do_excursion_with_'
-      let description = '[exc] do_' . matchstr(action, '^do_excursion_with_\zs.*$')
+      let description = '[excursion] do_' . matchstr(action, '^do_excursion_with_\zs.*$')
     else
       let description = get(desc_table, action, '')
     endif

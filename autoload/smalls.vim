@@ -191,7 +191,8 @@ function! s:smalls.loop() "{{{1
       "[NOTE] keyboard_cur might be changed within read_input()
       call self.keyboard_cur.post_input()
     catch /KEYBOARD_TIMEOUT/
-      call self.keyboard_cur.call_action('do_jump')
+      " currently TIMEOUT is never occur in excursion mode
+      call self.keyboard_cur.on_timeout()
     endtry
   endwhile
 endfunction

@@ -111,18 +111,34 @@ function! s:pos.adjust() "{{{1
     if (CASE ==# s:FWD_R || CASE ==# s:BWD_R) | let self.col += offset | endif
   endif
 
-  if self.owner.conf.adjust !=# 'till'
-    return
-  endif
-  if  mode ==# 'v'
-    let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_L)
-          \ ? self.col - offset - 1
-          \ : self.col + offset + 1
+  " [FIXME] need more precise adjustment when col is 0 or $
+  if self.owner.conf.adjust ==# 'till'
+    if  mode =~# 'v\|o'
+      let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_L)
+            \ ? self.col - offset - 1
+            \ : self.col + offset + 1
 
-  elseif mode ==# "\<C-v>"
-    let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_R)
-          \ ? self.col - offset - 1
-          \ : self.col + offset + 1
+    elseif mode ==# "\<C-v>"
+      let self.col = (CASE ==# s:FWD_R || CASE ==# s:FWD_R)
+            \ ? self.col - offset - 1
+            \ : self.col + offset + 1
+    endif
+    if ( CASE ==# s:FWD_L || CASE ==# s:FWD_R ) && self.col ==# 0
+      let self.line -= 1
+      let self.col = len(getline(self.line)) + 1
+    endif
+  elseif self.owner.conf.adjust ==# 'wordend'
+    if  mode ==# 'n'
+      let self.col += offset
+    elseif mode =~# 'v\|o'
+      if (CASE ==# s:BWD_R || CASE ==# s:BWD_L)
+        let self.col += offset
+      endif
+    elseif mode ==# "\<C-v>"
+      if (CASE ==# s:FWD_L || CASE ==# s:BWD_L)
+        let self.col += offset
+      endif
+    endif
   endif
 endfunction
 

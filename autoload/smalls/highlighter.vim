@@ -4,7 +4,7 @@ let s:h = {}
 let s:h.ids = []
 let s:priorities = {
       \ 'SmallsShade':      101,
-      \ 'SmallsCandidate':  103,
+      \ 'SmallsCandidate':  105,
       \ 'SmallsRegion':     104,
       \ 'SmallsCurrent':    107,
       \ 'SmallsPos':        106,
@@ -12,17 +12,16 @@ let s:priorities = {
       \ }
       " \ 'SmallsPos':        106,
 
-function! s:h.new(owner, conf, env) "{{{1
+function! s:h.new(owner) "{{{1
   let self.owner = a:owner
-  let self.conf  = a:conf
-  let self.env   = a:env
+  let self.conf  = a:owner.conf
+  let self.env   = a:owner.env
   let self.ids   = {}
   for color in keys(s:priorities)
     let self.ids[color] = []
   endfor
   return self
 endfunction
-
 
 function! s:h.hl(color, pattern) "{{{1
   call add(self.ids[a:color],
@@ -32,9 +31,6 @@ endfunction
 function! s:h.clear(...) "{{{1
   let colors = !empty(a:000) ? a:000 : keys(self.ids)
   for color in colors
-    if !has_key(self.ids, color)
-      continue
-    endif
     for id in self.ids[color]
       call matchdelete(id)
     endfor
@@ -146,8 +142,8 @@ function! s:h.current() "{{{1
   return self
 endfunction
 
-function! smalls#highlighter#new(owner, conf, env) "{{{1
-  return s:h.new(a:owner, a:conf, a:env)
+function! smalls#highlighter#new(owner) "{{{1
+  return s:h.new(a:owner)
 endfunction
 
 function! smalls#highlighter#extend_priority(table) "{{{1

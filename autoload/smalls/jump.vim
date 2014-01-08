@@ -65,7 +65,7 @@ function! s:jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
   return pos2jumpk
 endfunction
 
-function! s:jump.get_pos(poslist)
+function! s:jump.get_pos(poslist) "{{{1
   let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(self.conf.jump_keys, '\zs'))
   return self._get_pos(jumpk2pos)
 endfunction
@@ -106,17 +106,17 @@ function! s:jump._get_pos(jumpk2pos) "{{{1
         \ : self._get_pos(dest)
 endfunction
 
-function! s:jump.new(conf, env, hl)
+function! s:jump.new(owner) "{{{1
   if !exists('self.undofile')
     let self.undofile = tempname()
   endif
-  let self.conf = a:conf
-  let self.env  = a:env
-  let self.hl   = a:hl
+  let self.conf = a:owner.conf
+  let self.env  = a:owner.env
+  let self.hl   = a:owner.hl
   return self
 endfunction
 
-function! smalls#jump#new(conf, env, hl) "{{{1
-  return  s:jump.new(a:conf, a:env, a:hl)
+function! smalls#jump#new(owner) "{{{1
+  return  s:jump.new(a:owner)
 endfunction "}}}
 " vim: foldmethod=marker

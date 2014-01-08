@@ -114,14 +114,16 @@ function! s:keyboard.post_input() "{{{1
   let self.owner.env.dest = self.pos()
 endfunction
 
-function! s:keyboard.init(poslist, first_action) "{{{1
+function! s:keyboard.init(first_action) "{{{1
   let self.index       = 0
   let self._count      = ''
   let self.data        = self.owner.keyboard_cli.data
   let self.cursor      = len(self.data)
   let self._sorted     = []
-  let self.poslist     = a:poslist
-  let self.poslist_max = len(a:poslist)
+
+  " poslist is READ only. dont' edit poslist in this class.
+  let self.poslist     = self.owner.poslist
+  let self.poslist_max = len(self.owner.poslist)
 
   if !empty(a:first_action)
     call self.call_action('do_' . a:first_action)
@@ -142,7 +144,7 @@ function! s:keyboard.do_cancel() "{{{1
 endfunction
 
 function! s:keyboard.do_back_cli() "{{{1
-  call self.owner.keyboard_change(self.owner.keyboard_cli)
+  call self.owner.keyboard_swap(self.owner.keyboard_cli)
 endfunction
 
 function! s:keyboard.line() "{{{1
@@ -305,7 +307,6 @@ function! s:keyboard._setchar(c) "{{{1
 endfunction
 
 function! s:keyboard._action_missing(action) "{{{1
-  call g:plog(a:action)
   if a:action =~# '_then_'
     let [ first_action, next_action ] = split(a:action, '_then_')
     call self.call_action(first_action)
@@ -314,7 +315,6 @@ function! s:keyboard._action_missing(action) "{{{1
   if a:action =~# 'setopt_\zs.*$'
     let match =  matchstr(a:action, 'setopt_\zs.*$')
     let [opt, val] =  split(match, '_to_')
-    call g:plog([opt, val])
     let self.owner.conf[opt] = val
     let msg = printf("[%s: %s] ", opt, self.owner.conf[opt])
     call self.msg(msg, 'Statement')

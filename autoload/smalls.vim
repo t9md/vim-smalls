@@ -10,28 +10,6 @@ function! s:msg(msg) "{{{1
   echon a:msg
 endfunction
 
-function! s:env_preserve(mode) "{{{1
-  " to get precise start point in visual mode.
-  let dest = []
-  if s:is_visual(a:mode)
-    exe "normal! gv\<Esc>"
-    let dest = [ line('.'), col('.') ]
-    exe "normal! gvo\<Esc>"
-  endif
-  let [ l, c ] = [ line('.'), col('.') ]
-
-  return {
-        \ 'mode_org': a:mode,
-        \ 'mode': a:mode,
-        \ 'w0': line('w0'),
-        \ 'w$': line('w$'),
-        \ 'l': l,
-        \ 'dest': dest,
-        \ 'c': c,
-        \ 'p': [l, c],
-        \ }
-endfunction
-
 function! s:options_set(options) "{{{1
   let R = {}
   let curbuf = bufnr('')
@@ -124,13 +102,35 @@ function! s:smalls.cursor_restore() "{{{1
   let &t_ve = self.__t_ve_save
 endfunction
 
+function! s:smalls.env_preserve(mode) "{{{1
+  " to get precise start point in visual mode.
+  let dest = []
+  if s:is_visual(a:mode)
+    exe "normal! gv\<Esc>"
+    let dest = [ line('.'), col('.') ]
+    exe "normal! gvo\<Esc>"
+  endif
+  let [ l, c ] = [ line('.'), col('.') ]
+
+  return {
+        \ 'mode_org': a:mode,
+        \ 'mode': a:mode,
+        \ 'w0': line('w0'),
+        \ 'w$': line('w$'),
+        \ 'l': l,
+        \ 'dest': dest,
+        \ 'c': c,
+        \ 'p': smalls#pos#new(self, [l, c]),
+        \ }
+endfunction
+
 function! s:smalls.init(mode) "{{{1
+  let self.poslist         = []
   let self.operation       = {}
   let self.exception       = ''
-  let self.env             = s:env_preserve(a:mode)
-  let self.env.p           = smalls#pos#new(self, self.env.p)
-  let self.hl              = smalls#highlighter#new(self, self.conf, self.env)
-  let self.finder          = smalls#finder#new(self.conf, self.env)
+  let self.env             = self.env_preserve(a:mode)
+  let self.hl              = smalls#highlighter#new(self)
+  let self.finder          = smalls#finder#new(self)
   let self.keyboard_cli    = smalls#keyboard#cli#new(self)
   let self.keyboard_exc    = smalls#keyboard#excursion#new(self)
   let self.keyboard_cur    = self.keyboard_cli
@@ -182,26 +182,30 @@ function! s:smalls.loop() "{{{1
     try
       call self.keyboard_cur.read_input()
       "[NOTE] keyboard_cur might be changed within read_input()
+      " So post_input() is not necessarily same as input()ed one
       call self.keyboard_cur.post_input()
     catch /KEYBOARD_TIMEOUT/
-      " currently TIMEOUT is never occur in excursion mode
+      " currently TIMEOUT never occur in excursion mode
       call self.keyboard_cur.on_timeout()
     endtry
   endwhile
 endfunction
 
-function! s:smalls.keyboard_change(kbd)
+function! s:smalls.keyboard_swap(kbd) "{{{1
   call self.statusline_update(a:kbd.name)
   let self.keyboard_cur = a:kbd
 endfunction
 
-function! s:smalls.do_jump(word) "{{{1
+function! s:smalls.do_jump() "{{{1
   call self.hl.clear().shade()
-  if empty(a:word)
+  if empty(self.poslist)
     return
   endif
-  let poslist = self.finder.all(a:word)
-  let dest    = smalls#jump#new(self.conf, self.env, self.hl).get_pos(poslist)
+  try
+    let dest = smalls#jump#new(self).get_pos(self.poslist)
+  catch 'JUMP_CANCELED'
+    return
+  endtry
   call smalls#pos#new(self, dest).jump()
   throw 'SUCCESS'
 endfunction
@@ -220,11 +224,10 @@ function! s:smalls.statusline_update(mode) "{{{1
   let &ro = &ro
   redraw
 endfunction
-"}}}
 
-" PublicInterface:
 function! smalls#start(...) "{{{1
   call call( s:smalls.start, a:000, s:smalls)
-endfunction "}}}
+endfunction
 "}}}
+
 " vim: foldmethod=marker

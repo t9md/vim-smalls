@@ -1,9 +1,10 @@
 let s:pattern_for = smalls#util#import("pattern_for")
 
 let s:finder = {}
-function! s:finder.new(conf, env) "{{{1
-  let self.env = a:env
-  let self.conf = a:conf
+function! s:finder.new(owner) "{{{1
+  let self.owner = a:owner
+  let self.env = a:owner.env
+  let self.conf = a:owner.conf
   return self
 endfunction
 
@@ -78,8 +79,8 @@ function! s:finder.cursor_NEXT_COL() "{{{1
   call cursor(0, col('.') + 1)
 endfunction
 
-function! smalls#finder#new(conf, env) "{{{1
-  return s:finder.new(a:conf, a:env)
+function! smalls#finder#new(owner) "{{{1
+  return s:finder.new(a:owner)
 endfunction
 "}}}
 " vim: foldmethod=marker

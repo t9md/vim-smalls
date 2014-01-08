@@ -69,7 +69,6 @@ let s:help.ja = {
 let s:keyboard = {}
 
 function! s:keyboard.init() "{{{1
-  let self.poslist = []
   return self
 endfunction
 
@@ -98,9 +97,8 @@ endfunction
 
 function! s:keyboard._do_auto_set() "{{{1
   let conf = self.owner.conf
-  if len(self.poslist) ==# 1 && conf['auto_set'] &&
+  if len(self.owner.poslist) ==# 1 && conf['auto_set'] &&
         \ self.data_len() >=# conf['auto_set_min_input_length']
-    let self.owner._auto_set = 1
     try
       call self.call_action('do_excursion_with_set')
     catch 'SUCCESS'
@@ -114,15 +112,14 @@ function! s:keyboard.post_input() "{{{1
     return
   endif
 
-  let found = self.owner.finder.all(self.data)
-  if empty(found)
+  let self.owner.poslist = self.owner.finder.all(self.data)
+  if empty(self.owner.poslist)
     throw 'NOT_FOUND'
   endif
-  let self.poslist = found
 
   call self._do_auto_excursion()
   call self._do_auto_set()
-  let self.owner.env.dest = found[0]
+  let self.owner.env.dest = self.owner.poslist[0]
 endfunction
 
 function! s:keyboard.on_timeout() "{{{1
@@ -180,15 +177,16 @@ function! s:keyboard.do_cancel() "{{{1
 endfunction
 
 function! s:keyboard.do_jump() "{{{1
-  call call(self.owner.do_jump, [self.data], self.owner)
+  call self.owner.do_jump()
+  " call call(self.owner.do_jump, [self.data], self.owner)
 endfunction
 
 function! s:keyboard.do_excursion(...) "{{{1
-  if empty(self.data)
+  if empty(self.owner.poslist)
     return
   endif
-  call self.owner.keyboard_exc.init(self.poslist, a:0 ? a:1 : '')
-  call self.owner.keyboard_change(self.owner.keyboard_exc)
+  call self.owner.keyboard_exc.init(a:0 ? a:1 : '')
+  call self.owner.keyboard_swap(self.owner.keyboard_exc)
 endfunction
 
 function! s:keyboard._toggle_option(opt) "{{{1

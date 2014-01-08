@@ -202,11 +202,12 @@ function! s:smalls.do_jump() "{{{1
     return
   endif
   try
-    let dest = smalls#jump#new(self).get_pos(self.poslist)
+    call smalls#pos#new(self,
+          \ smalls#jump#new(self).get_pos()
+          \ ).jump()
   catch 'JUMP_CANCELED'
     return
   endtry
-  call smalls#pos#new(self, dest).jump()
   throw 'SUCCESS'
 endfunction
 

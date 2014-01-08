@@ -65,8 +65,8 @@ function! s:jump.gen_pos2jumpk(jumpk2pos, ...) "{{{1
   return pos2jumpk
 endfunction
 
-function! s:jump.get_pos(poslist) "{{{1
-  let jumpk2pos = smalls#grouping#SCTree(a:poslist, split(self.conf.jump_keys, '\zs'))
+function! s:jump.get_pos() "{{{1
+  let jumpk2pos = smalls#grouping#SCTree(self.poslist, split(self.conf.jump_keys, '\zs'))
   return self._get_pos(jumpk2pos)
 endfunction
 
@@ -110,9 +110,10 @@ function! s:jump.new(owner) "{{{1
   if !exists('self.undofile')
     let self.undofile = tempname()
   endif
-  let self.conf = a:owner.conf
-  let self.env  = a:owner.env
-  let self.hl   = a:owner.hl
+  let self.poslist = a:owner.poslist
+  let self.conf    = a:owner.conf
+  let self.env     = a:owner.env
+  let self.hl      = a:owner.hl
   return self
 endfunction
 

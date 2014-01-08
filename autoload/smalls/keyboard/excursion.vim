@@ -15,6 +15,7 @@ let s:key_table = {
       \   "\<Tab>": "do_next",
       \        "p": "do_prev",
       \ "\<S-Tab>": "do_prev",
+      \       "gg": "do_first",
       \        "G": "do_last",
       \        "0": "do_line_head",
       \        "^": "do_line_head",
@@ -144,6 +145,7 @@ function! s:keyboard.do_cancel() "{{{1
 endfunction
 
 function! s:keyboard.do_back_cli() "{{{1
+  let self.owner.conf.auto_excursion = 0
   call self.owner.keyboard_swap(self.owner.keyboard_cli)
 endfunction
 

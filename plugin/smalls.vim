@@ -29,11 +29,11 @@ let s:options = {
       \ 'g:smalls_auto_set_min_input_length': 3,
       \ }
 
+
       " Color format
       " { "Color1": [[cterm, ctermbg, cterfg],[gui, guibg, guifg], ... }
-      " \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           '#403D3D', '#66D9EF']],
 let s:color = {
-      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE', '#66D9EF']],
+      \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           '#403D3D', '#66D9EF']],
       \ 'SmallsCurrent':    [['NONE',      'magenta', 'white', ], [ 'NONE',           '#f92672', '#ffffff']],
       \ 'SmallsJumpTarget': [['NONE',      'NONE',    'red',   ], [ 'bold',           'NONE',    '#f92672']],
       \ 'SmallsPos':        [['underline', 'magenta', 'white', ], [ 'bold,underline', 'LawnGreen', 'Black']],
@@ -41,6 +41,7 @@ let s:color = {
       \ 'SmallsCli':        [['NONE',      'NONE',    'grey',  ], [ 'NONE',           'NONE',    '#a6e22e']],
       \ 'SmallsCliCursor':  [['NONE',      'NONE',    'grey',  ], [ 'underline',      'NONE',    '#a6e22e']],
       \ }
+      " \ 'SmallsCandidate':  [['NONE',      'NONE',    'cyan',  ], [ 'bold',           'NONE', '#66D9EF']],
 
 function! s:set_options(options) "{{{
   for [varname, value] in items(a:options)

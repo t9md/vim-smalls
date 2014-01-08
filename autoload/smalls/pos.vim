@@ -1,4 +1,4 @@
-let s:is_visual = smalls#util#import('is_visual')
+let s:is_visual   = smalls#util#import('is_visual')
 let s:pattern_for = smalls#util#import("pattern_for")
 
 let s:pos = {}
@@ -23,19 +23,6 @@ function! s:pos.set() "{{{1
   call cursor(self.line, self.col)
 endfunction
 
-function! s:pos.is_gt(pos) "{{{1
-  return ( self.line > a:pos.line ) ||
-        \ (( self.line == a:pos.line ) && ( self.col > a:pos.col ))
-endfunction
-
-function! s:pos.is_ge_col(pos) "{{{1
-  return ( self.col >= a:pos.col )
-endfunction
-
-function! s:pos.is_ge_line(pos) "{{{1
-  return ( self.line >= a:pos.line )
-endfunction
-
 function! s:pos.jump() "{{{1
   call self.adjust()
 
@@ -48,15 +35,12 @@ function! s:pos.jump() "{{{1
 endfunction
 
 function! s:pos.is_wild() "{{{1
-  return !empty(matchstr(self.word(), '\V' . self.owner.conf.wildchar))
-endfunction
-
-function! s:pos.word() "{{{1
-  return self.owner.keyboard_cli.data
+  return !empty(matchstr(
+        \ self.owner.word(), '\V' . self.owner.conf.wildchar))
 endfunction
 
 function! s:pos.offset() "{{{1
-  let word = self.word()
+  let word = self.owner.word()
   let R = self.is_wild()
         \ ? len(matchstr(getline(self.line),
         \   s:pattern_for(word, self.owner.conf.wildchar)))
@@ -66,10 +50,17 @@ endfunction
 "}}}
 
 unlockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
-let  [ s:FWD_R,    s:BWD_L,    s:FWD_L,   s:BWD_R  ] = [ 1, 2, 3, 4 ]
-"    S---------E E---------+ +---------S +---------E
-"    |         E E         | E         | |         |
-"    +---------E E---------S E---------+ S---------+
+let  [ s:FWD_R,   s:FWD_L,    s:BWD_L,   s:BWD_R  ] = [ 1, 2, 3, 4 ]
+
+"      BWD_L         BWD_R
+"    ++++++++++- +++++++++++                        
+"    ++++++++++- +++++++++++                        
+"    ++++++++++S S----------                        
+"    ----------S S++++++++++                        
+"    ++++++++++- +++++++++++
+"    ++++++++++- +++++++++++                        
+"      FWD_L         FWD_R
+
 lockvar s:FWD_R s:BWD_L s:FWD_L s:BWD_R
 
 function! s:pos.where() "{{{1

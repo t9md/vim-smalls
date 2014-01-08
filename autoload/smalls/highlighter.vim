@@ -76,9 +76,8 @@ function! s:h.offset_for(word, line) "{{{1
         \ ? len(matchstr(getline(a:line), s:pattern_for(a:word, self.conf.wildchar)))
         \ : len(a:word)
 endfunction
-"}}}
 
-function! s:h.refresh()
+function! s:h.refresh() "{{{1
   call self.shade().cursor().candidate().current().region()
 endfunction
 
@@ -120,7 +119,7 @@ endfunction
 function! s:h.candidate() "{{{1
   call self.clear("SmallsCandidate")
   let word = self.owner.word()
-  if empty(word)  | return self | endif
+  if empty(word) | return self | endif
 
   call self.hl("SmallsCandidate", s:pattern_for(word, self.conf.wildchar))
   return self
@@ -130,14 +129,10 @@ function! s:h.is_wild(word) "{{{1
   return !empty(matchstr(a:word, '\V' . self.conf.wildchar))
 endfunction
 
-" function! s:h.word() "{{{1
-  " return self.owner.word()
-" endfunction
-
 function! s:h.current() "{{{1
   call self.clear("SmallsCurrent")
   let word = self.owner.word()
-  let pos = self.owner.env.dest
+  let pos  = self.owner.env.dest
   if empty(word) || empty(pos)
     return self
   endif

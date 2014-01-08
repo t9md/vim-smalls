@@ -124,7 +124,7 @@ function! s:keyboard.init(poslist, first_action) "{{{1
   let self.poslist_max = len(a:poslist)
 
   if !empty(a:first_action)
-    call self['do_' . a:first_action ]()
+    call self.call_action('do_' . a:first_action)
   endif
   return self
 endfunction

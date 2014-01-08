@@ -96,8 +96,7 @@ function! s:smalls.start(mode, config)  "{{{1
   try
     let options_saved = s:options_set(s:vim_options)
     let self.conf     = extend(self._config(), a:config, 'force')
-    let mode          = a:mode ==# 'v' ? visualmode() : a:mode
-    call self.init(mode)
+    call self.init(a:mode ==# 'v' ? visualmode() : a:mode)
     call self.cursor_hide()
     call self.loop()
 
@@ -150,23 +149,17 @@ function! s:smalls.finish() "{{{1
   endif
   call s:msg(self.exception)
 
-  if ( NOT_FOUND && conf['blink_on_notfound']) ||
-        \ ( AUTO_SET && conf['blink_on_auto_set'] )
+  if ( NOT_FOUND && conf['blink_on_notfound'])
+        \ || ( AUTO_SET && conf['blink_on_auto_set'] )
     call self.hl.blink_cword(NOT_FOUND)
   endif
 
-  if NOT_FOUND || CANCELED
-    call self.recover_visual()
+  if (NOT_FOUND || CANCELED) && s:is_visual(self.env.mode_org)
+    normal! gv
   endif
   call self.do_operation()
   " to avoid user's input mess buffer, we consume keyinput before exit.
   while getchar(1) | call getchar() | endwhile
-endfunction
-
-function! s:smalls.recover_visual() "{{{1
-  if s:is_visual(self.mode())
-    normal! gv
-  endif
 endfunction
 
 function! s:smalls.do_operation() "{{{1

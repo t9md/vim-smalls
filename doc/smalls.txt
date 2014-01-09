@@ -121,6 +121,12 @@ VARIABLES						   *smalls-variables*
 	you typed is consumed by smalls plugin, this is for avoiding extra
 	char you typed mess buffer's content.
 
+*g:smalls_exit_at_notfound*
+	Default: 0
+
+	If you set this value to 1, smalls exit immediately if search word was
+	not found.
+
 AutoJump~
 Smalls provide feature to automatically show jump keys.
 Let's say, you want to auto-show jump key after 1.0sec but only at least two
@@ -414,6 +420,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2014-01-09:
+	[new-feature] add new var |g:smalls_exit_at_notfound|.
 2014-01-07:
 	[bugfix] now properly recover undo history with |rundo| and |wundo|.
 2014-01-04:

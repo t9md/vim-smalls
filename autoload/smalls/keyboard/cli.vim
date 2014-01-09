@@ -82,9 +82,9 @@ endfunction
 
 function! s:keyboard._timeout_second() "{{{1
   let conf = self.owner.conf
-  return ( conf.auto_jump &&
-        \ ( self.data_len() >= conf.auto_jump_min_input_length ))
-        \ ? conf.auto_jump_timeout : -1
+  return ( conf['auto_jump'] &&
+        \ ( self.data_len() >= conf['auto_jump_min_input_length'] ))
+        \ ? conf['auto_jump_timeout'] : -1
 endfunction
 
 function! s:keyboard._do_auto_excursion() "{{{1
@@ -114,7 +114,11 @@ function! s:keyboard.post_input() "{{{1
 
   let self.owner.poslist = self.owner.finder.all(self.data)
   if empty(self.owner.poslist)
-    throw 'NOT_FOUND'
+    if self.conf['exit_at_notfound']
+      throw 'NOT_FOUND'
+    else
+      return
+    endif
   endif
 
   call self._do_auto_excursion()

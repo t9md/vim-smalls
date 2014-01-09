@@ -66,6 +66,7 @@ function! s:smalls._config() "{{{1
         \ 'auto_excursion_min_input_length': g:smalls_auto_excursion_min_input_length,
         \ 'auto_set':                        g:smalls_auto_set,
         \ 'auto_set_min_input_length':       g:smalls_auto_set_min_input_length,
+        \ 'exit_at_notfound':                g:smalls_exit_at_notfound,
         \ }
   return R
 endfunction

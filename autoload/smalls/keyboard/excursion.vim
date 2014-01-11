@@ -10,7 +10,7 @@ let s:key_table = {
       \    "\<CR>": "do_jump",
       \        ";": "do_set",
       \        "e": "do_setopt_adjust_to_wordend",
-      \   "\<C-e>": "do_setopt_adjust_to_wordend_then_set",
+      \   "\<C-e>": "do_back_cli",
       \        "n": "do_next",
       \   "\<Tab>": "do_next",
       \        "p": "do_prev",

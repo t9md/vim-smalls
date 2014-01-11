@@ -11,12 +11,11 @@ set cpo&vim
 
 " Main:
 let s:options = {
-      \ 'g:smalls_shade' : 1,
-      \ 'g:smalls_wildchar' : '',
-      \ 'g:smalls_helplang' : &helplang,
+      \ 'g:smalls_shade':     1,
+      \ 'g:smalls_wildchar':  '',
+      \ 'g:smalls_helplang':  &helplang,
       \ 'g:smalls_jump_keys': ';ABCDEFGHIJKLMNOPQRSTUVWXYZ',
       \ 'g:smalls_highlight': {},
-      \ 'g:smalls_operator_motion_inclusive': 0,
       \ 'g:smalls_exit_at_notfound': 0,
       \ 'g:smalls_blink_on_notfound': 1,
       \ 'g:smalls_blink_on_auto_set': 1,

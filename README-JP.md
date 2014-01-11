@@ -243,13 +243,6 @@ call smalls#keyboard#excursion#extend_table({ "l": 'do_next', "h": 'do_prev', })
 対応しています。  
 例えば `3n` で 3つ先の着地点へ, `10j` で10行下の着地点へ移動が出来ます。
 
-## `d` の operator モードから呼び出した時、word の末尾の文字が消されずに残る。
-`g:smalls_operator_motion_inclusive = 1`する事で変更可能です。  
-副作用があるため、この設定はあまりお勧めしません。  
-`:help g:smalls_operator_motion_inclusive` に詳細が書かれています。  
-それよりは、`dvs` や `dVs` で operator の motion-wise を明示的に指定する方が良いです。  
-あるいは、normal モードから smalls に入り、excursion モードから `d` したり、cli-mode から `<C-d>` で直接消す方が良いかもしれません。  
-
 ## キーバインドをカスタマイズしたい。
 `:help smalls-example` に載っています。  
 ここでも例を示します。  

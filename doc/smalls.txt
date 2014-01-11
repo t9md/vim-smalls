@@ -15,6 +15,7 @@ CONTENTS						    *smalls-contents*
        Functions .......................... |smalls-functions|
        Keyboard ............................ |smalls-keyboard|
        Configuration Example ................ |smalls-example|
+       FAQ ...................................... |smalls-faq|
        Bug ...................................... |smalls-bug|
        Todo  ................................... |smalls-todo|
        Special Notes ........................... |smalls-note|
@@ -165,33 +166,6 @@ By default this feature is disabled.
 	let g:smalls_auto_jump = 1
 	let g:smalls_auto_jump_min_input_length = 2
 	let g:smalls_auto_jump_timeout = 0.0
-<
-*g:smalls_operator_motion_inclusive*
-	Default: 0
-
-	CAUTION: Not Recommended to change this var~
-	If you set to 1, o_<Plug>(smalls) eat end of char(|inclusive|).
-
-	for example, assume you have following line.
->
-	let a:pos.col += self.kbd_cli.data_len() - 1
-	          ^ cursor
-<
-	If execute 'd, o_<Plug>(smalls), )'.
-
-	Default 0: deletion exclude end of match ')'.
-	Default 1: deletion include end of match ')'.
-
-	But this setting lead unexpected result for |o_CTRL-V|.
-	See also |smalls-bug|.
-
-	RECOMMENDED: use vim's native operator modifier~
-	In my opinion, its' better to use motion-modifier rather than
-	setting this variable to 1.
-	For example, you can delete last ')' in above example, by
-	'd, v, o_<Plug>(smalls), )'. the 'v' is operator modifier that force
-	motion behave charwise, means operator affect same area as
-	charwise-visual. See |o_v|, |o_V|, |o_CTRL-V|.
 
 *g:smalls_current_mode*
 	Default: ''
@@ -220,22 +194,11 @@ By default this feature is disabled.
 	Default: 3
 	
 	The minimum char to trigger auto_set.
-	[NOTE]
-	Since when you enable |g:smalls_auto_set|, smalls need to check number of candiadate
-	every time you typed any char.
-	This introduce performance overhead, without auto_set, smalls only need to search
-	one candidate(for highlight) and not need to know number of candidate.
 
 *g:smalls_blink_on_auto_set*
 	Default: 1
 
 	Blink after automatically land to target when auto_set.
-
-*g:smalls_auto_set_exceed_char* [NOT IMPLEMENTED JUST IDEA]
-	Default: 0
-	
-	if |g:smalls_auto_set| is set, while you type as much cars as
-	specified this variable, cursor automatically set.
 
 ==============================================================================
 FUNCTIONS						   *smalls-functions*
@@ -278,8 +241,8 @@ see |smalls-example|
 	ex) { "\<Esc>": 'do_cancel' }
 	For available action, see |smalls-keyboard| section.
 
-	To unbind action from key, use '__UNMAP__' special action.
-	The key have '__UNMAP__' action is deleted at initialization.
+	To unbind action from key, use '<NOP>' special action.
+	The key have '<NOP>' action is deleted at initialization.
 
 *smalls#keyboard#cli#replace_table(table)*
 	{table} is |Dictionary| is replaced from default key table.
@@ -346,6 +309,19 @@ Example-2: Disable default ';' in excursion mode
 >
         call smalls#keyboard#excursion#extend_table({";": '__UNMAP__'})
 <
+==============================================================================
+FAQ								 *smalls-faq*
+
+Not included end of word char when invoked from operator mapping.
+For example, d<Plug>(smalls)) not delete ')' char.
+
+See |exclusive|, |inclusive| explanation.
+If you want to inlcude end of word, you can force wise of motion by |o_v|.
+For example, you can delete last ')' in above example, by
+'d, v, o_<Plug>(smalls), )'. the 'v' is operator modifier that force
+motion behave charwise, means operator affect same area as
+charwise-visual. See |o_v|, |o_V|, |o_CTRL-V|.
+
 ============================================================================
 BUG								 *smalls-bug*
 
@@ -422,6 +398,7 @@ What I did is simply combine search feature to original great plugin.
 CHANGELOG						   *smalls-changelog*
 2014-01-09:
 	[new-feature] add new var |g:smalls_exit_at_notfound|.
+	[behave-change] delete g:smalls_operator_motion_inclusive var.
 2014-01-07:
 	[bugfix] now properly recover undo history with |rundo| and |wundo|.
 2014-01-04:

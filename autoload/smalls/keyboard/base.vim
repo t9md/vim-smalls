@@ -1,7 +1,7 @@
 " Base:
 let s:getchar           = smalls#util#import("getchar")
 let s:getchar_timeout   = smalls#util#import("getchar_timeout")
-let s:special_key_table = smalls#util#import('special_key_table')()
+let s:special_key_table = smalls#special_key_table#get()
 
 let s:keyboard = {}
 
@@ -199,7 +199,7 @@ function! s:keyboard._prompt_str() "{{{1
 endfunction
 
 function! smalls#keyboard#base#new(owner, table, name, help) "{{{1
-  call filter(a:table, 'v:val != "__UNMAP__"')
+  call filter(a:table, "v:val != '<NOP>'")
   let kbd = deepcopy(s:keyboard)
   return kbd.init(a:owner, a:table, a:name, a:help)
 endfunction "}}}

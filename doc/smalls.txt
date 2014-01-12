@@ -396,6 +396,8 @@ is specified or not.
 ============================================================================
 TODO								*smalls-todo*
 
+* [ ] operator to combine smalls with text-object-function smalls within
+  function and replace character which cli-C-R become useful.
 * [ ] introduce smalls throughout multiwindow(multiwin-mode?)
 * [ ] improve to support 'c' operator
 * [ ] add auto_set or landing variable which finish and set cursor when 

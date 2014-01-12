@@ -54,7 +54,10 @@ function! s:function_key() "{{{1
 endfunction
 
 function! s:combination_key() "{{{1
-  let modifire_meta    = [ '<M-%s>', '<A-%s>', '<D-%s>' ]
+  let modifire_meta    = [ '<M-%s>' ]
+  if has('gui_macvim')
+    let modifire_meta += [ '<D-%s>' ]
+  endif
   let modifire_control = [ '<C-%s>' ]
   let modifire_shift   = [ '<S-%s>' ]
   let R = []
@@ -80,12 +83,17 @@ endfunction
 function! s:special_key_table() "{{{1
   let D = {}
   for key in (s:fixed_special_key + s:function_key() + s:combination_key())
-    let k = eval('"\' . key . '"')
-    if has_key(D, k)
-      continue
-    else
-      let D[k] = key
-    endif
+    try
+      let k = eval('"\' . key . '"')
+      if has_key(D, k)
+        continue
+      else
+        let D[k] = key
+      endif
+    catch
+      echom key
+      echom v:exception
+    endtry
   endfor
   return D
 endfunction

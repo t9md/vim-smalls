@@ -177,6 +177,8 @@ function! s:smalls.word() "{{{1
 endfunction
 
 function! s:smalls.loop() "{{{1
+  call self.statusline_update(self.keyboard_cur.name)
+
   while 1
     call self.hl.refresh()
     try

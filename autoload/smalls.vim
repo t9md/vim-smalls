@@ -1,4 +1,5 @@
 let s:is_visual       = smalls#util#import('is_visual')
+let s:SCREEN = has("gui_running") ? 'gui' : 'cui'
 
 " Util:
 function! s:msg(msg) "{{{1
@@ -90,16 +91,21 @@ function! s:smalls.start(mode, config)  "{{{1
 endfunction
 
 function! s:smalls.cursor_hide() "{{{1
-  let self.__hl_cursor_cmd = s:highlight_preserve('Cursor')
-  let self.__t_ve_save = &t_ve
-
-  highlight Cursor NONE
-  let &t_ve=''
+  if s:SCREEN is 'gui'
+    let self.__hl_cursor_cmd = s:highlight_preserve('Cursor')
+    highlight Cursor NONE
+  else
+    let self.__t_ve_save = &t_ve
+    let &t_ve=''
+  endif
 endfunction
 
 function! s:smalls.cursor_restore() "{{{1
-  execute self.__hl_cursor_cmd
-  let &t_ve = self.__t_ve_save
+  if s:SCREEN is 'gui'
+    execute self.__hl_cursor_cmd
+  else
+    let &t_ve = self.__t_ve_save
+  endif
 endfunction
 
 function! s:smalls.env_preserve(mode) "{{{1

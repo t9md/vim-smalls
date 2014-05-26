@@ -1,4 +1,4 @@
-# Fist of all
+# First of all
 
 Specially thanks to Lokaltog who created great [vim-easymotion](https://github.com/Lokaltog/vim-easymotion).
 Without his former work, I don't think I could create smalls from scratch.

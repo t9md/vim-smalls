@@ -31,6 +31,11 @@ Search and jump with easymotion style.
     omap s <Plug>(smalls)
     xmap s <Plug>(smalls)
 
+    " [NOTE] optionally it might be comfortable if you enable 'smartcase'
+    " comment-in following line if you want to.
+    " set ignorecase smartcase
+
+
 
 # Related work
 If you don't like this plugin? It's ok, there are a lot of plugins like bellow.  

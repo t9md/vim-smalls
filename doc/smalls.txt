@@ -396,6 +396,8 @@ What I did is simply combine search feature to original great plugin.
 
 ==============================================================================
 CHANGELOG						   *smalls-changelog*
+2014-07-02:
+	[usability] now respect 'smartcase' and 'ignrecase' options.
 2014-01-09:
 	[new-feature] add new var |g:smalls_exit_at_notfound|.
 	[behave-change] delete g:smalls_operator_motion_inclusive var.

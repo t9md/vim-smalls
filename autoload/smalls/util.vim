@@ -53,7 +53,12 @@ function! s:getchar_timeout(timeout) "{{{1
 endfunction
 
 function! s:pattern_for(word, wildchar) "{{{1
-  let pat = '\V\c' . escape(a:word, '\') . '\v'
+  let pat = '\V'
+  if match(a:word, '\u') ==# -1 && &ignorecase && &smartcase
+    let pat .= '\c'
+  endif
+  let pat .= escape(a:word, '\') . '\v'
+  call g:plog(pat)
   let pat = substitute(pat, '\.', '\\v.\\V', 'g')
   if !empty(a:wildchar)
     let pat = substitute(pat,

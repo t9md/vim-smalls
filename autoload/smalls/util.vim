@@ -58,7 +58,6 @@ function! s:pattern_for(word, wildchar) "{{{1
     let pat .= '\c'
   endif
   let pat .= escape(a:word, '\') . '\v'
-  call g:plog(pat)
   let pat = substitute(pat, '\.', '\\v.\\V', 'g')
   if !empty(a:wildchar)
     let pat = substitute(pat,

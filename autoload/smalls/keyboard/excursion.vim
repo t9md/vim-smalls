@@ -40,6 +40,9 @@ let s:key_table = {
       \    "\<F1>": "do_help",
       \        "?": "do_help",
       \ }
+      " \        "y": "do_yank_cword",
+      " \        "c": "do_change_cword",
+      " \        "d": "do_delete_cword",
       " \        "e": "do_set_on_wordend",
       " \        "v": "do_select_v_with_set",
       " \        "V": "do_select_V_with_set",
@@ -360,15 +363,27 @@ function! s:keyboard.do_change() "{{{1
   call self._do_normal('c', 'v')
 endfunction
 
+function! s:keyboard.do_change_cword() "{{{1
+  call self._do_normal('ciw', '')
+endfunction
+
+function! s:keyboard.do_yank_cword() "{{{1
+  call self._do_normal('yiw', '')
+endfunction
+
+function! s:keyboard.do_delete_cword() "{{{1
+  call self._do_normal('diw', '')
+endfunction
+
 function! s:keyboard._do_normal(key, wise, ...)
   let force_wise = !empty(a:000)
 
-  if force_wise || ! s:is_visual(self.owner.mode())
+  if force_wise || ! s:is_visual(self.owner.mode()) && !empty(a:wise)
     call self._do_select(a:wise, force_wise)
   endif
   let self.owner.operation = {
         \ 'normal':      a:key ==# 'c' ? 'd' : a:key,
-        \ 'startinsert': a:key ==# 'c',
+        \ 'startinsert': a:key =~# '^c',
         \ }
   call self.do_set()
 endfunction

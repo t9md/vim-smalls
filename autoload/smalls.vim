@@ -79,7 +79,7 @@ function! s:smalls.start(mode, config)  "{{{1
     call self.cursor_hide()
     call self.loop()
 
-  catch 'SUCCESS'
+  catch /^SUCCESS/
   catch
     let self.exception = v:exception
   finally

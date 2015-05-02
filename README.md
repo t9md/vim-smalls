@@ -21,7 +21,7 @@ Search and jump with easymotion style.
 * always ignore case for jump key(easy to type).
 
 # Movie
-![Movie](https://github.com/t9md/t9md/raw/2554ce46844e87014ef778daf112691abe9990f7/img/vim-smalls.gif)
+![Movie](https://raw.githubusercontent.com/t9md/t9md/85fd33b76f9a1a8b4d2d6993a6ab443d9cb2aebf/img/vim-smalls.gif)
 
 # Configuration example
 

@@ -31,8 +31,13 @@ delete, yank 等の operator と組み合わせて使用する motion。operator
 * 色のカスタマイズ
 
 # 動画
-![Movie](https://github.com/t9md/t9md/raw/2554ce46844e87014ef778daf112691abe9990f7/img/vim-smalls.gif)
+![Movie](https://raw.githubusercontent.com/t9md/t9md/85fd33b76f9a1a8b4d2d6993a6ab443d9cb2aebf/img/vim-smalls.gif)
 
+
+https://raw.githubusercontent.com/t9md/t9md/465f597e88cdf977b415248942d62c2584dd2c5f/img/smalls.gif
+https://raw.githubusercontent.com/t9md/t9md/ 556e4cdd54739eae646ae80632dbee626dce193b/
+/img/smalls.gif
+https://github.com/t9md/t9md/raw/556e4cdd54739eae646ae80632dbee626dce193b/img/vim-smalls.gif
 # 設定例
 
     " Normal モードの 's' で発動

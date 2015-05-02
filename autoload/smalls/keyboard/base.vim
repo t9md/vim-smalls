@@ -104,7 +104,7 @@ function! s:keyboard._set(c) "{{{1
   " set char or chars into cursor position.
   let self.data = self._before() . a:c .  self._after()
   let self.cursor += len(a:c)
-endfunction 
+endfunction
 
 function! s:keyboard._before() "{{{1
   return  self.cursor == 0 ? '' : self.data[ : self.cursor - 1]
@@ -146,7 +146,7 @@ function! s:keyboard.help() "{{{1
   let sep = printf(format,
         \ repeat('-', width_char),
         \ repeat('-', width_action),
-        \ repeat('-', width_desc), 
+        \ repeat('-', width_desc),
         \ )
   call add(R, printf(format, 'Char', 'Action', 'Description'))
   call add(R, sep)

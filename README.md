@@ -21,7 +21,7 @@ Search and jump with easymotion style.
 * always ignore case for jump key(easy to type).
 
 # Movie
-![Movie](http://gifzo.net/NBDnZVtDNJ.gif)
+![Movie](https://github.com/t9md/t9md/commit/556e4cdd54739eae646ae80632dbee626dce193b#diff-edade7341519b30c11f8dc2a33fdac5a)
 
 # Configuration example
 
